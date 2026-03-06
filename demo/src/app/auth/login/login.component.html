@@ -1,0 +1,66 @@
+<div class="auth-wrapper" [class.panel-active]="isPanelActive">
+
+  <!-- LOGIN -->
+  <div class="auth-form-box login-form-box">
+    <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+
+      <h1>Sign In</h1>
+      <p class="subtitle">or use your account</p>
+
+      <input type="email" placeholder="Email Address" formControlName="email"/>
+      <input type="password" placeholder="Password" formControlName="motDePasse"/>
+
+      <button type="submit">SIGN IN</button>
+
+      <div class="mobile-switch">
+        <p>Don't have an account?</p>
+        <button type="button" (click)="activateRegister()">SIGN UP</button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- REGISTER -->
+  <div class="auth-form-box register-form-box">
+    <form [formGroup]="registerForm" (ngSubmit)="onRegister()">
+
+      <h1>Create Account</h1>
+
+      <input type="text" placeholder="Full Name" formControlName="nom"/>
+      <input type="email" placeholder="Email Address" formControlName="email"/>
+      <input type="password" placeholder="Password" formControlName="motDePasse"/>
+
+
+
+      <input type="text" placeholder="Spécialité (Technicien)" formControlName="specialite"/>
+
+      <button type="submit">SIGN UP</button>
+
+      <div class="mobile-switch">
+        <p>Already have an account?</p>
+        <button type="button" (click)="activateLogin()">SIGN IN</button>
+      </div>
+
+    </form>
+  </div>
+
+
+
+  
+  <div class="slide-panel-wrapper">
+    <div class="slide-panel">
+      <div class="panel-content panel-content-left">
+        <h1>Welcome Back!</h1>
+        <p>Stay connected by logging in</p>
+        <button class="transparent-btn" (click)="activateLogin()">SIGN IN</button>
+      </div>
+
+      <div class="panel-content panel-content-right">
+        <h1>Hey There!</h1>
+        <p>Begin your amazing journey by creating an account with us today</p>
+        <button class="transparent-btn" (click)="activateRegister()">SIGN UP</button>
+      </div>
+    </div>
+  </div>
+
+</div>
