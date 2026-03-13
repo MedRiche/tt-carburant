@@ -5,12 +5,35 @@
     <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
 
       <h1>Sign In</h1>
-      <p class="subtitle">or use your account</p>
+      <p class="subtitle">Connectez-vous à votre compte</p>
 
-      <input type="email" placeholder="Email Address" formControlName="email"/>
-      <input type="password" placeholder="Password" formControlName="motDePasse"/>
+      <div class="input-group">
+        <input 
+          type="email" 
+          placeholder="Email Address" 
+          formControlName="email"
+          [class.error]="hasError(loginForm, 'email', 'email') || hasError(loginForm, 'email', 'required')"
+        />
+        <span class="error-message" *ngIf="getErrorMessage(loginForm, 'email')">
+          {{ getErrorMessage(loginForm, 'email') }}
+        </span>
+      </div>
 
-      <button type="submit">SIGN IN</button>
+      <div class="input-group">
+        <input 
+          type="password" 
+          placeholder="Password" 
+          formControlName="motDePasse"
+          [class.error]="hasError(loginForm, 'motDePasse', 'required')"
+        />
+        <span class="error-message" *ngIf="getErrorMessage(loginForm, 'motDePasse')">
+          {{ getErrorMessage(loginForm, 'motDePasse') }}
+        </span>
+      </div>
+
+      <button type="submit" [disabled]="isLoading">
+        {{ isLoading ? 'CONNEXION...' : 'SIGN IN' }}
+      </button>
 
       <div class="mobile-switch">
         <p>Don't have an account?</p>
@@ -25,16 +48,55 @@
     <form [formGroup]="registerForm" (ngSubmit)="onRegister()">
 
       <h1>Create Account</h1>
+      <p class="subtitle">Créez votre compte</p>
 
-      <input type="text" placeholder="Full Name" formControlName="nom"/>
-      <input type="email" placeholder="Email Address" formControlName="email"/>
-      <input type="password" placeholder="Password" formControlName="motDePasse"/>
+      <div class="input-group">
+        <input 
+          type="text" 
+          placeholder="Full Name" 
+          formControlName="nom"
+          [class.error]="hasError(registerForm, 'nom', 'required') || hasError(registerForm, 'nom', 'minlength')"
+        />
+        <span class="error-message" *ngIf="getErrorMessage(registerForm, 'nom')">
+          {{ getErrorMessage(registerForm, 'nom') }}
+        </span>
+      </div>
 
+      <div class="input-group">
+        <input 
+          type="email" 
+          placeholder="Email Address" 
+          formControlName="email"
+          [class.error]="hasError(registerForm, 'email', 'email') || hasError(registerForm, 'email', 'required')"
+        />
+        <span class="error-message" *ngIf="getErrorMessage(registerForm, 'email')">
+          {{ getErrorMessage(registerForm, 'email') }}
+        </span>
+      </div>
 
+      <div class="input-group">
+        <input 
+          type="password" 
+          placeholder="Password (min 6 caractères)" 
+          formControlName="motDePasse"
+          [class.error]="hasError(registerForm, 'motDePasse', 'required') || hasError(registerForm, 'motDePasse', 'minlength')"
+        />
+        <span class="error-message" *ngIf="getErrorMessage(registerForm, 'motDePasse')">
+          {{ getErrorMessage(registerForm, 'motDePasse') }}
+        </span>
+      </div>
 
-      <input type="text" placeholder="Spécialité (Technicien)" formControlName="specialite"/>
+      <div class="input-group">
+        <input 
+          type="text" 
+          placeholder="Spécialité (ex: Maintenance véhicules)" 
+          formControlName="specialite"
+        />
+      </div>
 
-      <button type="submit">SIGN UP</button>
+      <button type="submit" [disabled]="isLoading">
+        {{ isLoading ? 'CRÉATION...' : 'SIGN UP' }}
+      </button>
 
       <div class="mobile-switch">
         <p>Already have an account?</p>
@@ -44,20 +106,18 @@
     </form>
   </div>
 
-
-
-  
+  <!-- SLIDE PANELS -->
   <div class="slide-panel-wrapper">
     <div class="slide-panel">
       <div class="panel-content panel-content-left">
         <h1>Welcome Back!</h1>
-        <p>Stay connected by logging in</p>
+        <p>Connectez-vous pour accéder à votre espace</p>
         <button class="transparent-btn" (click)="activateLogin()">SIGN IN</button>
       </div>
 
       <div class="panel-content panel-content-right">
         <h1>Hey There!</h1>
-        <p>Begin your amazing journey by creating an account with us today</p>
+        <p>Rejoignez-nous et commencez votre parcours avec Tunisie Telecom</p>
         <button class="transparent-btn" (click)="activateRegister()">SIGN UP</button>
       </div>
     </div>

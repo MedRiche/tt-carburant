@@ -1,0 +1,58 @@
+<div class="zone-list-container">
+  <div class="header">
+    <h2>🗺️ Gestion des Zones</h2>
+    <button class="btn btn-primary" (click)="openCreateForm()">
+      ➕ Nouvelle Zone
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    Chargement des zones...
+  </div>
+
+  <div *ngIf="!loading && zones.length === 0" class="empty-state">
+    <p>Aucune zone trouvée</p>
+    <button class="btn btn-primary" (click)="openCreateForm()">
+      Créer la première zone
+    </button>
+  </div>
+
+  <div *ngIf="!loading && zones.length > 0" class="zones-grid">
+    <div *ngFor="let zone of zones" class="zone-card">
+      <div class="zone-header">
+        <h3>{{ zone.nom }}</h3>
+        <span class="badge">{{ zone.nombreUtilisateurs }} utilisateurs</span>
+      </div>
+
+      <div class="zone-body">
+        <p *ngIf="zone.description" class="description">
+          {{ zone.description }}
+        </p>
+        <p *ngIf="!zone.description" class="description text-muted">
+          Aucune description
+        </p>
+
+        <div *ngIf="zone.responsable" class="responsable">
+          <strong>Responsable :</strong> {{ zone.responsable }}
+        </div>
+      </div>
+
+      <div class="zone-footer">
+        <button class="btn btn-sm btn-outline" (click)="openEditForm(zone)">
+          ✏️ Modifier
+        </button>
+        <button class="btn btn-sm btn-danger" (click)="supprimerZone(zone)">
+          🗑️ Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Formulaire -->
+  <app-zone-form
+    *ngIf="showForm"
+    [zone]="selectedZone"
+    (onSave)="onZoneSaved()"
+    (onCancel)="closeForm()">
+  </app-zone-form>
+</div>

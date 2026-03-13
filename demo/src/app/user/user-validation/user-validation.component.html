@@ -1,0 +1,185 @@
+<div class="validation-container">
+  <div class="header">
+    <h2>👥 Gestion des Utilisateurs</h2>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button 
+      class="tab" 
+      [class.active]="activeTab === 'en_attente'"
+      (click)="activeTab = 'en_attente'">
+      ⏳ En attente ({{ utilisateursEnAttente.length }})
+    </button>
+    <button 
+      class="tab" 
+      [class.active]="activeTab === 'tous'"
+      (click)="activeTab = 'tous'">
+      📋 Tous les utilisateurs ({{ tousUtilisateurs.length }})
+    </button>
+  </div>
+
+  <!-- Tab En Attente -->
+  <div *ngIf="activeTab === 'en_attente'" class="tab-content">
+    <div *ngIf="loading" class="loading">Chargement...</div>
+
+    <div *ngIf="!loading && utilisateursEnAttente.length === 0" class="empty-state">
+      <p>✅ Aucun utilisateur en attente de validation</p>
+    </div>
+
+    <div *ngIf="!loading && utilisateursEnAttente.length > 0" class="users-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Rôle</th>
+            <th>Spécialité</th>
+            <th>Date inscription</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of utilisateursEnAttente">
+            <td>{{ user.nom }}</td>
+            <td>{{ user.email }}</td>
+            <td><span class="badge badge-role">{{ user.role }}</span></td>
+            <td>{{ user.specialite || '-' }}</td>
+            <td>{{ user.dateCreation | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td class="actions">
+              <button class="btn btn-sm btn-success" (click)="openValidationModal(user)">
+                ✅ Valider
+              </button>
+              <button class="btn btn-sm btn-danger" (click)="refuserCompte(user)">
+                ❌ Refuser
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Tab Tous les utilisateurs -->
+  <div *ngIf="activeTab === 'tous'" class="tab-content">
+    <div *ngIf="tousUtilisateurs.length === 0" class="empty-state">
+      <p>Aucun utilisateur</p>
+    </div>
+
+    <div *ngIf="tousUtilisateurs.length > 0" class="users-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Rôle</th>
+            <th>Statut</th>
+            <th>Zones affectées</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of tousUtilisateurs">
+            <td>{{ user.nom }}</td>
+            <td>{{ user.email }}</td>
+            <td><span class="badge badge-role">{{ user.role }}</span></td>
+            <td>
+              <span class="badge" [ngClass]="getStatutClass(user.statutCompte)">
+                {{ getStatutLabel(user.statutCompte) }}
+              </span>
+            </td>
+            <td>
+              <div *ngIf="user.zones && user.zones.length > 0" class="zones-list">
+                <span *ngFor="let zone of user.zones" class="zone-badge">
+                  {{ zone.nom }}
+                </span>
+              </div>
+              <span *ngIf="!user.zones || user.zones.length === 0" class="text-muted">
+                Aucune zone
+              </span>
+            </td>
+            <td class="actions">
+              <button 
+                *ngIf="user.statutCompte === 'ACTIF'" 
+                class="btn btn-sm btn-warning" 
+                (click)="desactiverCompte(user)">
+                🔒 Désactiver
+              </button>
+              <button 
+                class="btn btn-sm btn-danger" 
+                (click)="supprimerUtilisateur(user)">
+                🗑️ Supprimer
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal de validation avec sélection des zones -->
+  <div *ngIf="showValidationModal" class="modal-overlay" (click)="closeValidationModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>✅ Valider le compte de {{ selectedUser?.nom }}</h3>
+        <button class="btn-close" (click)="closeValidationModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="user-info">
+          <p><strong>Email:</strong> {{ selectedUser?.email }}</p>
+          <p><strong>Rôle:</strong> {{ selectedUser?.role }}</p>
+          <p *ngIf="selectedUser?.specialite">
+            <strong>Spécialité:</strong> {{ selectedUser?.specialite }}
+          </p>
+        </div>
+
+        <div class="zone-selection">
+          <h4>Sélectionnez les zones à affecter *</h4>
+          <p class="help-text">
+            L'utilisateur aura accès aux véhicules et équipements de ces zones
+          </p>
+
+          <div class="zones-grid">
+            <div 
+              *ngFor="let zone of toutesZones" 
+              class="zone-item"
+              [class.selected]="isZoneSelected(zone.id)"
+              (click)="toggleZoneSelection(zone.id)">
+              <div class="zone-checkbox">
+                <span *ngIf="isZoneSelected(zone.id)" class="check">✓</span>
+              </div>
+              <div class="zone-info">
+                <div class="zone-name">{{ zone.nom }}</div>
+                <div *ngIf="zone.description" class="zone-desc">
+                  {{ zone.description }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="selectedZoneIds.length === 0" class="error-message">
+            Veuillez sélectionner au moins une zone
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button 
+          type="button" 
+          class="btn btn-secondary" 
+          (click)="closeValidationModal()"
+          [disabled]="submitting">
+          Annuler
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-success" 
+          (click)="validerCompte()"
+          [disabled]="selectedZoneIds.length === 0 || submitting">
+          {{ submitting ? 'Validation...' : 'Valider le compte' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

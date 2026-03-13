@@ -1,19 +1,17 @@
 package com.example.ttcarburant.controller;
 
 import com.example.ttcarburant.dto.UtilisateurDto;
-import com.example.ttcarburant.security.JwtService;
+import com.example.ttcarburant.dto.ValiderCompteRequest;
 import com.example.ttcarburant.services.UtilisateurService;
-import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/utilisateurs")
-
 @PreAuthorize("hasRole('ADMIN')")
 @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:4200"})
 public class AdminUtilisateurController {
@@ -23,6 +21,7 @@ public class AdminUtilisateurController {
     public AdminUtilisateurController(UtilisateurService utilisateurService) {
         this.utilisateurService = utilisateurService;
     }
+
     /**
      * Récupérer tous les utilisateurs
      */
@@ -52,14 +51,14 @@ public class AdminUtilisateurController {
     }
 
     /**
-     * Valider un compte utilisateur
+     * Valider un compte utilisateur AVEC affectation de zones
      */
-    @PatchMapping("/{id}/valider")
-    public ResponseEntity<?> validerCompte(@PathVariable Long id) {
+    @PostMapping("/valider")
+    public ResponseEntity<?> validerCompteAvecZones(@Valid @RequestBody ValiderCompteRequest request) {
         try {
-            UtilisateurDto utilisateur = utilisateurService.validerCompte(id);
+            UtilisateurDto utilisateur = utilisateurService.validerCompteAvecZones(request);
             return ResponseEntity.ok(new SuccessResponse(
-                    "Compte validé avec succès",
+                    "Compte validé et zones affectées avec succès",
                     utilisateur
             ));
         } catch (Exception e) {
@@ -107,6 +106,42 @@ public class AdminUtilisateurController {
         try {
             utilisateurService.supprimerUtilisateur(id);
             return ResponseEntity.ok(new MessageResponse("Utilisateur supprimé avec succès"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
+    /**
+     * Ajouter une zone à un utilisateur
+     */
+    @PostMapping("/{utilisateurId}/zones/{zoneId}")
+    public ResponseEntity<?> ajouterZone(
+            @PathVariable Long utilisateurId,
+            @PathVariable Long zoneId) {
+        try {
+            UtilisateurDto utilisateur = utilisateurService.ajouterZone(utilisateurId, zoneId);
+            return ResponseEntity.ok(new SuccessResponse(
+                    "Zone ajoutée avec succès",
+                    utilisateur
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
+    /**
+     * Retirer une zone d'un utilisateur
+     */
+    @DeleteMapping("/{utilisateurId}/zones/{zoneId}")
+    public ResponseEntity<?> retirerZone(
+            @PathVariable Long utilisateurId,
+            @PathVariable Long zoneId) {
+        try {
+            UtilisateurDto utilisateur = utilisateurService.retirerZone(utilisateurId, zoneId);
+            return ResponseEntity.ok(new SuccessResponse(
+                    "Zone retirée avec succès",
+                    utilisateur
+            ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
