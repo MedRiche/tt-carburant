@@ -132,7 +132,7 @@ export class LoginComponent {
 
     if (role === 'ADMIN') {
       // Rediriger vers le dashboard admin
-      this.router.navigate(['/admin/profile']);
+      this.router.navigate(['/admin/dashboardAdmin']);
     } else if (role === 'TECHNICIEN') {
       // Rediriger vers le dashboard technicien
       this.router.navigate(['/technicien/dashboard']);

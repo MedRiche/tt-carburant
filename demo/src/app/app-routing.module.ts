@@ -2,9 +2,9 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from './auth/login/login.component';
 import { ZoneListComponent } from './zones/zone-list/zone-list.component';
-import { UserValidationComponent } from './user/user-validation/user-validation.component';
-import { ProfileComponent } from './profile/profile.component';
 import { AdminGuard, TechnicienGuard } from './guards/auth.guard';
+import { DashboardAdminComponent } from './dashboard/dashboard-admin/dashboard-admin.component';
+import { GestionutilisateurComponent } from './gestionutilisateur/gestionutilisateur.component';
   
 
 const routes: Routes = [
@@ -20,9 +20,9 @@ const routes: Routes = [
     canActivate: [AdminGuard],
     children: [
       { path: '', redirectTo: 'utilisateurs', pathMatch: 'full' },
-      { path: 'utilisateurs', component: UserValidationComponent },
+      { path: 'utilisateurs', component: GestionutilisateurComponent },
       { path: 'zones', component: ZoneListComponent },
-      { path: 'profile', component: ProfileComponent }
+      { path: 'dashboardAdmin', component: DashboardAdminComponent }
     ]
   },
 

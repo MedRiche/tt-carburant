@@ -10,7 +10,6 @@ import { AppComponent } from './app.component';
 import { LoginComponent } from './auth/login/login.component';
 import { ZoneListComponent } from './zones/zone-list/zone-list.component';
 import { ZoneFormComponent } from './zones/zone-form/zone-form.component';
-import { UserValidationComponent } from './user/user-validation/user-validation.component';
 import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
 import { ProfileComponent } from './profile/profile.component';
@@ -25,6 +24,8 @@ import { AuthGuard, AdminGuard, TechnicienGuard } from './guards/auth.guard';
 
 // Interceptors
 import { AuthInterceptor } from './interceptors/auth.interceptor';
+import { DashboardAdminComponent } from './dashboard/dashboard-admin/dashboard-admin.component';
+import { GestionutilisateurComponent } from './gestionutilisateur/gestionutilisateur.component';
 
 @NgModule({
   declarations: [
@@ -32,10 +33,11 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
     LoginComponent,
     ZoneListComponent,
     ZoneFormComponent,
-    UserValidationComponent,
     HeaderComponent,
     FooterComponent,
     ProfileComponent,
+    DashboardAdminComponent,
+    GestionutilisateurComponent,
 
   ],
     imports: [

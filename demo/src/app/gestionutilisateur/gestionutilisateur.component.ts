@@ -1,16 +1,16 @@
 import { Component, OnInit } from '@angular/core';
-import { Utilisateur, StatutCompte } from '../../models/utilisateur';
-import { Zone } from '../../models/zone';
-import { UtilisateurService } from '../../services/utilisateur.service';
-import { ZoneService } from '../../services/zone.service';
+import { Utilisateur, StatutCompte } from '../models/utilisateur';
+import { Zone } from '../models/zone';
+import { UtilisateurService } from '../services/utilisateur.service';
+import { ZoneService } from '../services/zone.service';
 
 @Component({
-  selector: 'app-user-validation',
+  selector: 'app-gestionutilisateur',
   standalone: false,
-  templateUrl: './user-validation.component.html',
-  styleUrls: ['./user-validation.component.css']
+  templateUrl: './gestionutilisateur.component.html',
+  styleUrl: './gestionutilisateur.component.css'
 })
-export class UserValidationComponent implements OnInit {
+export class GestionutilisateurComponent implements OnInit {
   utilisateursEnAttente: Utilisateur[] = [];
   tousUtilisateurs: Utilisateur[] = [];
   toutesZones: Zone[] = [];

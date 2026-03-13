@@ -5,22 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="777fc5d2-3bb5-4db8-8545-4efa7fe5d991" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/controller/ZoneController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/dto/ValiderCompteRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/dto/ZoneDto.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/dto/ZoneRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/model/entity/AffectationUtilisateurZone.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/model/entity/Zone.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/repository/AffectationUtilisateurZoneRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/repository/ZoneRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/ZoneService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/controller/AdminUtilisateurController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/controller/AdminUtilisateurController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/dto/UtilisateurDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/dto/UtilisateurDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/UtilisateurService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/UtilisateurService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/app/app.module.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/app.module.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -139,6 +124,7 @@
       <workItem from="1772802876561" duration="5085000" />
       <workItem from="1773063344439" duration="1339000" />
       <workItem from="1773188298505" duration="979000" />
+      <workItem from="1773410913422" duration="1307000" />
     </task>
     <servers />
   </component>
