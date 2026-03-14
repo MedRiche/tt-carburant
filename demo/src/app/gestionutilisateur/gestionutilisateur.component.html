@@ -1,6 +1,9 @@
 <div class="validation-container">
   <div class="header">
     <h2>👥 Gestion des Utilisateurs</h2>
+    <button class="btn btn-primary" (click)="navigateToDashboard()">
+      📊 Dashboard
+    </button>
   </div>
 
   <!-- Tabs -->
@@ -100,6 +103,11 @@
             </td>
             <td class="actions">
               <button 
+                class="btn btn-sm btn-primary" 
+                (click)="openEditModal(user)">
+                ✏️ Modifier
+              </button>
+              <button 
                 *ngIf="user.statutCompte === 'ACTIF'" 
                 class="btn btn-sm btn-warning" 
                 (click)="desactiverCompte(user)">
@@ -178,6 +186,66 @@
           (click)="validerCompte()"
           [disabled]="selectedZoneIds.length === 0 || submitting">
           {{ submitting ? 'Validation...' : 'Valider le compte' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de modification -->
+  <div *ngIf="showEditModal" class="modal-overlay" (click)="closeEditModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>✏️ Modifier {{ selectedUser?.nom }}</h3>
+        <button class="btn-close" (click)="closeEditModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="user-info">
+          <p><strong>Email:</strong> {{ selectedUser?.email }}</p>
+          <p><strong>Rôle:</strong> {{ selectedUser?.role }}</p>
+          <p><strong>Statut:</strong> <span class="badge" [ngClass]="getStatutClass(selectedUser!.statutCompte)">{{ getStatutLabel(selectedUser!.statutCompte) }}</span></p>
+        </div>
+
+        <div class="zone-selection">
+          <h4>Modifier les zones affectées</h4>
+          <p class="help-text">
+            Sélectionnez les zones pour cet utilisateur
+          </p>
+
+          <div class="zones-grid">
+            <div 
+              *ngFor="let zone of toutesZones" 
+              class="zone-item"
+              [class.selected]="isZoneSelected(zone.id)"
+              (click)="toggleZoneSelection(zone.id)">
+              <div class="zone-checkbox">
+                <span *ngIf="isZoneSelected(zone.id)" class="check">✓</span>
+              </div>
+              <div class="zone-info">
+                <div class="zone-name">{{ zone.nom }}</div>
+                <div *ngIf="zone.description" class="zone-desc">
+                  {{ zone.description }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button 
+          type="button" 
+          class="btn btn-secondary" 
+          (click)="closeEditModal()"
+          [disabled]="submitting">
+          Annuler
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-primary" 
+          (click)="modifierUtilisateur()"
+          [disabled]="submitting">
+          {{ submitting ? 'Modification...' : 'Enregistrer' }}
         </button>
       </div>
     </div>

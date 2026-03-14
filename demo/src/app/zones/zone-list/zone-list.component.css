@@ -18,6 +18,11 @@
   margin: 0;
 }
 
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
 .loading, .empty-state {
   text-align: center;
   padding: 60px 20px;
@@ -130,6 +135,16 @@
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+  transform: translateY(-2px);
+}
+
 .btn-sm {
   padding: 6px 12px;
   font-size: 13px;
@@ -162,6 +177,15 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 15px;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .header-actions .btn {
+    width: 100%;
   }
 
   .zones-grid {

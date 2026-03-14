@@ -1,14 +1,15 @@
+<!-- Navbar -->
 <nav class="navbar" *ngIf="currentUser">
   <div class="navbar-container">
-    <!-- Logo -->
     <div class="navbar-brand">
       <span class="logo">🚗 TT Carburant</span>
     </div>
 
-    <!-- Menu de navigation -->
     <div class="navbar-menu">
-      <!-- Menu Admin -->
       <div *ngIf="isAdmin" class="nav-links">
+        <a (click)="navigateTo('/admin/dashboardAdmin')" class="nav-link active">
+          📊 Dashboard
+        </a>
         <a (click)="navigateTo('/admin/utilisateurs')" class="nav-link">
           👥 Utilisateurs
         </a>
@@ -17,18 +18,10 @@
         </a>
       </div>
 
-      <!-- Menu Technicien -->
-      <div *ngIf="isTechnicien" class="nav-links">
-        <a (click)="navigateTo('/technicien/dashboard')" class="nav-link">
-          📊 Dashboard
-        </a>
-      </div>
-
-      <!-- Informations utilisateur -->
       <div class="user-info">
         <div class="user-details">
           <span class="user-name">{{ currentUser.nom }}</span>
-          <span class="user-role" [class.admin]="isAdmin" [class.technicien]="isTechnicien">
+          <span class="user-role" [class.admin]="isAdmin">
             {{ currentUser.role }}
           </span>
         </div>
@@ -39,3 +32,134 @@
     </div>
   </div>
 </nav>
+
+<!-- Dashboard Content -->
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h1>📊 Dashboard Administrateur</h1>
+    <p class="subtitle">Vue d'ensemble de la plateforme</p>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    Chargement des statistiques...
+  </div>
+
+  <div *ngIf="!loading">
+    <!-- Statistiques Principales -->
+    <div class="stats-grid">
+      <!-- Total Zones -->
+      <div class="stat-card card-blue">
+        <div class="stat-icon">🗺️</div>
+        <div class="stat-content">
+          <h3>Zones</h3>
+          <div class="stat-number">{{ totalZones }}</div>
+          <p class="stat-label">Zones géographiques</p>
+        </div>
+      </div>
+
+      <!-- Total Utilisateurs -->
+      <div class="stat-card card-purple">
+        <div class="stat-icon">👥</div>
+        <div class="stat-content">
+          <h3>Utilisateurs</h3>
+          <div class="stat-number">{{ totalUtilisateurs }}</div>
+          <p class="stat-label">Total utilisateurs</p>
+        </div>
+      </div>
+
+      <!-- Utilisateurs Actifs -->
+      <div class="stat-card card-green">
+        <div class="stat-icon">✅</div>
+        <div class="stat-content">
+          <h3>Actifs</h3>
+          <div class="stat-number">{{ totalActifs }}</div>
+          <p class="stat-label">Comptes actifs</p>
+        </div>
+      </div>
+
+      <!-- En Attente -->
+      <div class="stat-card card-orange">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-content">
+          <h3>En attente</h3>
+          <div class="stat-number">{{ totalEnAttente }}</div>
+          <p class="stat-label">Validations en attente</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Répartition par Rôle -->
+    <div class="section">
+      <h2>👥 Répartition par Rôle</h2>
+      <div class="role-grid">
+        <div class="role-card">
+          <div class="role-header">
+            <span class="role-icon">👨‍💼</span>
+            <h3>Administrateurs</h3>
+          </div>
+          <div class="role-number">{{ totalAdmins }}</div>
+          <div class="role-percentage">
+            {{ totalUtilisateurs > 0 ? ((totalAdmins / totalUtilisateurs) * 100).toFixed(1) : 0 }}%
+          </div>
+        </div>
+
+        <div class="role-card">
+          <div class="role-header">
+            <span class="role-icon">🔧</span>
+            <h3>Techniciens</h3>
+          </div>
+          <div class="role-number">{{ totalTechniciens }}</div>
+          <div class="role-percentage">
+            {{ totalUtilisateurs > 0 ? ((totalTechniciens / totalUtilisateurs) * 100).toFixed(1) : 0 }}%
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Zones -->
+    <div class="section">
+      <h2>🏆 Top 5 Zones par Nombre de Techniciens</h2>
+      <div *ngIf="topZones.length === 0" class="empty-message">
+        Aucune zone avec des techniciens affectés
+      </div>
+
+      <div *ngIf="topZones.length > 0" class="top-zones-list">
+        <div *ngFor="let item of topZones; let i = index" class="zone-item">
+          <div class="zone-rank">
+            <span class="rank-badge" [class.gold]="i === 0" [class.silver]="i === 1" [class.bronze]="i === 2">
+              #{{ i + 1 }}
+            </span>
+          </div>
+          <div class="zone-info">
+            <h4>{{ item.zone.nom }}</h4>
+            <p *ngIf="item.zone.description">{{ item.zone.description }}</p>
+            <p *ngIf="item.zone.responsable" class="responsable">
+              👤 {{ item.zone.responsable }}
+            </p>
+          </div>
+          <div class="zone-count">
+            <div class="count-number">{{ item.nombreTechniciens }}</div>
+            <div class="count-label">techniciens</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions Rapides -->
+    <div class="section">
+      <h2>⚡ Actions Rapides</h2>
+      <div class="actions-grid">
+        <button class="action-btn" (click)="navigateTo('/admin/utilisateurs')">
+          <span class="action-icon">👥</span>
+          <span class="action-text">Gérer les utilisateurs</span>
+          <span *ngIf="totalEnAttente > 0" class="action-badge">{{ totalEnAttente }}</span>
+        </button>
+
+        <button class="action-btn" (click)="navigateTo('/admin/zones')">
+          <span class="action-icon">🗺️</span>
+          <span class="action-text">Gérer les zones</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,9 +1,14 @@
 <div class="zone-list-container">
   <div class="header">
     <h2>🗺️ Gestion des Zones</h2>
-    <button class="btn btn-primary" (click)="openCreateForm()">
-      ➕ Nouvelle Zone
-    </button>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="navigateToDashboard()">
+        📊 Dashboard
+      </button>
+      <button class="btn btn-primary" (click)="openCreateForm()">
+        ➕ Nouvelle Zone
+      </button>
+    </div>
   </div>
 
   <div *ngIf="loading" class="loading">
