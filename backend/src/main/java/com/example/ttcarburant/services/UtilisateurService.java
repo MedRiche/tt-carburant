@@ -14,7 +14,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,27 +25,22 @@ public class UtilisateurService {
     private final AffectationUtilisateurZoneRepository affectationRepository;
 
     public UtilisateurService(UtilisateurRepository utilisateurRepository,
-                                     ZoneRepository zoneRepository,
-                                     AffectationUtilisateurZoneRepository affectationRepository) {
+                              ZoneRepository zoneRepository,
+                              AffectationUtilisateurZoneRepository affectationRepository) {
         this.utilisateurRepository = utilisateurRepository;
         this.zoneRepository = zoneRepository;
         this.affectationRepository = affectationRepository;
     }
 
-    /**
-     * Récupérer tous les utilisateurs en attente de validation
-     */
     @Transactional(readOnly = true)
     public List<UtilisateurDto> getUtilisateursEnAttente() {
-        return utilisateurRepository.findByStatutCompteOrderByDateCreationDesc(StatutCompte.EN_ATTENTE)
+        return utilisateurRepository
+                .findByStatutCompteOrderByDateCreationDesc(StatutCompte.EN_ATTENTE)
                 .stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Récupérer tous les utilisateurs
-     */
     @Transactional(readOnly = true)
     public List<UtilisateurDto> getAllUtilisateurs() {
         return utilisateurRepository.findAll()
@@ -55,9 +49,6 @@ public class UtilisateurService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Récupérer un utilisateur par ID
-     */
     @Transactional(readOnly = true)
     public UtilisateurDto getUtilisateurById(Long id) {
         Utilisateur utilisateur = utilisateurRepository.findById(id)
@@ -65,9 +56,6 @@ public class UtilisateurService {
         return convertToDto(utilisateur);
     }
 
-    /**
-     * Valider un compte utilisateur ET affecter des zones
-     */
     @Transactional
     public UtilisateurDto validerCompteAvecZones(ValiderCompteRequest request) {
         Utilisateur utilisateur = utilisateurRepository.findById(request.getUtilisateurId())
@@ -77,35 +65,24 @@ public class UtilisateurService {
             throw new RuntimeException("Ce compte n'est pas en attente de validation");
         }
 
-        // Récupérer l'admin qui valide
         String emailAdmin = SecurityContextHolder.getContext().getAuthentication().getName();
         Utilisateur admin = utilisateurRepository.findByEmail(emailAdmin)
                 .orElseThrow(() -> new RuntimeException("Admin non trouvé"));
 
-        // Valider le compte
         utilisateur.setStatutCompte(StatutCompte.ACTIF);
         utilisateurRepository.save(utilisateur);
 
-        // Affecter les zones
         for (Long zoneId : request.getZoneIds()) {
             Zone zone = zoneRepository.findById(zoneId)
                     .orElseThrow(() -> new RuntimeException("Zone non trouvée: " + zoneId));
-
-            // Vérifier si l'affectation existe déjà
             if (!affectationRepository.existsByUtilisateurAndZone(utilisateur, zone)) {
-                AffectationUtilisateurZone affectation = new AffectationUtilisateurZone(
-                        utilisateur, zone, admin
-                );
-                affectationRepository.save(affectation);
+                affectationRepository.save(new AffectationUtilisateurZone(utilisateur, zone, admin));
             }
         }
 
         return convertToDto(utilisateur);
     }
 
-    /**
-     * Refuser un compte utilisateur (passer de EN_ATTENTE à REFUSE)
-     */
     @Transactional
     public UtilisateurDto refuserCompte(Long id) {
         Utilisateur utilisateur = utilisateurRepository.findById(id)
@@ -117,50 +94,48 @@ public class UtilisateurService {
 
         utilisateur.setStatutCompte(StatutCompte.REFUSE);
         utilisateurRepository.save(utilisateur);
-
         return convertToDto(utilisateur);
     }
 
     /**
-     * Désactiver un compte utilisateur
+     * TOGGLE:
+     *   ACTIF     → DESACTIVE
+     *   DESACTIVE → ACTIF
+     *   REFUSE    → ACTIF   (réactivation depuis un refus)
      */
     @Transactional
-    public UtilisateurDto desactiverCompte(Long id) {
+    public UtilisateurDto toggleActivation(Long id) {
         Utilisateur utilisateur = utilisateurRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
-        utilisateur.setStatutCompte(StatutCompte.REFUSE);
-        utilisateurRepository.save(utilisateur);
+        switch (utilisateur.getStatutCompte()) {
+            case ACTIF:
+                utilisateur.setStatutCompte(StatutCompte.DESACTIVE);
+                break;
+            case DESACTIVE:
+            case REFUSE:
+                utilisateur.setStatutCompte(StatutCompte.ACTIF);
+                break;
+            default:
+                throw new RuntimeException("Action impossible pour un compte EN_ATTENTE");
+        }
 
+        utilisateurRepository.save(utilisateur);
         return convertToDto(utilisateur);
     }
 
-    /**
-     * Supprimer un utilisateur
-     */
     @Transactional
     public void supprimerUtilisateur(Long id) {
-        if (!utilisateurRepository.existsById(id)) {
-            throw new RuntimeException("Utilisateur non trouvé");
-        }
-
-        Utilisateur utilisateur = utilisateurRepository.findById(id).get();
-
-        // Supprimer d'abord les affectations
+        Utilisateur utilisateur = utilisateurRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
         affectationRepository.deleteByUtilisateur(utilisateur);
-
-        // Puis supprimer l'utilisateur
         utilisateurRepository.deleteById(id);
     }
 
-    /**
-     * Ajouter une zone à un utilisateur
-     */
     @Transactional
     public UtilisateurDto ajouterZone(Long utilisateurId, Long zoneId) {
         Utilisateur utilisateur = utilisateurRepository.findById(utilisateurId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
-
         Zone zone = zoneRepository.findById(zoneId)
                 .orElseThrow(() -> new RuntimeException("Zone non trouvée"));
 
@@ -172,33 +147,20 @@ public class UtilisateurService {
         Utilisateur admin = utilisateurRepository.findByEmail(emailAdmin)
                 .orElseThrow(() -> new RuntimeException("Admin non trouvé"));
 
-        AffectationUtilisateurZone affectation = new AffectationUtilisateurZone(
-                utilisateur, zone, admin
-        );
-        affectationRepository.save(affectation);
-
+        affectationRepository.save(new AffectationUtilisateurZone(utilisateur, zone, admin));
         return convertToDto(utilisateur);
     }
 
-    /**
-     * Retirer une zone d'un utilisateur
-     */
     @Transactional
     public UtilisateurDto retirerZone(Long utilisateurId, Long zoneId) {
         Utilisateur utilisateur = utilisateurRepository.findById(utilisateurId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
-
         Zone zone = zoneRepository.findById(zoneId)
                 .orElseThrow(() -> new RuntimeException("Zone non trouvée"));
-
         affectationRepository.deleteByUtilisateurAndZone(utilisateur, zone);
-
         return convertToDto(utilisateur);
     }
 
-    /**
-     * Convertir une entité Utilisateur en DTO
-     */
     private UtilisateurDto convertToDto(Utilisateur utilisateur) {
         List<AffectationUtilisateurZone> affectations =
                 affectationRepository.findByUtilisateur(utilisateur);
@@ -225,7 +187,6 @@ public class UtilisateurService {
         dto.setDateCreation(utilisateur.getDateCreation());
         dto.setSpecialite(utilisateur.getSpecialite());
         dto.setZones(zones);
-
         return dto;
     }
 }

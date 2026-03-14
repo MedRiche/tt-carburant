@@ -22,27 +22,18 @@ public class AdminUtilisateurController {
         this.utilisateurService = utilisateurService;
     }
 
-    /**
-     * Récupérer tous les utilisateurs
-     */
     @GetMapping
     public ResponseEntity<List<UtilisateurDto>> getAllUtilisateurs() {
         return ResponseEntity.ok(utilisateurService.getAllUtilisateurs());
     }
 
-    /**
-     * Récupérer les utilisateurs en attente de validation
-     */
     @GetMapping("/en-attente")
     public ResponseEntity<List<UtilisateurDto>> getUtilisateursEnAttente() {
         return ResponseEntity.ok(utilisateurService.getUtilisateursEnAttente());
     }
 
-    /**
-     * Récupérer un utilisateur par ID
-     */
     @GetMapping("/{id}")
-    public ResponseEntity<?> getUtilisateurById(@PathVariable Long id) {
+    public ResponseEntity<?> getUtilisateurById(@PathVariable("id") Long id) {
         try {
             return ResponseEntity.ok(utilisateurService.getUtilisateurById(id));
         } catch (Exception e) {
@@ -50,59 +41,47 @@ public class AdminUtilisateurController {
         }
     }
 
-    /**
-     * Valider un compte utilisateur AVEC affectation de zones
-     */
     @PostMapping("/valider")
     public ResponseEntity<?> validerCompteAvecZones(@Valid @RequestBody ValiderCompteRequest request) {
         try {
             UtilisateurDto utilisateur = utilisateurService.validerCompteAvecZones(request);
-            return ResponseEntity.ok(new SuccessResponse(
-                    "Compte validé et zones affectées avec succès",
-                    utilisateur
-            ));
+            return ResponseEntity.ok(new SuccessResponse("Compte validé et zones affectées avec succès", utilisateur));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
     }
 
-    /**
-     * Refuser un compte utilisateur
-     */
     @PatchMapping("/{id}/refuser")
-    public ResponseEntity<?> refuserCompte(@PathVariable Long id) {
+    public ResponseEntity<?> refuserCompte(@PathVariable("id") Long id) {
         try {
             UtilisateurDto utilisateur = utilisateurService.refuserCompte(id);
-            return ResponseEntity.ok(new SuccessResponse(
-                    "Compte refusé",
-                    utilisateur
-            ));
+            return ResponseEntity.ok(new SuccessResponse("Compte refusé", utilisateur));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
     }
 
     /**
-     * Désactiver un compte utilisateur
+     * TOGGLE endpoint:
+     *   ACTIF     → DESACTIVE  (bouton affiche "Désactiver")
+     *   DESACTIVE → ACTIF      (bouton affiche "Activer")
+     *   REFUSE    → ACTIF      (bouton affiche "Activer")
      */
-    @PatchMapping("/{id}/desactiver")
-    public ResponseEntity<?> desactiverCompte(@PathVariable Long id) {
+    @PatchMapping("/{id}/toggle-activation")
+    public ResponseEntity<?> toggleActivation(@PathVariable("id") Long id) {
         try {
-            UtilisateurDto utilisateur = utilisateurService.desactiverCompte(id);
-            return ResponseEntity.ok(new SuccessResponse(
-                    "Compte désactivé",
-                    utilisateur
-            ));
+            UtilisateurDto utilisateur = utilisateurService.toggleActivation(id);
+            String msg = utilisateur.getStatutCompte().name().equals("ACTIF")
+                    ? "Compte activé avec succès"
+                    : "Compte désactivé avec succès";
+            return ResponseEntity.ok(new SuccessResponse(msg, utilisateur));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
     }
 
-    /**
-     * Supprimer un utilisateur
-     */
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> supprimerUtilisateur(@PathVariable Long id) {
+    public ResponseEntity<?> supprimerUtilisateur(@PathVariable("id") Long id) {
         try {
             utilisateurService.supprimerUtilisateur(id);
             return ResponseEntity.ok(new MessageResponse("Utilisateur supprimé avec succès"));
@@ -111,45 +90,30 @@ public class AdminUtilisateurController {
         }
     }
 
-    /**
-     * Ajouter une zone à un utilisateur
-     */
     @PostMapping("/{utilisateurId}/zones/{zoneId}")
     public ResponseEntity<?> ajouterZone(
-            @PathVariable Long utilisateurId,
-            @PathVariable Long zoneId) {
+            @PathVariable("utilisateurId") Long utilisateurId,
+            @PathVariable("zoneId") Long zoneId) {
         try {
             UtilisateurDto utilisateur = utilisateurService.ajouterZone(utilisateurId, zoneId);
-            return ResponseEntity.ok(new SuccessResponse(
-                    "Zone ajoutée avec succès",
-                    utilisateur
-            ));
+            return ResponseEntity.ok(new SuccessResponse("Zone ajoutée avec succès", utilisateur));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
     }
 
-    /**
-     * Retirer une zone d'un utilisateur
-     */
     @DeleteMapping("/{utilisateurId}/zones/{zoneId}")
     public ResponseEntity<?> retirerZone(
-            @PathVariable Long utilisateurId,
-            @PathVariable Long zoneId) {
+            @PathVariable("utilisateurId") Long utilisateurId,
+            @PathVariable("zoneId") Long zoneId) {
         try {
             UtilisateurDto utilisateur = utilisateurService.retirerZone(utilisateurId, zoneId);
-            return ResponseEntity.ok(new SuccessResponse(
-                    "Zone retirée avec succès",
-                    utilisateur
-            ));
+            return ResponseEntity.ok(new SuccessResponse("Zone retirée avec succès", utilisateur));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
     }
 
-    /**
-     * Classes internes pour les réponses
-     */
     private record ErrorResponse(String message) {}
     private record MessageResponse(String message) {}
     private record SuccessResponse(String message, UtilisateurDto data) {}

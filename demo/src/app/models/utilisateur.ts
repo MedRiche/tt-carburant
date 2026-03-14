@@ -1,15 +1,15 @@
-// models/utilisateur.model.ts
 import { Zone } from './zone';
 
 export enum Role {
-  ADMIN = 'ADMIN',
+  ADMIN      = 'ADMIN',
   TECHNICIEN = 'TECHNICIEN'
 }
 
 export enum StatutCompte {
   EN_ATTENTE = 'EN_ATTENTE',
-  ACTIF = 'ACTIF',
-  REFUSE = 'REFUSE'
+  ACTIF      = 'ACTIF',
+  REFUSE     = 'REFUSE',
+  DESACTIVE  = 'DESACTIVE'
 }
 
 export interface Utilisateur {

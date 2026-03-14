@@ -24,28 +24,24 @@ export class UtilisateurService {
   }
 
   getUtilisateursEnAttente(): Observable<Utilisateur[]> {
-    return this.http.get<Utilisateur[]>(`${this.apiUrl}/en-attente`, 
-      { headers: this.getHeaders() });
+    return this.http.get<Utilisateur[]>(`${this.apiUrl}/en-attente`, { headers: this.getHeaders() });
   }
 
   getUtilisateurById(id: number): Observable<Utilisateur> {
-    return this.http.get<Utilisateur>(`${this.apiUrl}/${id}`, 
-      { headers: this.getHeaders() });
+    return this.http.get<Utilisateur>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
   }
 
   validerCompteAvecZones(request: ValiderCompteRequest): Observable<any> {
-    return this.http.post(`${this.apiUrl}/valider`, request, 
-      { headers: this.getHeaders() });
+    return this.http.post(`${this.apiUrl}/valider`, request, { headers: this.getHeaders() });
   }
 
   refuserCompte(id: number): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/${id}/refuser`, {}, 
-      { headers: this.getHeaders() });
+    return this.http.patch(`${this.apiUrl}/${id}/refuser`, {}, { headers: this.getHeaders() });
   }
 
-  desactiverCompte(id: number): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/${id}/desactiver`, {}, 
-      { headers: this.getHeaders() });
+  /** TOGGLE: ACTIF→DESACTIVE, DESACTIVE→ACTIF, REFUSE→ACTIF */
+  toggleActivation(id: number): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/${id}/toggle-activation`, {}, { headers: this.getHeaders() });
   }
 
   supprimerUtilisateur(id: number): Observable<any> {
@@ -53,12 +49,10 @@ export class UtilisateurService {
   }
 
   ajouterZone(utilisateurId: number, zoneId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${utilisateurId}/zones/${zoneId}`, {}, 
-      { headers: this.getHeaders() });
+    return this.http.post(`${this.apiUrl}/${utilisateurId}/zones/${zoneId}`, {}, { headers: this.getHeaders() });
   }
 
   retirerZone(utilisateurId: number, zoneId: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${utilisateurId}/zones/${zoneId}`, 
-      { headers: this.getHeaders() });
+    return this.http.delete(`${this.apiUrl}/${utilisateurId}/zones/${zoneId}`, { headers: this.getHeaders() });
   }
 }

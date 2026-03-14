@@ -23,9 +23,6 @@ public class ZoneController {
         this.zoneService = zoneService;
     }
 
-    /**
-     * Créer une nouvelle zone
-     */
     @PostMapping
     public ResponseEntity<?> creerZone(@Valid @RequestBody ZoneRequest request) {
         try {
@@ -38,19 +35,14 @@ public class ZoneController {
         }
     }
 
-    /**
-     * Récupérer toutes les zones
-     */
     @GetMapping
     public ResponseEntity<List<ZoneDto>> getAllZones() {
         return ResponseEntity.ok(zoneService.getAllZones());
     }
 
-    /**
-     * Récupérer une zone par ID
-     */
+    // ✅ FIX: explicit name in @PathVariable
     @GetMapping("/{id}")
-    public ResponseEntity<?> getZoneById(@PathVariable Long id) {
+    public ResponseEntity<?> getZoneById(@PathVariable("id") Long id) {
         try {
             return ResponseEntity.ok(zoneService.getZoneById(id));
         } catch (Exception e) {
@@ -58,12 +50,10 @@ public class ZoneController {
         }
     }
 
-    /**
-     * Modifier une zone
-     */
+    // ✅ FIX: explicit name in @PathVariable
     @PutMapping("/{id}")
     public ResponseEntity<?> modifierZone(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody ZoneRequest request) {
         try {
             ZoneDto zone = zoneService.modifierZone(id, request);
@@ -73,11 +63,9 @@ public class ZoneController {
         }
     }
 
-    /**
-     * Supprimer une zone
-     */
+    // ✅ FIX: explicit name in @PathVariable
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> supprimerZone(@PathVariable Long id) {
+    public ResponseEntity<?> supprimerZone(@PathVariable("id") Long id) {
         try {
             zoneService.supprimerZone(id);
             return ResponseEntity.ok(new MessageResponse("Zone supprimée avec succès"));
@@ -86,9 +74,6 @@ public class ZoneController {
         }
     }
 
-    /**
-     * Classes internes pour les réponses
-     */
     private record ErrorResponse(String message) {}
     private record MessageResponse(String message) {}
     private record SuccessResponse(String message, ZoneDto data) {}

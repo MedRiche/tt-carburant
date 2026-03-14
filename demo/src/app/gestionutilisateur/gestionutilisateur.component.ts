@@ -4,6 +4,8 @@ import { Utilisateur, StatutCompte } from '../models/utilisateur';
 import { Zone } from '../models/zone';
 import { UtilisateurService } from '../services/utilisateur.service';
 import { ZoneService } from '../services/zone.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-gestionutilisateur',
@@ -12,27 +14,21 @@ import { ZoneService } from '../services/zone.service';
   styleUrl: './gestionutilisateur.component.css'
 })
 export class GestionutilisateurComponent implements OnInit {
+
   utilisateursEnAttente: Utilisateur[] = [];
   tousUtilisateurs: Utilisateur[] = [];
   toutesZones: Zone[] = [];
-  
+
   selectedUser: Utilisateur | null = null;
   selectedZoneIds: number[] = [];
-  
+
   showValidationModal = false;
   showEditModal = false;
   loading = false;
   submitting = false;
-  
-  activeTab: 'en_attente' | 'tous' = 'en_attente';
 
-  // Pour le formulaire d'édition
-  editForm = {
-    nom: '',
-    email: '',
-    specialite: '',
-    zones: [] as number[]
-  };
+  activeTab: 'en_attente' | 'tous' = 'en_attente';
+  StatutCompte = StatutCompte;
 
   constructor(
     private utilisateurService: UtilisateurService,
@@ -49,36 +45,22 @@ export class GestionutilisateurComponent implements OnInit {
   loadUtilisateursEnAttente(): void {
     this.loading = true;
     this.utilisateurService.getUtilisateursEnAttente().subscribe({
-      next: (data) => {
-        this.utilisateursEnAttente = data;
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Erreur', err);
-        this.loading = false;
-      }
+      next: (data) => { this.utilisateursEnAttente = data; this.loading = false; },
+      error: () => { this.loading = false; }
     });
   }
 
   loadTousUtilisateurs(): void {
     this.utilisateurService.getAllUtilisateurs().subscribe({
-      next: (data) => {
-        this.tousUtilisateurs = data;
-      },
-      error: (err) => {
-        console.error('Erreur', err);
-      }
+      next: (data) => { this.tousUtilisateurs = data; },
+      error: (err) => console.error(err)
     });
   }
 
   loadZones(): void {
     this.zoneService.getAllZones().subscribe({
-      next: (data) => {
-        this.toutesZones = data;
-      },
-      error: (err) => {
-        console.error('Erreur', err);
-      }
+      next: (data) => { this.toutesZones = data; },
+      error: (err) => console.error(err)
     });
   }
 
@@ -96,13 +78,7 @@ export class GestionutilisateurComponent implements OnInit {
 
   openEditModal(user: Utilisateur): void {
     this.selectedUser = user;
-    this.editForm = {
-      nom: user.nom,
-      email: user.email,
-      specialite: user.specialite || '',
-      zones: user.zones ? user.zones.map(z => z.id) : []
-    };
-    this.selectedZoneIds = this.editForm.zones;
+    this.selectedZoneIds = user.zones ? user.zones.map(z => z.id) : [];
     this.showEditModal = true;
   }
 
@@ -113,12 +89,9 @@ export class GestionutilisateurComponent implements OnInit {
   }
 
   toggleZoneSelection(zoneId: number): void {
-    const index = this.selectedZoneIds.indexOf(zoneId);
-    if (index > -1) {
-      this.selectedZoneIds.splice(index, 1);
-    } else {
-      this.selectedZoneIds.push(zoneId);
-    }
+    const i = this.selectedZoneIds.indexOf(zoneId);
+    if (i > -1) this.selectedZoneIds.splice(i, 1);
+    else this.selectedZoneIds.push(zoneId);
   }
 
   isZoneSelected(zoneId: number): boolean {
@@ -126,169 +99,90 @@ export class GestionutilisateurComponent implements OnInit {
   }
 
   validerCompte(): void {
-    if (!this.selectedUser || this.selectedZoneIds.length === 0) {
-      alert('Veuillez sélectionner au moins une zone');
-      return;
-    }
-
+    if (!this.selectedUser || this.selectedZoneIds.length === 0) return;
     this.submitting = true;
-    const request = {
+    this.utilisateurService.validerCompteAvecZones({
       utilisateurId: this.selectedUser.id,
       zoneIds: this.selectedZoneIds
-    };
-
-    this.utilisateurService.validerCompteAvecZones(request).subscribe({
-      next: (response) => {
-        alert(response.message || 'Compte validé avec succès');
+    }).subscribe({
+      next: (res) => {
+        alert(res.message || 'Compte validé avec succès');
         this.closeValidationModal();
         this.loadUtilisateursEnAttente();
         this.loadTousUtilisateurs();
         this.submitting = false;
       },
-      error: (err) => {
-        console.error('Erreur', err);
-        alert(err.error?.message || 'Erreur lors de la validation');
-        this.submitting = false;
-      }
+      error: (err) => { alert(err.error?.message || 'Erreur'); this.submitting = false; }
     });
   }
 
   modifierUtilisateur(): void {
     if (!this.selectedUser) return;
-
     this.submitting = true;
-
-    // D'abord, obtenir les zones actuelles
-    const currentZones = this.selectedUser.zones?.map(z => z.id) || [];
-    const newZones = this.selectedZoneIds;
-
-    // Zones à ajouter
-    const zonesToAdd = newZones.filter(id => !currentZones.includes(id));
-    // Zones à retirer
-    const zonesToRemove = currentZones.filter(id => !newZones.includes(id));
-
-    // Compteur pour suivre les opérations
-    let operations = 0;
-    const totalOperations = zonesToAdd.length + zonesToRemove.length;
-
-    if (totalOperations === 0) {
-      alert('Aucune modification à apporter');
-      this.submitting = false;
-      return;
+    const current = this.selectedUser.zones?.map(z => z.id) || [];
+    const toAdd    = this.selectedZoneIds.filter(id => !current.includes(id));
+    const toRemove = current.filter(id => !this.selectedZoneIds.includes(id));
+    if (!toAdd.length && !toRemove.length) {
+      alert('Aucune modification'); this.submitting = false; return;
     }
-
-    const checkComplete = () => {
-      operations++;
-      if (operations === totalOperations) {
-        alert('Utilisateur modifié avec succès');
-        this.closeEditModal();
-        this.loadTousUtilisateurs();
-        this.submitting = false;
-      }
-    };
-
-    // Ajouter les nouvelles zones
-    zonesToAdd.forEach(zoneId => {
-      this.utilisateurService.ajouterZone(this.selectedUser!.id, zoneId).subscribe({
-        next: () => checkComplete(),
-        error: (err) => {
-          console.error('Erreur ajout zone', err);
-          checkComplete();
-        }
-      });
-    });
-
-    // Retirer les zones
-    zonesToRemove.forEach(zoneId => {
-      this.utilisateurService.retirerZone(this.selectedUser!.id, zoneId).subscribe({
-        next: () => checkComplete(),
-        error: (err) => {
-          console.error('Erreur retrait zone', err);
-          checkComplete();
-        }
-      });
+    const uid = this.selectedUser.id;
+    const ops = [
+      ...toAdd.map(z => this.utilisateurService.ajouterZone(uid, z).pipe(catchError(() => of(null)))),
+      ...toRemove.map(z => this.utilisateurService.retirerZone(uid, z).pipe(catchError(() => of(null))))
+    ];
+    forkJoin(ops).subscribe({
+      next: () => { alert('Modifié avec succès'); this.closeEditModal(); this.loadTousUtilisateurs(); this.submitting = false; },
+      error: () => { alert('Erreur'); this.submitting = false; }
     });
   }
 
   refuserCompte(user: Utilisateur): void {
-    if (!confirm(`Êtes-vous sûr de vouloir refuser le compte de ${user.nom} ?`)) {
-      return;
-    }
-
+    if (!confirm(`Refuser le compte de ${user.nom} ?`)) return;
     this.utilisateurService.refuserCompte(user.id).subscribe({
-      next: () => {
-        alert('Compte refusé');
-        this.loadUtilisateursEnAttente();
-        this.loadTousUtilisateurs();
-      },
-      error: (err) => {
-        alert(err.error?.message || 'Erreur');
-      }
+      next: () => { alert('Compte refusé'); this.loadUtilisateursEnAttente(); this.loadTousUtilisateurs(); },
+      error: (err) => alert(err.error?.message || 'Erreur')
     });
   }
 
-  desactiverCompte(user: Utilisateur): void {
-    if (!confirm(`Êtes-vous sûr de vouloir désactiver le compte de ${user.nom} ?`)) {
-      return;
-    }
-
-    this.utilisateurService.desactiverCompte(user.id).subscribe({
-      next: () => {
-        alert('Compte désactivé avec succès');
-        this.loadTousUtilisateurs();
-      },
-      error: (err) => {
-        console.error('Erreur désactivation', err);
-        alert(err.error?.message || 'Erreur lors de la désactivation');
-      }
+  toggleActivation(user: Utilisateur): void {
+    const isActive = user.statutCompte === StatutCompte.ACTIF;
+    if (!confirm(`${isActive ? 'Désactiver' : 'Activer'} le compte de ${user.nom} ?`)) return;
+    this.utilisateurService.toggleActivation(user.id).subscribe({
+      next: (res) => { alert(res.message || 'Succès'); this.loadTousUtilisateurs(); },
+      error: (err) => alert(err.error?.message || 'Erreur')
     });
   }
 
   supprimerUtilisateur(user: Utilisateur): void {
-    if (!confirm(`⚠️ ATTENTION ⚠️\n\nÊtes-vous sûr de vouloir supprimer définitivement ${user.nom} ?\n\nCette action est IRRÉVERSIBLE !`)) {
-      return;
-    }
-
+    if (!confirm(`Supprimer définitivement ${user.nom} ? Cette action est IRRÉVERSIBLE !`)) return;
     this.utilisateurService.supprimerUtilisateur(user.id).subscribe({
-      next: () => {
-        alert('Utilisateur supprimé avec succès');
-        this.loadUtilisateursEnAttente();
-        this.loadTousUtilisateurs();
-      },
-      error: (err) => {
-        console.error('Erreur suppression', err);
-        alert(err.error?.message || 'Erreur lors de la suppression');
-      }
+      next: () => { alert('Supprimé'); this.loadUtilisateursEnAttente(); this.loadTousUtilisateurs(); },
+      error: (err) => alert(err.error?.message || 'Erreur')
     });
   }
 
-  navigateToDashboard(): void {
-    this.router.navigate(['/admin/dashboardAdmin']);
+  navigateToDashboard(): void { this.router.navigate(['/admin/dashboardAdmin']); }
+
+  showToggleButton(s: StatutCompte): boolean { return s !== StatutCompte.EN_ATTENTE; }
+  canBeActivated(s: StatutCompte): boolean   { return s === StatutCompte.DESACTIVE || s === StatutCompte.REFUSE; }
+
+  getInitials(nom: string): string {
+    return (nom || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
   }
 
-  getStatutClass(statut: StatutCompte): string {
-    switch (statut) {
-      case StatutCompte.ACTIF:
-        return 'statut-actif';
-      case StatutCompte.EN_ATTENTE:
-        return 'statut-attente';
-      case StatutCompte.REFUSE:
-        return 'statut-refuse';
-      default:
-        return '';
-    }
+  getStatutClass(s: StatutCompte): string {
+    const map: Record<string, string> = {
+      ACTIF: 'chip-actif', EN_ATTENTE: 'chip-attente',
+      REFUSE: 'chip-refuse', DESACTIVE: 'chip-desactive'
+    };
+    return map[s] || '';
   }
 
-  getStatutLabel(statut: StatutCompte): string {
-    switch (statut) {
-      case StatutCompte.ACTIF:
-        return 'Actif';
-      case StatutCompte.EN_ATTENTE:
-        return 'En attente';
-      case StatutCompte.REFUSE:
-        return 'Refusé';
-      default:
-        return statut;
-    }
+  getStatutLabel(s: StatutCompte): string {
+    const map: Record<string, string> = {
+      ACTIF: 'Actif', EN_ATTENTE: 'En attente',
+      REFUSE: 'Refusé', DESACTIVE: 'Désactivé'
+    };
+    return map[s] || s;
   }
 }

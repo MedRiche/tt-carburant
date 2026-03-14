@@ -1,126 +1,336 @@
-<div class="auth-wrapper" [class.panel-active]="isPanelActive">
+<div class="auth-page">
 
-  <!-- LOGIN -->
-  <div class="auth-form-box login-form-box">
-    <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+  <!-- ═══════════════════════════════════
+       LEFT PANEL — Brand / Visual
+  ═══════════════════════════════════ -->
+  <div class="brand-panel">
 
-      <h1>Sign In</h1>
-      <p class="subtitle">Connectez-vous à votre compte</p>
+    <!-- Animated network grid background -->
+    <div class="grid-bg">
+      <svg class="grid-svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+        <!-- Horizontal lines -->
+        <line x1="0" y1="100" x2="800" y2="100" class="grid-line" style="animation-delay:0s"/>
+        <line x1="0" y1="200" x2="800" y2="200" class="grid-line" style="animation-delay:0.3s"/>
+        <line x1="0" y1="300" x2="800" y2="300" class="grid-line" style="animation-delay:0.6s"/>
+        <line x1="0" y1="400" x2="800" y2="400" class="grid-line" style="animation-delay:0.9s"/>
+        <line x1="0" y1="500" x2="800" y2="500" class="grid-line" style="animation-delay:1.2s"/>
+        <!-- Vertical lines -->
+        <line x1="133" y1="0" x2="133" y2="600" class="grid-line" style="animation-delay:0.15s"/>
+        <line x1="266" y1="0" x2="266" y2="600" class="grid-line" style="animation-delay:0.45s"/>
+        <line x1="400" y1="0" x2="400" y2="600" class="grid-line" style="animation-delay:0.75s"/>
+        <line x1="533" y1="0" x2="533" y2="600" class="grid-line" style="animation-delay:1.05s"/>
+        <line x1="666" y1="0" x2="666" y2="600" class="grid-line" style="animation-delay:1.35s"/>
+        <!-- Network nodes -->
+        <circle cx="133" cy="100" r="4" class="node" style="animation-delay:0.5s"/>
+        <circle cx="266" cy="200" r="4" class="node" style="animation-delay:0.8s"/>
+        <circle cx="400" cy="100" r="6" class="node node-accent" style="animation-delay:1s"/>
+        <circle cx="533" cy="300" r="4" class="node" style="animation-delay:0.3s"/>
+        <circle cx="666" cy="200" r="4" class="node" style="animation-delay:1.2s"/>
+        <circle cx="133" cy="400" r="5" class="node node-accent" style="animation-delay:0.6s"/>
+        <circle cx="400" cy="400" r="4" class="node" style="animation-delay:1.4s"/>
+        <circle cx="666" cy="500" r="5" class="node node-accent" style="animation-delay:0.2s"/>
+        <circle cx="266" cy="500" r="4" class="node" style="animation-delay:0.9s"/>
+        <!-- Connection diagonals -->
+        <line x1="133" y1="100" x2="266" y2="200" class="conn-line" style="animation-delay:0.7s"/>
+        <line x1="266" y1="200" x2="400" y2="100" class="conn-line" style="animation-delay:1.1s"/>
+        <line x1="400" y1="100" x2="533" y2="300" class="conn-line" style="animation-delay:0.4s"/>
+        <line x1="533" y1="300" x2="666" y2="200" class="conn-line" style="animation-delay:0.9s"/>
+        <line x1="133" y1="400" x2="266" y2="500" class="conn-line" style="animation-delay:1.3s"/>
+        <line x1="400" y1="400" x2="533" y2="300" class="conn-line" style="animation-delay:0.5s"/>
+        <line x1="666" y1="500" x2="533" y2="300" class="conn-line" style="animation-delay:0.8s"/>
+        <!-- Traveling signal dots -->
+        <circle r="3" class="signal-dot sd-1"><animateMotion dur="4s" repeatCount="indefinite" path="M133,100 L266,200 L400,100 L533,300"/></circle>
+        <circle r="3" class="signal-dot sd-2"><animateMotion dur="5s" repeatCount="indefinite" path="M666,500 L400,400 L133,400"/></circle>
+        <circle r="2" class="signal-dot sd-3"><animateMotion dur="6s" repeatCount="indefinite" path="M266,200 L533,300 L666,200"/></circle>
+      </svg>
+    </div>
 
-      <div class="input-group">
-        <input 
-          type="email" 
-          placeholder="Email Address" 
-          formControlName="email"
-          [class.error]="hasError(loginForm, 'email', 'email') || hasError(loginForm, 'email', 'required')"
-        />
-        <span class="error-message" *ngIf="getErrorMessage(loginForm, 'email')">
-          {{ getErrorMessage(loginForm, 'email') }}
-        </span>
+    <!-- Overlay gradient -->
+    <div class="panel-overlay"></div>
+
+    <!-- Brand content -->
+    <div class="panel-content">
+      <!-- TT Logo mark -->
+      <div class="tt-logo">
+        <div class="tt-logo-mark">
+          <div class="tt-square tt-sq1"></div>
+          <div class="tt-square tt-sq2"></div>
+          <div class="tt-bar"></div>
+        </div>
+        <div class="tt-logo-text">
+          <span class="tt-name">Tunisie Telecom</span>
+          <span class="tt-division">Système de Gestion Carburant</span>
+        </div>
       </div>
 
-      <div class="input-group">
-        <input 
-          type="password" 
-          placeholder="Password" 
-          formControlName="motDePasse"
-          [class.error]="hasError(loginForm, 'motDePasse', 'required')"
-        />
-        <span class="error-message" *ngIf="getErrorMessage(loginForm, 'motDePasse')">
-          {{ getErrorMessage(loginForm, 'motDePasse') }}
-        </span>
+      <!-- Headline -->
+      <div class="panel-headline">
+        <h1 class="panel-title">
+          Bienvenue sur<br>
+          <span class="title-accent">TT Carburant</span>
+        </h1>
+        <p class="panel-desc">
+          Plateforme de gestion intelligente des ressources carburant pour les équipes terrain de Tunisie Telecom.
+        </p>
       </div>
 
-      <button type="submit" [disabled]="isLoading">
-        {{ isLoading ? 'CONNEXION...' : 'SIGN IN' }}
-      </button>
-
-      <div class="mobile-switch">
-        <p>Don't have an account?</p>
-        <button type="button" (click)="activateRegister()">SIGN UP</button>
+      <!-- Feature pills -->
+      <div class="feature-list">
+        <div class="feature-item">
+          <span class="feature-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+            </svg>
+          </span>
+          <span>Gestion des zones géographiques</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            </svg>
+          </span>
+          <span>Contrôle d'accès par rôles</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+              <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+            </svg>
+          </span>
+          <span>Tableau de bord analytique</span>
+        </div>
       </div>
 
-    </form>
-  </div>
-
-  <!-- REGISTER -->
-  <div class="auth-form-box register-form-box">
-    <form [formGroup]="registerForm" (ngSubmit)="onRegister()">
-
-      <h1>Create Account</h1>
-      <p class="subtitle">Créez votre compte</p>
-
-      <div class="input-group">
-        <input 
-          type="text" 
-          placeholder="Full Name" 
-          formControlName="nom"
-          [class.error]="hasError(registerForm, 'nom', 'required') || hasError(registerForm, 'nom', 'minlength')"
-        />
-        <span class="error-message" *ngIf="getErrorMessage(registerForm, 'nom')">
-          {{ getErrorMessage(registerForm, 'nom') }}
-        </span>
-      </div>
-
-      <div class="input-group">
-        <input 
-          type="email" 
-          placeholder="Email Address" 
-          formControlName="email"
-          [class.error]="hasError(registerForm, 'email', 'email') || hasError(registerForm, 'email', 'required')"
-        />
-        <span class="error-message" *ngIf="getErrorMessage(registerForm, 'email')">
-          {{ getErrorMessage(registerForm, 'email') }}
-        </span>
-      </div>
-
-      <div class="input-group">
-        <input 
-          type="password" 
-          placeholder="Password (min 6 caractères)" 
-          formControlName="motDePasse"
-          [class.error]="hasError(registerForm, 'motDePasse', 'required') || hasError(registerForm, 'motDePasse', 'minlength')"
-        />
-        <span class="error-message" *ngIf="getErrorMessage(registerForm, 'motDePasse')">
-          {{ getErrorMessage(registerForm, 'motDePasse') }}
-        </span>
-      </div>
-
-      <div class="input-group">
-        <input 
-          type="text" 
-          placeholder="Spécialité (ex: Maintenance véhicules)" 
-          formControlName="specialite"
-        />
-      </div>
-
-      <button type="submit" [disabled]="isLoading">
-        {{ isLoading ? 'CRÉATION...' : 'SIGN UP' }}
-      </button>
-
-      <div class="mobile-switch">
-        <p>Already have an account?</p>
-        <button type="button" (click)="activateLogin()">SIGN IN</button>
-      </div>
-
-    </form>
-  </div>
-
-  <!-- SLIDE PANELS -->
-  <div class="slide-panel-wrapper">
-    <div class="slide-panel">
-      <div class="panel-content panel-content-left">
-        <h1>Welcome Back!</h1>
-        <p>Connectez-vous pour accéder à votre espace</p>
-        <button class="transparent-btn" (click)="activateLogin()">SIGN IN</button>
-      </div>
-
-      <div class="panel-content panel-content-right">
-        <h1>Hey There!</h1>
-        <p>Rejoignez-nous et commencez votre parcours avec Tunisie Telecom</p>
-        <button class="transparent-btn" (click)="activateRegister()">SIGN UP</button>
+      <!-- Bottom bar -->
+      <div class="panel-footer">
+        <span>© 2025 Tunisie Telecom</span>
+        <span class="dot-sep">·</span>
+        <span>Tous droits réservés</span>
       </div>
     </div>
   </div>
 
-</div>
+  <!-- ═══════════════════════════════════
+       RIGHT PANEL — Forms
+  ═══════════════════════════════════ -->
+  <div class="form-panel">
+
+    <!-- Mobile logo -->
+    <div class="mobile-logo">
+      <div class="tt-logo-mark tt-logo-mark--sm">
+        <div class="tt-square tt-sq1"></div>
+        <div class="tt-square tt-sq2"></div>
+        <div class="tt-bar"></div>
+      </div>
+      <span class="tt-name">Tunisie Telecom</span>
+    </div>
+
+    <!-- Form switcher tabs -->
+    <div class="form-switcher">
+      <button class="switch-btn" [class.active]="!isPanelActive" (click)="activateLogin()">
+        Connexion
+      </button>
+      <button class="switch-btn" [class.active]="isPanelActive" (click)="activateRegister()">
+        Inscription
+      </button>
+      <div class="switch-indicator" [style.transform]="isPanelActive ? 'translateX(100%)' : 'translateX(0)'"></div>
+    </div>
+
+    <!-- ── LOGIN FORM ── -->
+    <div class="form-wrapper" [class.hidden]="isPanelActive">
+      <div class="form-header">
+        <h2 class="form-title">Connexion</h2>
+        <p class="form-sub">Accédez à votre espace de travail</p>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="auth-form" autocomplete="off">
+
+        <div class="field-group">
+          <label class="field-label">Adresse email</label>
+          <div class="field-wrap" [class.focused]="emailFocused" [class.has-error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+            <span class="field-icon">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+            </span>
+            <input
+              type="email"
+              class="field-input"
+              placeholder="votre@email.com"
+              formControlName="email"
+              (focus)="emailFocused=true"
+              (blur)="emailFocused=false"
+              autocomplete="email"
+            />
+          </div>
+          <span class="field-error" *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+            {{ getError(loginForm, 'email') }}
+          </span>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Mot de passe</label>
+          <div class="field-wrap" [class.focused]="passFocused" [class.has-error]="loginForm.get('motDePasse')?.invalid && loginForm.get('motDePasse')?.touched">
+            <span class="field-icon">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </span>
+            <input
+              [type]="showPass ? 'text' : 'password'"
+              class="field-input"
+              placeholder="••••••••"
+              formControlName="motDePasse"
+              (focus)="passFocused=true"
+              (blur)="passFocused=false"
+            />
+            <button type="button" class="field-eye" (click)="showPass=!showPass">
+              <svg *ngIf="!showPass" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg *ngIf="showPass" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            </button>
+          </div>
+          <span class="field-error" *ngIf="loginForm.get('motDePasse')?.invalid && loginForm.get('motDePasse')?.touched">
+            Le mot de passe est obligatoire
+          </span>
+        </div>
+
+        <button type="submit" class="submit-btn" [class.loading]="isLoading" [disabled]="isLoading">
+          <span *ngIf="!isLoading" class="btn-content">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+              <polyline points="10 17 15 12 10 7"/>
+              <line x1="15" y1="12" x2="3" y2="12"/>
+            </svg>
+            Se connecter
+          </span>
+          <span *ngIf="isLoading" class="btn-spinner"></span>
+        </button>
+
+      </form>
+
+      <p class="form-switch-link">
+        Pas encore de compte ?
+        <button class="link-btn" (click)="activateRegister()">Créer un compte</button>
+      </p>
+    </div>
+
+    <!-- ── REGISTER FORM ── -->
+    <div class="form-wrapper" [class.hidden]="!isPanelActive">
+      <div class="form-header">
+        <h2 class="form-title">Créer un compte</h2>
+        <p class="form-sub">Rejoignez la plateforme TT Carburant</p>
+      </div>
+
+      <form [formGroup]="registerForm" (ngSubmit)="onRegister()" class="auth-form" autocomplete="off">
+
+        <div class="field-group">
+          <label class="field-label">Nom complet</label>
+          <div class="field-wrap" [class.has-error]="registerForm.get('nom')?.invalid && registerForm.get('nom')?.touched">
+            <span class="field-icon">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </span>
+            <input type="text" class="field-input" placeholder="Prénom Nom" formControlName="nom"/>
+          </div>
+          <span class="field-error" *ngIf="registerForm.get('nom')?.invalid && registerForm.get('nom')?.touched">
+            {{ getError(registerForm, 'nom') }}
+          </span>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Adresse email</label>
+          <div class="field-wrap" [class.has-error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+            <span class="field-icon">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+            </span>
+            <input type="email" class="field-input" placeholder="votre@email.com" formControlName="email"/>
+          </div>
+          <span class="field-error" *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+            {{ getError(registerForm, 'email') }}
+          </span>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Mot de passe</label>
+          <div class="field-wrap" [class.has-error]="registerForm.get('motDePasse')?.invalid && registerForm.get('motDePasse')?.touched">
+            <span class="field-icon">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </span>
+            <input [type]="showPassR ? 'text' : 'password'" class="field-input" placeholder="Min. 6 caractères" formControlName="motDePasse"/>
+            <button type="button" class="field-eye" (click)="showPassR=!showPassR">
+              <svg *ngIf="!showPassR" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg *ngIf="showPassR" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            </button>
+          </div>
+          <span class="field-error" *ngIf="registerForm.get('motDePasse')?.invalid && registerForm.get('motDePasse')?.touched">
+            {{ getError(registerForm, 'motDePasse') }}
+          </span>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Spécialité <span class="optional">(optionnel)</span></label>
+          <div class="field-wrap">
+            <span class="field-icon">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+              </svg>
+            </span>
+            <input type="text" class="field-input" placeholder="Ex: Maintenance réseau, Terrain…" formControlName="specialite"/>
+          </div>
+        </div>
+
+        <!-- Pending notice -->
+        <div class="pending-notice">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span>Votre compte sera activé après validation par un administrateur.</span>
+        </div>
+
+        <button type="submit" class="submit-btn submit-btn--register" [class.loading]="isLoading" [disabled]="isLoading">
+          <span *ngIf="!isLoading" class="btn-content">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="8.5" cy="7" r="4"/>
+              <line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+            </svg>
+            Créer mon compte
+          </span>
+          <span *ngIf="isLoading" class="btn-spinner btn-spinner--dark"></span>
+        </button>
+
+      </form>
+
+      <p class="form-switch-link">
+        Déjà un compte ?
+        <button class="link-btn" (click)="activateLogin()">Se connecter</button>
+      </p>
+    </div>
+
+  </div><!-- /form-panel -->
+
+</div><!-- /auth-page -->
