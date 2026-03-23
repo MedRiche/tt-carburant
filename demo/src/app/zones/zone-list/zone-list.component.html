@@ -40,6 +40,17 @@
         <span>Zones</span>
         <span class="nav-count">{{ zones.length }}</span>
       </a>
+      <a class="nav-item" routerLink="/admin/vehicules">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="1" y="3" width="15" height="13" rx="2"/>
+            <path d="M16 8h4l3 5v3h-7V8z"/>
+            <circle cx="5.5" cy="18.5" r="2.5"/>
+            <circle cx="18.5" cy="18.5" r="2.5"/>
+          </svg>
+        </span>
+        <span>Véhicules</span>
+      </a>
     </nav>
 
     <div class="sidebar-footer">
@@ -105,7 +116,6 @@
              class="zone-card"
              [style.animation-delay]="(i * 60) + 'ms'">
 
-          <!-- Card header -->
           <div class="zone-card-head">
             <div class="zone-icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -125,7 +135,6 @@
             </div>
           </div>
 
-          <!-- Description -->
           <div class="zone-card-body">
             <p class="zone-desc" *ngIf="zone.description">{{ zone.description }}</p>
             <p class="zone-desc zone-desc--empty" *ngIf="!zone.description">Aucune description</p>
@@ -148,7 +157,6 @@
             </div>
           </div>
 
-          <!-- Actions -->
           <div class="zone-card-foot">
             <button class="zone-btn zone-btn-edit" (click)="openEditForm(zone)">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -166,18 +174,15 @@
             </button>
           </div>
 
-          <!-- Glow accent -->
           <div class="zone-card-glow"></div>
         </div>
       </div>
 
-    </div><!-- /content-area -->
+    </div>
   </main>
 </div>
 
-<!-- ════════════════════════════════════
-     MODAL ZONE FORM
-════════════════════════════════════ -->
+<!-- Modal Zone Form -->
 <app-zone-form
   *ngIf="showForm"
   [zone]="selectedZone"
