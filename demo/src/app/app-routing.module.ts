@@ -5,7 +5,7 @@ import { ZoneListComponent } from './zones/zone-list/zone-list.component';
 import { AdminGuard, TechnicienGuard } from './guards/auth.guard';
 import { DashboardAdminComponent } from './dashboard/dashboard-admin/dashboard-admin.component';
 import { GestionutilisateurComponent } from './gestionutilisateur/gestionutilisateur.component';
-  
+import { VehiculeListComponent } from './vehicule/vehicule-list/vehicule-list.component';
 
 const routes: Routes = [
   // Route par défaut
@@ -22,7 +22,8 @@ const routes: Routes = [
       { path: '', redirectTo: 'utilisateurs', pathMatch: 'full' },
       { path: 'utilisateurs', component: GestionutilisateurComponent },
       { path: 'zones', component: ZoneListComponent },
-      { path: 'dashboardAdmin', component: DashboardAdminComponent }
+      { path: 'dashboardAdmin', component: DashboardAdminComponent },
+      { path: 'vehicules', component: VehiculeListComponent },
     ]
   },
 

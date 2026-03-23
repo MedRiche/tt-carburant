@@ -6,10 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="777fc5d2-3bb5-4db8-8545-4efa7fe5d991" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/controller/AdminUtilisateurController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/controller/AdminUtilisateurController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/controller/ZoneController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/controller/ZoneController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/model/enums/StatutCompte.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/model/enums/StatutCompte.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/UtilisateurService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/UtilisateurService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -129,7 +125,8 @@
       <workItem from="1773063344439" duration="1339000" />
       <workItem from="1773188298505" duration="979000" />
       <workItem from="1773410913422" duration="2700000" />
-      <workItem from="1773494563153" duration="2191000" />
+      <workItem from="1773494563153" duration="3108000" />
+      <workItem from="1774256929918" duration="1035000" />
     </task>
     <servers />
   </component>
