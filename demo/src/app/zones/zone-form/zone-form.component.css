@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -18,12 +18,14 @@
 }
 
 .modal-content {
-  background: white;
-  border-radius: 12px;
+  background: #0f172a;
+  border: 1px solid #1e2d47;
+  border-radius: 14px;
   width: 90%;
   max-width: 550px;
   max-height: 90vh;
   overflow-y: auto;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
   animation: slideUp 0.3s ease;
 }
 
@@ -39,8 +41,8 @@
 }
 
 .modal-header {
-  padding: 20px;
-  border-bottom: 1px solid #e0e0e0;
+  padding: 20px 24px;
+  border-bottom: 1px solid #1e2d47;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -48,132 +50,152 @@
 
 .modal-header h3 {
   margin: 0;
-  font-size: 22px;
-  font-weight: 600;
-  color: #333;
+  font-size: 18px;
+  font-weight: 700;
+  color: #e2e8f0;
 }
 
 .btn-close {
-  background: transparent;
-  border: none;
-  font-size: 24px;
-  color: #999;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #1e2d47;
+  font-size: 20px;
+  color: #475569;
   cursor: pointer;
   padding: 0;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
+  border-radius: 8px;
   transition: all 0.2s ease;
 }
 
 .btn-close:hover {
-  background: #f0f0f0;
-  color: #333;
+  background: rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
 }
 
 form {
-  padding: 20px;
+  padding: 20px 24px;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 label {
   display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
-  color: #333;
-  font-size: 14px;
+  margin-bottom: 7px;
+  font-weight: 600;
+  color: #94a3b8;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-input, textarea {
+input,
+select,
+textarea {
   width: 100%;
-  padding: 12px 15px;
-  border: 2px solid #e0e0e0;
+  padding: 11px 14px;
+  background: #131f35;
+  border: 1px solid #253755;
   border-radius: 8px;
   font-size: 14px;
-  transition: all 0.3s ease;
+  color: #e2e8f0;
+  transition: all 0.2s ease;
   font-family: inherit;
+  box-sizing: border-box;
 }
 
-input:focus, textarea:focus {
+input::placeholder,
+textarea::placeholder {
+  color: #334155;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: rgba(0, 212, 170, 0.4);
+  background: rgba(0, 212, 170, 0.03);
+  box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.07);
 }
 
-input.error {
-  border-color: #dc3545;
+select option {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+input.error,
+select.error,
+textarea.error {
+  border-color: rgba(239, 68, 68, 0.5);
 }
 
 .error-message {
-  color: #dc3545;
+  color: #f87171;
   font-size: 12px;
   margin-top: 5px;
   display: block;
 }
 
 .modal-footer {
-  padding: 20px;
-  border-top: 1px solid #e0e0e0;
+  padding: 16px 24px;
+  border-top: 1px solid #1e2d47;
   display: flex;
   gap: 10px;
   justify-content: flex-end;
 }
 
 .btn {
-  padding: 10px 24px;
+  padding: 10px 22px;
   border: none;
   border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  font-family: inherit;
 }
 
 .btn:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: rgba(0, 212, 170, 0.12);
+  border: 1px solid rgba(0, 212, 170, 0.3);
+  color: #00d4aa;
 }
 
 .btn-primary:not(:disabled):hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  background: rgba(0, 212, 170, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 212, 170, 0.2);
 }
 
 .btn-secondary {
-  background: #f0f0f0;
-  color: #333;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #1e2d47;
+  color: #94a3b8;
 }
 
 .btn-secondary:hover {
-  background: #e0e0e0;
+  background: rgba(255, 255, 255, 0.09);
+  color: #e2e8f0;
 }
 
 @media (max-width: 600px) {
   .modal-content {
     width: 95%;
-    margin: 20px;
   }
 
-  .modal-header, form, .modal-footer {
+  .modal-header,
+  form,
+  .modal-footer {
     padding: 15px;
   }
-
-
-
-
-
-
-
-  
 }
