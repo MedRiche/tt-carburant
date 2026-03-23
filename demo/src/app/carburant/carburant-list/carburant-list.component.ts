@@ -1,12 +1,12 @@
 // src/app/carburant/carburant-list/carburant-list.component.ts
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { CarburantVehicule, MOIS_LABELS } from '../models/carburant-vehicule';
-import { Vehicule } from '../models/vehicule';
-import { Zone } from '../models/zone';
-import { CarburantVehiculeService } from '../services/carburant-vehicule.service';
-import { VehiculeService } from '../services/vehicule.service';
-import { ZoneService } from '../services/zone.service';
+import { CarburantVehicule, MOIS_LABELS } from '../../models/carburant-vehicule';
+import { Vehicule } from '../../models/vehicule';
+import { Zone } from '../../models/zone';
+import { CarburantVehiculeService } from '../../services/carburant-vehicule.service';
+import { VehiculeService } from '../../services/vehicule.service';
+import { ZoneService } from '../../services/zone.service';
 
 @Component({
   selector: 'app-carburant-list',

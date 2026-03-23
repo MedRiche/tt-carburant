@@ -178,3 +178,14 @@
     </div>
   </main>
 </div>
+
+<!-- Modal saisie -->
+<app-carburant-form
+  *ngIf="showForm"
+  [enregistrement]="selected"
+  [vehicules]="vehicules"
+  [anneeDefaut]="annee"
+  [moisDefaut]="mois"
+  (onSave)="onSaved()"
+  (onCancel)="closeForm()">
+</app-carburant-form>

@@ -31,7 +31,8 @@ import { DashboardAdminComponent } from './dashboard/dashboard-admin/dashboard-a
 import { GestionutilisateurComponent } from './gestionutilisateur/gestionutilisateur.component';
 import { VehiculeListComponent } from './vehicule/vehicule-list/vehicule-list.component';
 import { VehiculeFormComponent } from './vehicule/vehicule-form/vehicule-form.component';
-import { CarburantListComponent } from './carburant-list/carburant-list.component';
+import { CarburantListComponent } from './carburant/carburant-list/carburant-list.component';
+import { CarburantFormComponent } from './carburant/carburant-form/carburant-form.component';
 
 @NgModule({
   declarations: [
@@ -47,6 +48,7 @@ import { CarburantListComponent } from './carburant-list/carburant-list.componen
     VehiculeListComponent,
     VehiculeFormComponent,
     CarburantListComponent,
+    CarburantFormComponent,
 
   ],
     imports: [
