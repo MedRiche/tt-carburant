@@ -19,6 +19,7 @@ import { AuthService } from './services/auth.service';
 import { ZoneService } from './services/zone.service';
 import { UtilisateurService } from './services/utilisateur.service';
 import { VehiculeService }       from './services/vehicule.service';
+import { CarburantVehiculeService } from './services/carburant-vehicule.service';
 
 
 // Guards
@@ -30,6 +31,7 @@ import { DashboardAdminComponent } from './dashboard/dashboard-admin/dashboard-a
 import { GestionutilisateurComponent } from './gestionutilisateur/gestionutilisateur.component';
 import { VehiculeListComponent } from './vehicule/vehicule-list/vehicule-list.component';
 import { VehiculeFormComponent } from './vehicule/vehicule-form/vehicule-form.component';
+import { CarburantListComponent } from './carburant-list/carburant-list.component';
 
 @NgModule({
   declarations: [
@@ -44,6 +46,7 @@ import { VehiculeFormComponent } from './vehicule/vehicule-form/vehicule-form.co
     GestionutilisateurComponent,
     VehiculeListComponent,
     VehiculeFormComponent,
+    CarburantListComponent,
 
   ],
     imports: [
@@ -60,6 +63,8 @@ import { VehiculeFormComponent } from './vehicule/vehicule-form/vehicule-form.co
     ZoneService,
     UtilisateurService,
     VehiculeService,
+    CarburantVehiculeService,
+
     
     // Guards
     AuthGuard,

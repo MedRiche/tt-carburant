@@ -1,0 +1,180 @@
+<!-- src/app/carburant/carburant-list/carburant-list.component.html -->
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">⛽</div>
+      <div class="brand-text">
+        <span class="brand-name">TT Carburant</span>
+        <span class="brand-sub">Tunisie Telecom</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" (click)="navigateTo('/admin/dashboardAdmin')">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span>
+        Dashboard
+      </a>
+      <a class="nav-item" (click)="navigateTo('/admin/vehicules')">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>
+        Véhicules
+      </a>
+      <a class="nav-item active">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/></svg></span>
+        Carburant
+        <span class="nav-count">{{ enregistrements.length }}</span>
+      </a>
+      <a class="nav-item" (click)="navigateTo('/admin/zones')">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/></svg></span>
+        Zones
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-avatar">AD</div>
+      <div class="user-meta">
+        <span class="user-name">Administrateur</span>
+        <span class="user-role">Admin</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+
+    <header class="topbar">
+      <div>
+        <h1 class="page-title">Gestion du Carburant</h1>
+        <p class="page-subtitle">Suivi mensuel par véhicule — formules DAF 2026</p>
+      </div>
+      <div class="topbar-right">
+        <button class="btn-new" (click)="openCreate()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Nouvelle saisie
+        </button>
+      </div>
+    </header>
+
+    <div class="content-area">
+
+      <!-- Filtres période -->
+      <div class="filter-bar">
+        <select class="filter-select" [(ngModel)]="annee" (ngModelChange)="charger()">
+          <option *ngFor="let a of annees" [value]="a">{{ a }}</option>
+        </select>
+
+        <select class="filter-select" [(ngModel)]="mois" (ngModelChange)="charger()">
+          <option *ngFor="let m of moisOptions" [value]="m">{{ moisLabels[m] }}</option>
+        </select>
+
+        <select class="filter-select" [(ngModel)]="filtreZoneId" (ngModelChange)="charger()">
+          <option value="">Toutes les zones</option>
+          <option *ngFor="let z of zones" [value]="z.id">{{ z.nom }}</option>
+        </select>
+      </div>
+
+      <!-- KPI summary -->
+      <div class="kpi-row" *ngIf="!loading && enregistrements.length > 0">
+        <div class="kpi-mini kpi-blue">
+          <span class="kpi-mini-label">Véhicules saisis</span>
+          <span class="kpi-mini-val">{{ enregistrements.length }}</span>
+        </div>
+        <div class="kpi-mini kpi-cyan">
+          <span class="kpi-mini-label">Total km parcourus</span>
+          <span class="kpi-mini-val">{{ totalDistance | number:'1.0-0' }} km</span>
+        </div>
+        <div class="kpi-mini kpi-green">
+          <span class="kpi-mini-label">Total ravitaillement (L)</span>
+          <span class="kpi-mini-val">{{ fmt3(totalLitres) }} L</span>
+        </div>
+        <div class="kpi-mini kpi-amber">
+          <span class="kpi-mini-label">Total demandé (DT)</span>
+          <span class="kpi-mini-val">{{ fmt3(totalDemande) }}</span>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="loading" class="state-empty">
+        <div class="loader-ring"></div>
+        <p>Chargement…</p>
+      </div>
+
+      <!-- Empty -->
+      <div *ngIf="!loading && enregistrements.length === 0" class="state-empty">
+        <div class="state-icon">⛽</div>
+        <p class="state-title">Aucune saisie pour {{ moisLabel }} {{ annee }}</p>
+        <p class="state-sub">Cliquez sur « Nouvelle saisie » pour commencer.</p>
+      </div>
+
+      <!-- Table -->
+      <div *ngIf="!loading && enregistrements.length > 0" class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Matricule</th>
+              <th>Marque</th>
+              <th>Zone</th>
+              <th>Prix (DT/L)</th>
+              <th>Index Démarrage</th>
+              <th>Index Fin</th>
+              <th class="col-calc">Distance (km)</th>
+              <th class="col-calc">Total Ravit. (L)</th>
+              <th class="col-calc">Qté Restante (L)</th>
+              <th class="col-calc">% Conso</th>
+              <th class="col-calc highlight">Carb. Demandé (DT)</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let e of enregistrements" class="table-row">
+              <td><span class="mat-badge">{{ e.vehiculeMatricule }}</span></td>
+              <td><span class="v-marque">{{ e.vehiculeMarqueModele }}</span></td>
+              <td>
+                <span *ngIf="e.vehiculeZoneNom" class="chip chip-zone">{{ e.vehiculeZoneNom }}</span>
+                <span *ngIf="!e.vehiculeZoneNom" class="u-none">—</span>
+              </td>
+              <td><span class="mono-val">{{ fmt3(e.prixCarburant) }}</span></td>
+              <td><span class="mono-val">{{ e.indexDemarrageMois | number:'1.0-0' }}</span></td>
+              <td><span class="mono-val">{{ e.indexFinMois | number:'1.0-0' }}</span></td>
+
+              <!-- Calculés -->
+              <td class="col-calc"><span class="mono-val calc-val">{{ e.distanceParcourue | number:'1.0-0' }}</span></td>
+              <td class="col-calc"><span class="mono-val calc-val">{{ fmt3(e.totalRavitaillementLitres) }}</span></td>
+              <td class="col-calc"><span class="mono-val calc-val">{{ fmt3(e.quantiteRestanteReservoir) }}</span></td>
+              <td class="col-calc">
+                <span class="pct-badge"
+                      [class.pct-ok]="(e.pourcentageConsommation||0) <= 0.25"
+                      [class.pct-warn]="(e.pourcentageConsommation||0) > 0.25 && (e.pourcentageConsommation||0) <= 0.40"
+                      [class.pct-bad]="(e.pourcentageConsommation||0) > 0.40">
+                  {{ fmt3(e.pourcentageConsommation) }}
+                </span>
+              </td>
+              <td class="col-calc highlight">
+                <span class="mono-val demand-val">{{ fmt3(e.carburantDemandeDinars) }}</span>
+              </td>
+
+              <td>
+                <div class="row-actions">
+                  <button class="btn-act btn-edit" (click)="openEdit(e)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                  </button>
+                  <button class="btn-act btn-delete" (click)="supprimer(e)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+</div>

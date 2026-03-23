@@ -6,7 +6,7 @@ import { AdminGuard, TechnicienGuard } from './guards/auth.guard';
 import { DashboardAdminComponent } from './dashboard/dashboard-admin/dashboard-admin.component';
 import { GestionutilisateurComponent } from './gestionutilisateur/gestionutilisateur.component';
 import { VehiculeListComponent } from './vehicule/vehicule-list/vehicule-list.component';
-
+import { CarburantListComponent } from './carburant-list/carburant-list.component';
 const routes: Routes = [
   // Route par défaut
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -24,6 +24,7 @@ const routes: Routes = [
       { path: 'zones', component: ZoneListComponent },
       { path: 'dashboardAdmin', component: DashboardAdminComponent },
       { path: 'vehicules', component: VehiculeListComponent },
+      { path: 'carburant', component: CarburantListComponent },
     ]
   },
 
