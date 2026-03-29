@@ -29,12 +29,15 @@ public class VehiculeController {
     }
 
     @GetMapping("/zone/{zoneId}")
-    public ResponseEntity<List<VehiculeDto>> getVehiculesByZone(@PathVariable Long zoneId) {
+    public ResponseEntity<List<VehiculeDto>> getVehiculesByZone(
+            @PathVariable("zoneId") Long zoneId) {
         return ResponseEntity.ok(vehiculeService.getVehiculesByZone(zoneId));
     }
 
-    @GetMapping("/{matricule}")
-    public ResponseEntity<?> getVehiculeById(@PathVariable String matricule) {
+    // ✅ FIX: explicit name in @PathVariable + :.+ to allow "/" in matricule
+    @GetMapping("/{matricule:.+}")
+    public ResponseEntity<?> getVehiculeById(
+            @PathVariable("matricule") String matricule) {
         try {
             return ResponseEntity.ok(vehiculeService.getVehiculeById(matricule));
         } catch (Exception e) {
@@ -53,9 +56,10 @@ public class VehiculeController {
         }
     }
 
-    @PutMapping("/{matricule}")
+    // ✅ FIX: explicit name in @PathVariable + :.+ to allow "/" in matricule
+    @PutMapping("/{matricule:.+}")
     public ResponseEntity<?> modifierVehicule(
-            @PathVariable String matricule,
+            @PathVariable("matricule") String matricule,
             @Valid @RequestBody VehiculeRequest request) {
         try {
             VehiculeDto dto = vehiculeService.modifierVehicule(matricule, request);
@@ -65,8 +69,10 @@ public class VehiculeController {
         }
     }
 
-    @DeleteMapping("/{matricule}")
-    public ResponseEntity<?> supprimerVehicule(@PathVariable String matricule) {
+    // ✅ FIX: explicit name in @PathVariable + :.+ to allow "/" in matricule
+    @DeleteMapping("/{matricule:.+}")
+    public ResponseEntity<?> supprimerVehicule(
+            @PathVariable("matricule") String matricule) {
         try {
             vehiculeService.supprimerVehicule(matricule);
             return ResponseEntity.ok(new MessageResponse("Véhicule supprimé avec succès"));
@@ -75,10 +81,10 @@ public class VehiculeController {
         }
     }
 
-    @PatchMapping("/{matricule}/zone/{zoneId}")
+    @PatchMapping("/{matricule:.+}/zone/{zoneId}")
     public ResponseEntity<?> affecterZone(
-            @PathVariable String matricule,
-            @PathVariable Long zoneId) {
+            @PathVariable("matricule") String matricule,
+            @PathVariable("zoneId") Long zoneId) {
         try {
             VehiculeDto dto = vehiculeService.affecterZone(matricule, zoneId);
             return ResponseEntity.ok(new SuccessResponse("Zone affectée avec succès", dto));

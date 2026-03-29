@@ -5,7 +5,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="777fc5d2-3bb5-4db8-8545-4efa7fe5d991" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/controller/AdminUtilisateurController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/controller/AdminUtilisateurController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/controller/CarburantVehiculeController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/controller/CarburantVehiculeController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/controller/VehiculeController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/controller/VehiculeController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/security/JwtAuthenticationFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/security/JwtAuthenticationFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/app/carburant/carburant-list/carburant-list.component.html" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/carburant/carburant-list/carburant-list.component.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/app/carburant/carburant-list/carburant-list.component.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/carburant/carburant-list/carburant-list.component.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/app/dashboard/dashboard-admin/dashboard-admin.component.html" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/dashboard/dashboard-admin/dashboard-admin.component.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/app/gestionutilisateur/gestionutilisateur.component.html" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/gestionutilisateur/gestionutilisateur.component.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/app/vehicule/vehicule-list/vehicule-list.component.html" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/vehicule/vehicule-list/vehicule-list.component.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/app/zones/zone-list/zone-list.component.html" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/zones/zone-list/zone-list.component.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -83,8 +95,8 @@
       <command value=" mvn clean install" />
       <command value="mvn install" />
       <command value="mvn spring-boot:run" />
-      <command value="mvn clean install" />
       <command value="mvn clean" />
+      <command value="mvn clean install" />
     </option>
   </component>
   <component name="RunManager">
@@ -127,11 +139,24 @@
       <workItem from="1773410913422" duration="2700000" />
       <workItem from="1773494563153" duration="3108000" />
       <workItem from="1774256929918" duration="6249000" />
-      <workItem from="1774287024930" duration="1968000" />
+      <workItem from="1774287024930" duration="5296000" />
+      <workItem from="1774627014363" duration="1393000" />
+      <workItem from="1774801026314" duration="1054000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>

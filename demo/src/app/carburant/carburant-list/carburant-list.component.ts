@@ -21,16 +21,15 @@ export class CarburantListComponent implements OnInit {
   zones: Zone[] = [];
   moisLabels = MOIS_LABELS;
 
-  // Filtres période
-  annee  = new Date().getFullYear();
-  mois   = new Date().getMonth() + 1;
+  annee        = new Date().getFullYear();
+  mois         = new Date().getMonth() + 1;
   filtreZoneId = '';
 
-  loading   = false;
-  showForm  = false;
+  loading  = false;
+  showForm = false;
   selected: CarburantVehicule | null = null;
 
-  annees = Array.from({ length: 6 }, (_, i) => new Date().getFullYear() - i);
+  annees      = Array.from({ length: 6 }, (_, i) => new Date().getFullYear() - i);
   moisOptions = Array.from({ length: 12 }, (_, i) => i + 1);
 
   constructor(
@@ -56,20 +55,35 @@ export class CarburantListComponent implements OnInit {
 
   charger(): void {
     this.loading = true;
+    this.enregistrements = []; // ✅ reset before reload
+
     const obs = this.filtreZoneId
       ? this.carburantService.getByZoneAndPeriode(+this.filtreZoneId, this.annee, this.mois)
       : this.carburantService.getByPeriode(this.annee, this.mois);
 
     obs.subscribe({
-      next: d => { this.enregistrements = d; this.loading = false; },
-      error: () => { this.loading = false; }
+      next: d => {
+        // ✅ FIX: ensure we always have an array
+        this.enregistrements = Array.isArray(d) ? d : [];
+        this.loading = false;
+      },
+      error: err => {
+        console.error('Erreur chargement carburant:', err);
+        this.enregistrements = [];
+        this.loading = false;
+      }
     });
   }
 
   openCreate(): void { this.selected = null; this.showForm = true; }
   openEdit(e: CarburantVehicule): void { this.selected = { ...e }; this.showForm = true; }
   closeForm(): void { this.showForm = false; this.selected = null; }
-  onSaved(): void { this.closeForm(); this.charger(); }
+
+  // ✅ FIX: small delay to ensure backend transaction is committed before reload
+  onSaved(): void {
+    this.closeForm();
+    setTimeout(() => this.charger(), 300);
+  }
 
   supprimer(e: CarburantVehicule): void {
     if (!confirm(`Supprimer la saisie ${e.vehiculeMatricule} — ${this.moisLabels[e.mois]} ${e.annee} ?`)) return;
@@ -79,7 +93,6 @@ export class CarburantListComponent implements OnInit {
     });
   }
 
-  // KPI totaux du tableau affiché
   get totalDistance(): number {
     return this.enregistrements.reduce((s, e) => s + (e.distanceParcourue || 0), 0);
   }

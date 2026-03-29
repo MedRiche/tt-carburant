@@ -1,5 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpErrorResponse } from '@angular/common/http';
+import {
+  HttpInterceptor, HttpRequest, HttpHandler,
+  HttpEvent, HttpErrorResponse
+} from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
@@ -14,31 +17,34 @@ export class AuthInterceptor implements HttpInterceptor {
   ) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    // Récupérer le token depuis le service d'authentification
     const token = this.authService.getToken();
 
-    // Si le token existe, l'ajouter au header de la requête
     if (token) {
       request = request.clone({
-        setHeaders: {
-          Authorization: `Bearer ${token}`
-        }
+        setHeaders: { Authorization: `Bearer ${token}` }
       });
     }
 
-    // Passer la requête au prochain handler
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
-        // Gérer les erreurs HTTP
+
         if (error.status === 401) {
-          // Token expiré ou invalide
-          console.error('Token invalide ou expiré');
-          this.authService.logout();
-          alert('⚠️ Session expirée\n\nVeuillez vous reconnecter.');
+          // Token expiré ou invalide → déconnexion silencieuse puis redirection
+          const message = error.error?.message || '';
+          const isExpired = message.toLowerCase().includes('expir');
+
+          this.authService.logout(); // nettoie localStorage
+
+          if (isExpired) {
+            alert('⚠️ Votre session a expiré.\n\nVeuillez vous reconnecter.');
+          } else {
+            alert('⚠️ Session invalide.\n\nVeuillez vous reconnecter.');
+          }
+
+          // logout() navigue déjà vers /login — on ne redirige pas deux fois
+
         } else if (error.status === 403) {
-          // Accès refusé
-          console.error('Accès refusé');
-          alert('❌ Accès refusé\n\nVous n\'avez pas les permissions nécessaires.');
+          alert('❌ Accès refusé.\n\nVous n\'avez pas les permissions nécessaires.');
           this.router.navigate(['/login']);
         }
 

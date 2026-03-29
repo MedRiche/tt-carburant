@@ -32,6 +32,7 @@ public class AdminUtilisateurController {
         return ResponseEntity.ok(utilisateurService.getUtilisateursEnAttente());
     }
 
+    // ✅ FIX: explicit name in @PathVariable
     @GetMapping("/{id}")
     public ResponseEntity<?> getUtilisateurById(@PathVariable("id") Long id) {
         try {
@@ -51,6 +52,7 @@ public class AdminUtilisateurController {
         }
     }
 
+    // ✅ FIX: explicit name in @PathVariable
     @PatchMapping("/{id}/refuser")
     public ResponseEntity<?> refuserCompte(@PathVariable("id") Long id) {
         try {
@@ -61,12 +63,7 @@ public class AdminUtilisateurController {
         }
     }
 
-    /**
-     * TOGGLE endpoint:
-     *   ACTIF     → DESACTIVE  (bouton affiche "Désactiver")
-     *   DESACTIVE → ACTIF      (bouton affiche "Activer")
-     *   REFUSE    → ACTIF      (bouton affiche "Activer")
-     */
+    // ✅ FIX: explicit name in @PathVariable
     @PatchMapping("/{id}/toggle-activation")
     public ResponseEntity<?> toggleActivation(@PathVariable("id") Long id) {
         try {
@@ -80,6 +77,7 @@ public class AdminUtilisateurController {
         }
     }
 
+    // ✅ FIX: explicit name in @PathVariable
     @DeleteMapping("/{id}")
     public ResponseEntity<?> supprimerUtilisateur(@PathVariable("id") Long id) {
         try {
@@ -90,6 +88,7 @@ public class AdminUtilisateurController {
         }
     }
 
+    // ✅ FIX: explicit names in @PathVariable
     @PostMapping("/{utilisateurId}/zones/{zoneId}")
     public ResponseEntity<?> ajouterZone(
             @PathVariable("utilisateurId") Long utilisateurId,
@@ -102,6 +101,7 @@ public class AdminUtilisateurController {
         }
     }
 
+    // ✅ FIX: explicit names in @PathVariable
     @DeleteMapping("/{utilisateurId}/zones/{zoneId}")
     public ResponseEntity<?> retirerZone(
             @PathVariable("utilisateurId") Long utilisateurId,

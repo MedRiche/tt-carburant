@@ -23,35 +23,36 @@ public class CarburantVehiculeController {
         this.service = service;
     }
 
-    // Historique d'un véhicule
-    @GetMapping("/vehicule/{matricule}")
-    public ResponseEntity<List<CarburantVehiculeDto>> getByVehicule(@PathVariable String matricule) {
+    // ✅ FIX: explicit name in @PathVariable + :.+ for matricules with "/"
+    @GetMapping("/vehicule/{matricule:.+}")
+    public ResponseEntity<List<CarburantVehiculeDto>> getByVehicule(
+            @PathVariable("matricule") String matricule) {
         return ResponseEntity.ok(service.getByVehicule(matricule));
     }
 
-    // Tableau de bord mensuel (toutes zones)
     @GetMapping("/periode")
     public ResponseEntity<List<CarburantVehiculeDto>> getByPeriode(
-            @RequestParam int annee, @RequestParam int mois) {
+            @RequestParam("annee") int annee,
+            @RequestParam("mois") int mois) {
         return ResponseEntity.ok(service.getByPeriode(annee, mois));
     }
 
-    // Tableau d'une zone pour un mois
+    // ✅ FIX: explicit name in @PathVariable
     @GetMapping("/zone/{zoneId}/periode")
     public ResponseEntity<List<CarburantVehiculeDto>> getByZone(
-            @PathVariable Long zoneId,
-            @RequestParam int annee, @RequestParam int mois) {
+            @PathVariable("zoneId") Long zoneId,
+            @RequestParam("annee") int annee,
+            @RequestParam("mois") int mois) {
         return ResponseEntity.ok(service.getByZoneAndPeriode(zoneId, annee, mois));
     }
 
-    // Détail
+    // ✅ FIX: explicit name in @PathVariable
     @GetMapping("/{id}")
-    public ResponseEntity<?> getById(@PathVariable Long id) {
+    public ResponseEntity<?> getById(@PathVariable("id") Long id) {
         try { return ResponseEntity.ok(service.getById(id)); }
         catch (Exception e) { return ResponseEntity.badRequest().body(err(e)); }
     }
 
-    // Saisir
     @PostMapping
     public ResponseEntity<?> saisir(@Valid @RequestBody CarburantVehiculeRequest req) {
         try {
@@ -61,19 +62,20 @@ public class CarburantVehiculeController {
         } catch (Exception e) { return ResponseEntity.badRequest().body(err(e)); }
     }
 
-    // Modifier
+    // ✅ FIX: explicit name in @PathVariable
     @PutMapping("/{id}")
-    public ResponseEntity<?> modifier(@PathVariable Long id,
-                                      @Valid @RequestBody CarburantVehiculeRequest req) {
+    public ResponseEntity<?> modifier(
+            @PathVariable("id") Long id,
+            @Valid @RequestBody CarburantVehiculeRequest req) {
         try {
             CarburantVehiculeDto dto = service.modifier(id, req);
             return ResponseEntity.ok(new SuccessResponse("Saisie modifiée", dto));
         } catch (Exception e) { return ResponseEntity.badRequest().body(err(e)); }
     }
 
-    // Supprimer
+    // ✅ FIX: explicit name in @PathVariable
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> supprimer(@PathVariable Long id) {
+    public ResponseEntity<?> supprimer(@PathVariable("id") Long id) {
         try { service.supprimer(id); return ResponseEntity.ok(new MsgResponse("Supprimé")); }
         catch (Exception e) { return ResponseEntity.badRequest().body(err(e)); }
     }
