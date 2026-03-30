@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,13 +52,79 @@ public class CarburantVehiculeService {
                 .orElseThrow(() -> new RuntimeException("Enregistrement non trouvé")));
     }
 
+    // ── NOUVEAU : récupérer les valeurs pré-remplies du mois précédent (règles 6 & 7) ──
+
+    /**
+     * Règle 6 : Index démarrage = Index fin du mois précédent
+     * Règle 7 : Montant restant mois précédent = Montant restant réservoir du mois précédent
+     * Retourne un DTO pré-rempli avec ces deux valeurs (0 si pas de mois précédent)
+     */
+    @Transactional(readOnly = true)
+    public CarburantVehiculeDto getPrefillFromPreviousMonth(String matricule, int annee, int mois) {
+        Vehicule v = findVehicule(matricule);
+
+        // Calculer le mois précédent
+        int prevMois  = (mois == 1) ? 12 : mois - 1;
+        int prevAnnee = (mois == 1) ? annee - 1 : annee;
+
+        CarburantVehiculeDto prefill = new CarburantVehiculeDto();
+        prefill.setVehiculeMatricule(matricule);
+        prefill.setAnnee(annee);
+        prefill.setMois(mois);
+        prefill.setPrixCarburant(v.getPrixCarburant());
+        prefill.setCoutDuMois(v.getCoutDuMois());
+
+        Optional<GestionCarburantVehicule> prevOpt =
+                carburantRepo.findByVehiculeAndAnneeAndMois(v, prevAnnee, prevMois);
+
+        if (prevOpt.isPresent()) {
+            GestionCarburantVehicule prev = prevOpt.get();
+            // Règle 6 : index démarrage = index fin du mois précédent
+            prefill.setIndexDemarrageMois(prev.getIndexFinMois());
+            // Règle 7 : montant restant = montant restant du mois précédent
+            prefill.setMontantRestantMoisPrecedent(prev.getMontantRestantReservoirFin());
+            // Ravitaillement précédent = ravitaillement du mois précédent
+            prefill.setRavitaillementMoisPrecedent(prev.getRavitaillementMois());
+        } else {
+            prefill.setIndexDemarrageMois(0);
+            prefill.setMontantRestantMoisPrecedent(0);
+            prefill.setRavitaillementMoisPrecedent(0);
+        }
+
+        return prefill;
+    }
+
+    // ── NOUVEAU : récupérer les véhicules avec budget dépassé ──
+    @Transactional(readOnly = true)
+    public List<CarburantVehiculeDto> getBudgetDepasses(int annee, int mois) {
+        return carburantRepo.findBudgetDepasses(annee, mois)
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+    // ── NOUVEAU : récapitulatif annuel par véhicule ──
+
+    @Transactional(readOnly = true)
+    public List<CarburantVehiculeDto> getRecapAnnuelByVehicule(String matricule, int annee) {
+        Vehicule v = findVehicule(matricule);
+        return carburantRepo.findByVehiculeAndAnneeOrderByMois(v, annee)
+                .stream().map(this::toDto).collect(Collectors.toList());
+    }
+
+    // ── NOUVEAU : récapitulatif annuel par zone ──
+
+    @Transactional(readOnly = true)
+    public List<CarburantVehiculeDto> getRecapAnnuelByZone(Long zoneId, int annee) {
+        return carburantRepo.findByZoneAndAnnee(zoneId, annee)
+                .stream().map(this::toDto).collect(Collectors.toList());
+    }
+
     // ── Créer / Modifier ────────────────────────────────────────
 
     @Transactional
     public CarburantVehiculeDto saisir(CarburantVehiculeRequest req) {
         Vehicule v = findVehicule(req.getVehiculeMatricule());
 
-        // Vérifier doublon
         if (carburantRepo.findByVehiculeAndAnneeAndMois(v, req.getAnnee(), req.getMois()).isPresent()) {
             throw new RuntimeException(
                     "Un enregistrement existe déjà pour ce véhicule / mois / année. Utilisez modifier.");
@@ -88,22 +155,7 @@ public class CarburantVehiculeService {
     }
 
     // ── Formules DAF 2026 ────────────────────────────────────────
-    /**
-     * 1) Total ravitaillement litres =
-     *       (ravitaillement mois précédent + montant restant mois précédent) / prix
-     *
-     * 2) Quantité restante réservoir =
-     *       montant restant mois précédent / prix
-     *
-     * 3) Distance parcourue =
-     *       index fin mois - index démarrage mois
-     *
-     * 4) % consommation =
-     *       (total litres - qté restante) / distance
-     *
-     * 5) Carburant demandé DT =
-     *       coût du mois (budget) - montant restant mois précédent
-     */
+
     private void appliquerSaisieEtCalculer(GestionCarburantVehicule g,
                                            CarburantVehiculeRequest req,
                                            Vehicule v) {
@@ -115,31 +167,45 @@ public class CarburantVehiculeService {
 
         double prix = v.getPrixCarburant();
 
-        // Calcul 1
+        // Formule 1 : Total ravitaillement litres
         double totalLitres = prix > 0
                 ? (req.getRavitaillementMoisPrecedent() + req.getMontantRestantMoisPrecedent()) / prix
                 : 0;
         g.setTotalRavitaillementLitres(round3(totalLitres));
 
-        // Calcul 2
+        // Formule 2 : Quantité restante réservoir
         double qteRestante = prix > 0
                 ? req.getMontantRestantMoisPrecedent() / prix
                 : 0;
         g.setQuantiteRestanteReservoir(round3(qteRestante));
 
-        // Calcul 3
+        // Formule 3 : Distance parcourue
         double distance = req.getIndexFinMois() - req.getIndexDemarrageMois();
         g.setDistanceParcourue(round3(distance));
 
-        // Calcul 4
+        // Formule 4 : % consommation
         double pct = distance > 0
                 ? (totalLitres - qteRestante) / distance
                 : 0;
         g.setPourcentageConsommation(round3(pct));
 
-        // Calcul 5
+        // Formule 5 : Carburant demandé DT
         double demande = v.getCoutDuMois() - req.getMontantRestantMoisPrecedent();
         g.setCarburantDemandeDinars(round3(demande));
+
+        // ── NOUVEAU : montant restant réservoir FIN de ce mois (pour règle 7 du mois suivant) ──
+        // = ravitaillement du mois en cours + montant restant précédent - consommation réelle
+        // Consommation réelle = (totalLitres - qteRestante) * prix
+        double consommationDT = round3((totalLitres - qteRestante) * prix);
+        double montantRestantFin = req.getRavitaillementMois()
+                + req.getMontantRestantMoisPrecedent()
+                - consommationDT;
+        g.setMontantRestantReservoirFin(round3(Math.max(0, montantRestantFin)));
+
+        // ── NOUVEAU : alerte budget dépassé ──
+        double coutReel = (totalLitres - qteRestante) * prix;
+        g.setBudgetDepasse(coutReel > v.getCoutDuMois() && v.getCoutDuMois() > 0);
+        g.setDepassementMontant(round3(Math.max(0, coutReel - v.getCoutDuMois())));
     }
 
     private double round3(double val) {
@@ -169,6 +235,9 @@ public class CarburantVehiculeService {
         dto.setDistanceParcourue(g.getDistanceParcourue());
         dto.setPourcentageConsommation(g.getPourcentageConsommation());
         dto.setCarburantDemandeDinars(g.getCarburantDemandeDinars());
+        dto.setMontantRestantReservoirFin(g.getMontantRestantReservoirFin());
+        dto.setBudgetDepasse(g.isBudgetDepasse());
+        dto.setDepassementMontant(g.getDepassementMontant());
         return dto;
     }
 

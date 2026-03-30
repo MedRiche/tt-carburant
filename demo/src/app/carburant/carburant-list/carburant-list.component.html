@@ -41,7 +41,6 @@
         Carburant
         <span class="nav-count">{{ enregistrements.length }}</span>
       </a>
-
     </nav>
     <div class="sidebar-footer">
       <div class="user-avatar">AD</div>
@@ -60,7 +59,47 @@
         <h1 class="page-title">Gestion du Carburant</h1>
         <p class="page-subtitle">Suivi mensuel par véhicule — formules DAF 2026</p>
       </div>
+
+      <!-- ── Topbar droite : alertes + exports + récap + nouvelle saisie ── -->
       <div class="topbar-right">
+
+        <!-- Alerte budget dépassé -->
+        <div *ngIf="nbBudgetDepasses > 0"
+             class="alert-pill"
+             (click)="toggleAlertes()"
+             title="Voir les véhicules avec budget dépassé">
+          ⚠️ {{ nbBudgetDepasses }} budget{{ nbBudgetDepasses > 1 ? 's' : '' }} dépassé{{ nbBudgetDepasses > 1 ? 's' : '' }}
+        </div>
+
+        <!-- Bouton récap annuel -->
+        <button class="btn-recap" (click)="ouvrirRecapAnnuel()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          Récap {{ annee }}
+        </button>
+
+        <!-- Export Excel mensuel -->
+        <button class="btn-export" (click)="exporterMensuel()" [disabled]="exportingMensuel || enregistrements.length === 0">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          {{ exportingMensuel ? 'Export…' : 'Excel mensuel' }}
+        </button>
+
+        <!-- Export Excel annuel -->
+        <button class="btn-export" (click)="exporterAnnuel()" [disabled]="exportingAnnuel">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          {{ exportingAnnuel ? 'Export…' : 'Excel annuel' }}
+        </button>
+
+        <!-- Bouton nouvelle saisie -->
         <button class="btn-new" (click)="openCreate()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
@@ -86,6 +125,18 @@
           <option value="">Toutes les zones</option>
           <option *ngFor="let z of zones" [value]="z.id">{{ z.nom }}</option>
         </select>
+      </div>
+
+      <!-- ── Panneau alertes budget (sous .filter-bar) ── -->
+      <div *ngIf="showAlertes && budgetAlertes.length > 0" class="alertes-panel">
+        <h4>⚠️ Véhicules avec budget dépassé — {{ moisLabel }} {{ annee }}</h4>
+        <div *ngFor="let a of budgetAlertes" class="alerte-row">
+          <span class="alerte-mat">{{ a.vehiculeMatricule }}</span>
+          <span class="alerte-marque">{{ a.vehiculeMarqueModele }}</span>
+          <span>Budget : {{ fmt3(a.coutDuMois) }} DT</span>
+          <span>→</span>
+          <span class="alerte-montant">+{{ fmt3(a.depassementMontant) }} DT dépassé</span>
+        </div>
       </div>
 
       <!-- KPI summary -->
@@ -137,11 +188,14 @@
               <th class="col-calc">Qté Restante (L)</th>
               <th class="col-calc">% Conso</th>
               <th class="col-calc highlight">Carb. Demandé (DT)</th>
+              <th>Alerte</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let e of enregistrements" class="table-row">
+            <tr *ngFor="let e of enregistrements"
+                class="table-row"
+                [class.row-alert]="e.budgetDepasse">
               <td><span class="mat-badge">{{ e.vehiculeMatricule }}</span></td>
               <td><span class="v-marque">{{ e.vehiculeMarqueModele }}</span></td>
               <td>
@@ -166,6 +220,14 @@
               </td>
               <td class="col-calc highlight">
                 <span class="mono-val demand-val">{{ fmt3(e.carburantDemandeDinars) }}</span>
+              </td>
+
+              <!-- Alerte budget -->
+              <td>
+                <span *ngIf="e.budgetDepasse" class="budget-depasse-badge">
+                  ⚠️ +{{ fmt3(e.depassementMontant) }}
+                </span>
+                <span *ngIf="!e.budgetDepasse" style="color:var(--text-muted)">✓</span>
               </td>
 
               <td>
@@ -203,3 +265,78 @@
   (onSave)="onSaved()"
   (onCancel)="closeForm()">
 </app-carburant-form>
+
+<!-- ══════════════════════════════════════════
+     MODALE RÉCAPITULATIF ANNUEL
+══════════════════════════════════════════ -->
+<div *ngIf="showRecapAnnuel" class="recap-modal-overlay" (click)="fermerRecapAnnuel()">
+  <div class="recap-modal" (click)="$event.stopPropagation()">
+
+    <div class="recap-header">
+      <div>
+        <span class="recap-title">Récapitulatif annuel {{ recapAnnee }}</span>
+        <span style="font-size:12px;color:var(--text-muted);margin-left:12px">
+          Distance parcourue (km) par mois
+        </span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <select class="filter-select" [(ngModel)]="recapAnnee" (ngModelChange)="chargerRecapAnnuel()"
+                style="min-width:100px">
+          <option *ngFor="let a of annees" [value]="a">{{ a }}</option>
+        </select>
+        <button class="btn-export" (click)="exporterAnnuel()" [disabled]="exportingAnnuel">
+          {{ exportingAnnuel ? 'Export…' : '⬇ Excel annuel' }}
+        </button>
+        <button class="btn-close"
+                style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text-muted);cursor:pointer;font-size:16px"
+                (click)="fermerRecapAnnuel()">✕</button>
+      </div>
+    </div>
+
+    <div class="recap-body">
+
+      <!-- Chargement -->
+      <div *ngIf="recapLoading" style="text-align:center;padding:40px;color:var(--text-muted)">
+        <div class="loader-ring" style="margin:0 auto 12px"></div>
+        <p>Chargement du récapitulatif…</p>
+      </div>
+
+      <!-- Tableau récap -->
+      <div *ngIf="!recapLoading && recapAnnuelData.length > 0">
+        <table class="recap-table">
+          <thead>
+            <tr>
+              <th>Matricule</th>
+              <th>Marque</th>
+              <th *ngFor="let m of moisOptions">{{ moisLabels[m].substring(0,3) }}</th>
+              <th>Total km</th>
+              <th>Total L</th>
+              <th>Total DT</th>
+            </tr>
+          </thead>
+         <tbody>
+            <tr *ngFor="let mat of getVehiculesRecap()">
+              <td>{{ mat }}</td>
+              <td>{{ getMarqueVehicule(mat) }}</td>
+              <ng-container *ngFor="let m of moisOptions">
+                <td *ngIf="getMoisData(mat, m) as d; else emptyCell">
+                  {{ fmt3(d.distanceParcourue) }}
+                </td>
+                <ng-template #emptyCell><td class="empty-col">—</td></ng-template>
+              </ng-container>
+              <!-- Totaux ligne -->
+              <td class="total-col">{{ fmt3(getTotalKmVehicule(mat)) }}</td>
+              <td class="total-col">{{ fmt3(getTotalLitresVehicule(mat)) }}</td>
+              <td class="total-col">{{ fmt3(getTotalDtVehicule(mat)) }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <p *ngIf="recapAnnuelData.length === 0"
+           style="text-align:center;color:var(--text-muted);padding:30px">
+          Aucune donnée pour {{ recapAnnee }}.
+        </p>
+      </div>
+
+    </div><!-- /recap-body -->
+  </div>
+</div>

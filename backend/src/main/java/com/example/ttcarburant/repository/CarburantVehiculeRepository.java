@@ -27,6 +27,20 @@ public interface CarburantVehiculeRepository extends JpaRepository<GestionCarbur
             @Param("annee")  int annee,
             @Param("mois")   int mois);
 
-    // Historique d'un véhicule par année
+    // Historique annuel d'un véhicule
     List<GestionCarburantVehicule> findByVehiculeAndAnneeOrderByMois(Vehicule v, int annee);
+
+    // NOUVEAU : recap annuel d'une zone (les 12 mois)
+    @Query("SELECT g FROM GestionCarburantVehicule g WHERE g.vehicule.zone.id = :zoneId " +
+            "AND g.annee = :annee ORDER BY g.vehicule.matricule, g.mois")
+    List<GestionCarburantVehicule> findByZoneAndAnnee(
+            @Param("zoneId") Long zoneId,
+            @Param("annee")  int annee);
+
+    // NOUVEAU : tous les véhicules avec budget dépassé pour un mois donné
+    @Query("SELECT g FROM GestionCarburantVehicule g WHERE g.annee = :annee AND g.mois = :mois " +
+            "AND g.budgetDepasse = true ORDER BY g.depassementMontant DESC")
+    List<GestionCarburantVehicule> findBudgetDepasses(
+            @Param("annee") int annee,
+            @Param("mois")  int mois);
 }

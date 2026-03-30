@@ -16,33 +16,39 @@ public class GestionCarburantVehicule {
     private Vehicule vehicule;
 
     @Column(nullable = false) private int annee;
-    @Column(nullable = false) private int mois; // 1..12
+    @Column(nullable = false) private int mois;
 
     // ── Données saisies ──────────────────────────────
     private double indexDemarrageMois;
     private double indexFinMois;
-    private double montantRestantMoisPrecedent; // DT
-    private double ravitaillementMoisPrecedent; // DT (mois N-1)
-    private double ravitaillementMois;          // DT (mois courant)
+    private double montantRestantMoisPrecedent;
+    private double ravitaillementMoisPrecedent;
+    private double ravitaillementMois;
 
-    // ── Calculés automatiquement ─────────────────────
-    // 1) Total ravitaillement litres = (ravitPrecedent + montantRestantPrecedent) / prix
+    // ── Calculés DAF 2026 ────────────────────────────
     private double totalRavitaillementLitres;
-    // 2) Quantité restante réservoir = montantRestantPrecedent / prix
     private double quantiteRestanteReservoir;
-    // 3) Distance = indexFin - indexDemarrage
     private double distanceParcourue;
-    // 4) % consommation = (totalLitres - qteRestante) / distance
     private double pourcentageConsommation;
-    // 5) Carburant demandé DT = coutDuMois - montantRestantPrecedent
     private double carburantDemandeDinars;
+
+    // ── NOUVEAU : montant restant fin de mois (pour règle 7 mois suivant) ──
+    @Column(name = "montant_restant_reservoir_fin", columnDefinition = "double default 0")
+    private double montantRestantReservoirFin;
+
+    // ── NOUVEAU : alerte budget dépassé ──
+    @Column(name = "budget_depasse", columnDefinition = "boolean default false")
+    private boolean budgetDepasse;
+
+    @Column(name = "depassement_montant", columnDefinition = "double default 0")
+    private double depassementMontant;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime dateCreation;
 
     @PrePersist protected void onCreate() { dateCreation = LocalDateTime.now(); }
 
-    // Getters / Setters
+    // ── Getters / Setters ────────────────────────────
     public Long getId() { return id; }
     public Vehicule getVehicule() { return vehicule; }
     public void setVehicule(Vehicule v) { this.vehicule = v; }
@@ -70,5 +76,11 @@ public class GestionCarburantVehicule {
     public void setPourcentageConsommation(double v) { this.pourcentageConsommation = v; }
     public double getCarburantDemandeDinars() { return carburantDemandeDinars; }
     public void setCarburantDemandeDinars(double v) { this.carburantDemandeDinars = v; }
+    public double getMontantRestantReservoirFin() { return montantRestantReservoirFin; }
+    public void setMontantRestantReservoirFin(double v) { this.montantRestantReservoirFin = v; }
+    public boolean isBudgetDepasse() { return budgetDepasse; }
+    public void setBudgetDepasse(boolean v) { this.budgetDepasse = v; }
+    public double getDepassementMontant() { return depassementMontant; }
+    public void setDepassementMontant(double v) { this.depassementMontant = v; }
     public LocalDateTime getDateCreation() { return dateCreation; }
 }

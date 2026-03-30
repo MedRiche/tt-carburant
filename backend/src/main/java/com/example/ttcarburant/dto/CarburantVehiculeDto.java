@@ -1,4 +1,3 @@
-// ── CarburantVehiculeDto.java ─────────────────────────────────────
 package com.example.ttcarburant.dto;
 
 public class CarburantVehiculeDto {
@@ -18,16 +17,23 @@ public class CarburantVehiculeDto {
     private double ravitaillementMoisPrecedent;
     private double ravitaillementMois;
 
-    // Calculés
+    // Calculés DAF 2026
     private double totalRavitaillementLitres;
     private double quantiteRestanteReservoir;
     private double distanceParcourue;
     private double pourcentageConsommation;
     private double carburantDemandeDinars;
 
+    // NOUVEAU : montant restant fin de mois (pour pré-remplissage règle 7)
+    private double montantRestantReservoirFin;
+
+    // NOUVEAU : alertes budget
+    private boolean budgetDepasse;
+    private double depassementMontant;
+
     public CarburantVehiculeDto() {}
 
-    // Getters & Setters
+    // ── Getters & Setters ──
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getVehiculeMatricule() { return vehiculeMatricule; }
@@ -64,4 +70,10 @@ public class CarburantVehiculeDto {
     public void setPourcentageConsommation(double v) { this.pourcentageConsommation = v; }
     public double getCarburantDemandeDinars() { return carburantDemandeDinars; }
     public void setCarburantDemandeDinars(double v) { this.carburantDemandeDinars = v; }
+    public double getMontantRestantReservoirFin() { return montantRestantReservoirFin; }
+    public void setMontantRestantReservoirFin(double v) { this.montantRestantReservoirFin = v; }
+    public boolean isBudgetDepasse() { return budgetDepasse; }
+    public void setBudgetDepasse(boolean v) { this.budgetDepasse = v; }
+    public double getDepassementMontant() { return depassementMontant; }
+    public void setDepassementMontant(double v) { this.depassementMontant = v; }
 }

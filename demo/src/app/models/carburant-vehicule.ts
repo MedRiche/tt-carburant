@@ -1,4 +1,4 @@
-// ── src/app/models/carburant-vehicule.ts ─────────────────────────
+// src/app/models/carburant-vehicule.ts
 
 export interface CarburantVehicule {
   id?: number;
@@ -15,15 +15,31 @@ export interface CarburantVehicule {
   montantRestantMoisPrecedent: number;
   ravitaillementMoisPrecedent: number;
   ravitaillementMois: number;
-  // Calculés
+  // Calculés DAF 2026
   totalRavitaillementLitres?: number;
   quantiteRestanteReservoir?: number;
   distanceParcourue?: number;
   pourcentageConsommation?: number;
   carburantDemandeDinars?: number;
+  // NOUVEAU
+  montantRestantReservoirFin?: number;
+  budgetDepasse?: boolean;
+  depassementMontant?: number;
 }
 
-export const MOIS_LABELS = [
-  '', 'Janvier','Février','Mars','Avril','Mai','Juin',
-  'Juillet','Août','Septembre','Octobre','Novembre','Décembre'
-];
+export interface CarburantPrefill {
+  vehiculeMatricule: string;
+  annee: number;
+  mois: number;
+  indexDemarrageMois: number;
+  montantRestantMoisPrecedent: number;
+  ravitaillementMoisPrecedent: number;
+  prixCarburant: number;
+  coutDuMois: number;
+}
+
+export const MOIS_LABELS: Record<number, string> = {
+  0: '', 1: 'Janvier', 2: 'Février', 3: 'Mars', 4: 'Avril',
+  5: 'Mai', 6: 'Juin', 7: 'Juillet', 8: 'Août',
+  9: 'Septembre', 10: 'Octobre', 11: 'Novembre', 12: 'Décembre'
+};

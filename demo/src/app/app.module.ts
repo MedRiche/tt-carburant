@@ -33,6 +33,7 @@ import { VehiculeListComponent } from './vehicule/vehicule-list/vehicule-list.co
 import { VehiculeFormComponent } from './vehicule/vehicule-form/vehicule-form.component';
 import { CarburantListComponent } from './carburant/carburant-list/carburant-list.component';
 import { CarburantFormComponent } from './carburant/carburant-form/carburant-form.component';
+import { CarburantAdditionsComponent } from './carburant/carburant-additions/carburant-additions.component';
 
 @NgModule({
   declarations: [
@@ -49,6 +50,7 @@ import { CarburantFormComponent } from './carburant/carburant-form/carburant-for
     VehiculeFormComponent,
     CarburantListComponent,
     CarburantFormComponent,
+    CarburantAdditionsComponent,
 
   ],
     imports: [
