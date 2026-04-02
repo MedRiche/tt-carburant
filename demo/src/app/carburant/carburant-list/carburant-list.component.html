@@ -1,4 +1,5 @@
 <!-- src/app/carburant/carburant-list/carburant-list.component.html -->
+<!-- UPDATED: Verrouillage mensuel + Historique modifications -->
 <div class="app-shell">
 
   <!-- SIDEBAR -->
@@ -16,20 +17,11 @@
         Dashboard
       </a>
       <a class="nav-item" (click)="navigateTo('/admin/utilisateurs')">
-        <span class="nav-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-          </svg>
-        </span>
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span>
         Utilisateurs
       </a>
       <a class="nav-item" (click)="navigateTo('/admin/zones')">
-        <span class="nav-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
-          </svg>
-        </span>
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/></svg></span>
         Zones
       </a>
       <a class="nav-item" (click)="navigateTo('/admin/vehicules')">
@@ -40,6 +32,10 @@
         <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/></svg></span>
         Carburant
         <span class="nav-count">{{ enregistrements.length }}</span>
+      </a>
+      <a class="nav-item" (click)="navigateTo('/admin/carburant-analytics')">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+        Analytiques
       </a>
     </nav>
     <div class="sidebar-footer">
@@ -60,54 +56,68 @@
         <p class="page-subtitle">Suivi mensuel par véhicule — formules DAF 2026</p>
       </div>
 
-      <!-- ── Topbar droite : alertes + exports + récap + nouvelle saisie ── -->
       <div class="topbar-right">
 
-        <!-- Alerte budget dépassé -->
-        <div *ngIf="nbBudgetDepasses > 0"
-             class="alert-pill"
-             (click)="toggleAlertes()"
-             title="Voir les véhicules avec budget dépassé">
+        <!-- 🔒 BADGE VERROUILLAGE -->
+        <div *ngIf="!verrouillageLoading" class="verrou-status" [class.verrou-locked]="isMoisVerrouille" [class.verrou-unlocked]="!isMoisVerrouille">
+          <span class="verrou-icon">{{ isMoisVerrouille ? '🔒' : '🔓' }}</span>
+          <span class="verrou-label">{{ isMoisVerrouille ? 'Mois verrouillé' : 'Mois ouvert' }}</span>
+          <button class="verrou-toggle-btn" (click)="toggleVerrouillage()" [title]="isMoisVerrouille ? 'Déverrouiller ce mois' : 'Verrouiller ce mois'">
+            {{ isMoisVerrouille ? 'Déverrouiller' : 'Verrouiller' }}
+          </button>
+        </div>
+        <div *ngIf="verrouillageLoading" class="verrou-status verrou-loading">
+          <span class="small-spinner"></span> Vérification…
+        </div>
+
+        <!-- Badge alerte budget -->
+        <div *ngIf="nbBudgetDepasses > 0" class="alert-pill" (click)="toggleAlertes()" title="Voir les véhicules avec budget dépassé">
           ⚠️ {{ nbBudgetDepasses }} budget{{ nbBudgetDepasses > 1 ? 's' : '' }} dépassé{{ nbBudgetDepasses > 1 ? 's' : '' }}
         </div>
 
-        <!-- Bouton récap annuel -->
+        <!-- Historique global -->
+        <button class="btn-histo" (click)="ouvrirHistorique('periode')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><polyline points="3 3 3 8 8 8"/><line x1="12" y1="7" x2="12" y2="12"/><line x1="12" y1="12" x2="15" y2="15"/></svg>
+          Historique
+        </button>
+
+        <!-- Récap annuel -->
         <button class="btn-recap" (click)="ouvrirRecapAnnuel()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
-            <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           Récap {{ annee }}
         </button>
 
         <!-- Export Excel mensuel -->
         <button class="btn-export" (click)="exporterMensuel()" [disabled]="exportingMensuel || enregistrements.length === 0">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           {{ exportingMensuel ? 'Export…' : 'Excel mensuel' }}
         </button>
 
         <!-- Export Excel annuel -->
         <button class="btn-export" (click)="exporterAnnuel()" [disabled]="exportingAnnuel">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-          </svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           {{ exportingAnnuel ? 'Export…' : 'Excel annuel' }}
         </button>
 
-        <!-- Bouton nouvelle saisie -->
-        <button class="btn-new" (click)="openCreate()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          Nouvelle saisie
+        <!-- Nouvelle saisie -->
+        <button class="btn-new" (click)="openCreate()" [disabled]="isMoisVerrouille" [title]="isMoisVerrouille ? 'Mois verrouillé — saisie impossible' : 'Nouvelle saisie'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          {{ isMoisVerrouille ? '🔒 Verrouillé' : 'Nouvelle saisie' }}
         </button>
       </div>
     </header>
+
+    <!-- BANDEAU VERROUILLAGE (info détaillée) -->
+    <div *ngIf="isMoisVerrouille && verrouillageStatut" class="verrou-banner">
+      <span class="verrou-banner-icon">🔒</span>
+      <div class="verrou-banner-text">
+        <strong>{{ moisLabel }} {{ annee }} est verrouillé</strong>
+        <span *ngIf="verrouillageStatut.verrouilleParEmail">
+          — Verrouillé par <strong>{{ verrouillageStatut.verrouilleParEmail }}</strong>
+          le {{ verrouillageStatut.verrouillerLe | date:'dd/MM/yyyy à HH:mm' }}
+        </span>
+      </div>
+    </div>
 
     <div class="content-area">
 
@@ -116,18 +126,16 @@
         <select class="filter-select" [(ngModel)]="annee" (ngModelChange)="charger()">
           <option *ngFor="let a of annees" [value]="a">{{ a }}</option>
         </select>
-
         <select class="filter-select" [(ngModel)]="mois" (ngModelChange)="charger()">
           <option *ngFor="let m of moisOptions" [value]="m">{{ moisLabels[m] }}</option>
         </select>
-
         <select class="filter-select" [(ngModel)]="filtreZoneId" (ngModelChange)="charger()">
           <option value="">Toutes les zones</option>
           <option *ngFor="let z of zones" [value]="z.id">{{ z.nom }}</option>
         </select>
       </div>
 
-      <!-- ── Panneau alertes budget (sous .filter-bar) ── -->
+      <!-- Panneau alertes budget -->
       <div *ngIf="showAlertes && budgetAlertes.length > 0" class="alertes-panel">
         <h4>⚠️ Véhicules avec budget dépassé — {{ moisLabel }} {{ annee }}</h4>
         <div *ngFor="let a of budgetAlertes" class="alerte-row">
@@ -141,61 +149,36 @@
 
       <!-- KPI summary -->
       <div class="kpi-row" *ngIf="!loading && enregistrements.length > 0">
-        <div class="kpi-mini kpi-blue">
-          <span class="kpi-mini-label">Véhicules saisis</span>
-          <span class="kpi-mini-val">{{ enregistrements.length }}</span>
-        </div>
-        <div class="kpi-mini kpi-cyan">
-          <span class="kpi-mini-label">Total km parcourus</span>
-          <span class="kpi-mini-val">{{ totalDistance | number:'1.0-0' }} km</span>
-        </div>
-        <div class="kpi-mini kpi-green">
-          <span class="kpi-mini-label">Total ravitaillement (L)</span>
-          <span class="kpi-mini-val">{{ fmt3(totalLitres) }} L</span>
-        </div>
-        <div class="kpi-mini kpi-amber">
-          <span class="kpi-mini-label">Total demandé (DT)</span>
-          <span class="kpi-mini-val">{{ fmt3(totalDemande) }}</span>
-        </div>
+        <div class="kpi-mini kpi-blue"><span class="kpi-mini-label">Véhicules saisis</span><span class="kpi-mini-val">{{ enregistrements.length }}</span></div>
+        <div class="kpi-mini kpi-cyan"><span class="kpi-mini-label">Total km parcourus</span><span class="kpi-mini-val">{{ totalDistance | number:'1.0-0' }} km</span></div>
+        <div class="kpi-mini kpi-green"><span class="kpi-mini-label">Total ravitaillement (L)</span><span class="kpi-mini-val">{{ fmt3(totalLitres) }} L</span></div>
+        <div class="kpi-mini kpi-amber"><span class="kpi-mini-label">Total demandé (DT)</span><span class="kpi-mini-val">{{ fmt3(totalDemande) }}</span></div>
       </div>
 
-      <!-- Loading -->
-      <div *ngIf="loading" class="state-empty">
-        <div class="loader-ring"></div>
-        <p>Chargement…</p>
-      </div>
-
-      <!-- Empty -->
+      <!-- Loading / Empty -->
+      <div *ngIf="loading" class="state-empty"><div class="loader-ring"></div><p>Chargement…</p></div>
       <div *ngIf="!loading && enregistrements.length === 0" class="state-empty">
         <div class="state-icon">⛽</div>
         <p class="state-title">Aucune saisie pour {{ moisLabel }} {{ annee }}</p>
-        <p class="state-sub">Cliquez sur « Nouvelle saisie » pour commencer.</p>
+        <p class="state-sub" *ngIf="!isMoisVerrouille">Cliquez sur « Nouvelle saisie » pour commencer.</p>
+        <p class="state-sub state-locked" *ngIf="isMoisVerrouille">🔒 Ce mois est verrouillé.</p>
       </div>
 
       <!-- Table -->
-      <div *ngIf="!loading && enregistrements.length > 0" class="data-table-wrap">
+      <div *ngIf="!loading && enregistrements.length > 0" class="data-table-wrap" [class.table-locked]="isMoisVerrouille">
         <table class="data-table">
           <thead>
             <tr>
-              <th>Matricule</th>
-              <th>Marque</th>
-              <th>Zone</th>
-              <th>Prix (DT/L)</th>
-              <th>Index Démarrage</th>
-              <th>Index Fin</th>
-              <th class="col-calc">Distance (km)</th>
-              <th class="col-calc">Total Ravit. (L)</th>
-              <th class="col-calc">Qté Restante (L)</th>
-              <th class="col-calc">% Conso</th>
+              <th>Matricule</th><th>Marque</th><th>Zone</th><th>Prix (DT/L)</th>
+              <th>Index Démarrage</th><th>Index Fin</th>
+              <th class="col-calc">Distance (km)</th><th class="col-calc">Total Ravit. (L)</th>
+              <th class="col-calc">Qté Restante (L)</th><th class="col-calc">% Conso</th>
               <th class="col-calc highlight">Carb. Demandé (DT)</th>
-              <th>Alerte</th>
-              <th>Actions</th>
+              <th>Alerte</th><th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let e of enregistrements"
-                class="table-row"
-                [class.row-alert]="e.budgetDepasse">
+            <tr *ngFor="let e of enregistrements" class="table-row" [class.row-alert]="e.budgetDepasse">
               <td><span class="mat-badge">{{ e.vehiculeMatricule }}</span></td>
               <td><span class="v-marque">{{ e.vehiculeMarqueModele }}</span></td>
               <td>
@@ -205,44 +188,44 @@
               <td><span class="mono-val">{{ fmt3(e.prixCarburant) }}</span></td>
               <td><span class="mono-val">{{ e.indexDemarrageMois | number:'1.0-0' }}</span></td>
               <td><span class="mono-val">{{ e.indexFinMois | number:'1.0-0' }}</span></td>
-
-              <!-- Calculés -->
               <td class="col-calc"><span class="mono-val calc-val">{{ e.distanceParcourue | number:'1.0-0' }}</span></td>
               <td class="col-calc"><span class="mono-val calc-val">{{ fmt3(e.totalRavitaillementLitres) }}</span></td>
               <td class="col-calc"><span class="mono-val calc-val">{{ fmt3(e.quantiteRestanteReservoir) }}</span></td>
               <td class="col-calc">
                 <span class="pct-badge"
-                      [class.pct-ok]="(e.pourcentageConsommation||0) <= 0.25"
-                      [class.pct-warn]="(e.pourcentageConsommation||0) > 0.25 && (e.pourcentageConsommation||0) <= 0.40"
-                      [class.pct-bad]="(e.pourcentageConsommation||0) > 0.40">
+                  [class.pct-ok]="(e.pourcentageConsommation||0) <= 0.25"
+                  [class.pct-warn]="(e.pourcentageConsommation||0) > 0.25 && (e.pourcentageConsommation||0) <= 0.40"
+                  [class.pct-bad]="(e.pourcentageConsommation||0) > 0.40">
                   {{ fmt3(e.pourcentageConsommation) }}
                 </span>
               </td>
-              <td class="col-calc highlight">
-                <span class="mono-val demand-val">{{ fmt3(e.carburantDemandeDinars) }}</span>
-              </td>
-
-              <!-- Alerte budget -->
+              <td class="col-calc highlight"><span class="mono-val demand-val">{{ fmt3(e.carburantDemandeDinars) }}</span></td>
               <td>
-                <span *ngIf="e.budgetDepasse" class="budget-depasse-badge">
-                  ⚠️ +{{ fmt3(e.depassementMontant) }}
-                </span>
+                <span *ngIf="e.budgetDepasse" class="budget-depasse-badge">⚠️ +{{ fmt3(e.depassementMontant) }}</span>
                 <span *ngIf="!e.budgetDepasse" style="color:var(--text-muted)">✓</span>
               </td>
-
               <td>
                 <div class="row-actions">
-                  <button class="btn-act btn-edit" (click)="openEdit(e)">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                    </svg>
+                  <!-- Modifier — désactivé si verrouillé -->
+                  <button class="btn-act btn-edit"
+                          (click)="openEdit(e)"
+                          [disabled]="isMoisVerrouille"
+                          [title]="isMoisVerrouille ? '🔒 Mois verrouillé' : 'Modifier'">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    {{ isMoisVerrouille ? '🔒' : '' }}
                   </button>
-                  <button class="btn-act btn-delete" (click)="supprimer(e)">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6"/>
-                    </svg>
+
+                  <!-- Historique de cette saisie -->
+                  <button class="btn-act btn-histo-row" (click)="voirHistoriqueSaisie(e)" title="Historique modifications">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><polyline points="3 3 3 8 8 8"/></svg>
+                  </button>
+
+                  <!-- Supprimer — désactivé si verrouillé -->
+                  <button class="btn-act btn-delete"
+                          (click)="supprimer(e)"
+                          [disabled]="isMoisVerrouille"
+                          [title]="isMoisVerrouille ? '🔒 Mois verrouillé' : 'Supprimer'">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>
                   </button>
                 </div>
               </td>
@@ -255,7 +238,9 @@
   </main>
 </div>
 
-<!-- Modal saisie -->
+<!-- ═══════════════════════════════════════
+     MODAL SAISIE
+═══════════════════════════════════════ -->
 <app-carburant-form
   *ngIf="showForm"
   [enregistrement]="selected"
@@ -266,77 +251,142 @@
   (onCancel)="closeForm()">
 </app-carburant-form>
 
-<!-- ══════════════════════════════════════════
-     MODALE RÉCAPITULATIF ANNUEL
-══════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════
+     MODAL RÉCAPITULATIF ANNUEL
+═══════════════════════════════════════ -->
 <div *ngIf="showRecapAnnuel" class="recap-modal-overlay" (click)="fermerRecapAnnuel()">
   <div class="recap-modal" (click)="$event.stopPropagation()">
-
     <div class="recap-header">
       <div>
         <span class="recap-title">Récapitulatif annuel {{ recapAnnee }}</span>
-        <span style="font-size:12px;color:var(--text-muted);margin-left:12px">
-          Distance parcourue (km) par mois
-        </span>
+        <span style="font-size:12px;color:var(--text-muted);margin-left:12px">Distance parcourue (km) par mois</span>
       </div>
       <div style="display:flex;gap:10px;align-items:center">
-        <select class="filter-select" [(ngModel)]="recapAnnee" (ngModelChange)="chargerRecapAnnuel()"
-                style="min-width:100px">
+        <select class="filter-select" [(ngModel)]="recapAnnee" (ngModelChange)="chargerRecapAnnuel()" style="min-width:100px">
           <option *ngFor="let a of annees" [value]="a">{{ a }}</option>
         </select>
-        <button class="btn-export" (click)="exporterAnnuel()" [disabled]="exportingAnnuel">
-          {{ exportingAnnuel ? 'Export…' : '⬇ Excel annuel' }}
-        </button>
-        <button class="btn-close"
-                style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text-muted);cursor:pointer;font-size:16px"
-                (click)="fermerRecapAnnuel()">✕</button>
+        <button class="btn-export" (click)="exporterAnnuel()" [disabled]="exportingAnnuel">{{ exportingAnnuel ? 'Export…' : '⬇ Excel annuel' }}</button>
+        <button class="btn-close-modal" (click)="fermerRecapAnnuel()">✕</button>
       </div>
     </div>
-
     <div class="recap-body">
-
-      <!-- Chargement -->
-      <div *ngIf="recapLoading" style="text-align:center;padding:40px;color:var(--text-muted)">
-        <div class="loader-ring" style="margin:0 auto 12px"></div>
-        <p>Chargement du récapitulatif…</p>
-      </div>
-
-      <!-- Tableau récap -->
+      <div *ngIf="recapLoading" style="text-align:center;padding:40px;color:var(--text-muted)"><div class="loader-ring" style="margin:0 auto 12px"></div><p>Chargement…</p></div>
       <div *ngIf="!recapLoading && recapAnnuelData.length > 0">
         <table class="recap-table">
           <thead>
             <tr>
-              <th>Matricule</th>
-              <th>Marque</th>
+              <th>Matricule</th><th>Marque</th>
               <th *ngFor="let m of moisOptions">{{ moisLabels[m].substring(0,3) }}</th>
-              <th>Total km</th>
-              <th>Total L</th>
-              <th>Total DT</th>
+              <th>Total km</th><th>Total L</th><th>Total DT</th>
             </tr>
           </thead>
-         <tbody>
+          <tbody>
             <tr *ngFor="let mat of getVehiculesRecap()">
-              <td>{{ mat }}</td>
-              <td>{{ getMarqueVehicule(mat) }}</td>
+              <td>{{ mat }}</td><td>{{ getMarqueVehicule(mat) }}</td>
               <ng-container *ngFor="let m of moisOptions">
-                <td *ngIf="getMoisData(mat, m) as d; else emptyCell">
-                  {{ fmt3(d.distanceParcourue) }}
-                </td>
+                <td *ngIf="getMoisData(mat, m) as d; else emptyCell">{{ fmt3(d.distanceParcourue) }}</td>
                 <ng-template #emptyCell><td class="empty-col">—</td></ng-template>
               </ng-container>
-              <!-- Totaux ligne -->
               <td class="total-col">{{ fmt3(getTotalKmVehicule(mat)) }}</td>
               <td class="total-col">{{ fmt3(getTotalLitresVehicule(mat)) }}</td>
               <td class="total-col">{{ fmt3(getTotalDtVehicule(mat)) }}</td>
             </tr>
           </tbody>
         </table>
-        <p *ngIf="recapAnnuelData.length === 0"
-           style="text-align:center;color:var(--text-muted);padding:30px">
-          Aucune donnée pour {{ recapAnnee }}.
-        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     📋 MODAL HISTORIQUE MODIFICATIONS
+═══════════════════════════════════════ -->
+<div *ngIf="showHistorique" class="histo-modal-overlay" (click)="fermerHistorique()">
+  <div class="histo-modal" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="histo-header">
+      <div class="histo-header-left">
+        <span class="histo-icon">📋</span>
+        <div>
+          <h3 class="histo-title">Historique des modifications</h3>
+          <p class="histo-sub" *ngIf="historiqueMode === 'periode'">{{ moisLabel }} {{ annee }}</p>
+          <p class="histo-sub" *ngIf="historiqueMode === 'vehicule'">Véhicule : {{ historiqueVehicule }}</p>
+          <p class="histo-sub" *ngIf="historiqueMode === 'saisie'">Saisie #{{ historiqueSaisieId }}</p>
+        </div>
+      </div>
+      <div class="histo-header-right">
+        <!-- Tabs mode -->
+        <div class="histo-mode-tabs">
+          <button [class.active]="historiqueMode === 'periode'" (click)="historiqueMode='periode'; chargerHistorique()">Par mois</button>
+          <button [class.active]="historiqueMode === 'vehicule'" (click)="historiqueMode='vehicule'; chargerHistorique()">Par véhicule</button>
+        </div>
+        <button class="btn-close-modal" (click)="fermerHistorique()">✕</button>
+      </div>
+    </div>
+
+    <!-- Filtres historique -->
+    <div class="histo-filters" *ngIf="historiqueMode === 'vehicule'">
+      <select class="filter-select" [(ngModel)]="historiqueVehicule" (ngModelChange)="chargerHistorique()" style="min-width:200px">
+        <option value="">— Sélectionner un véhicule —</option>
+        <option *ngFor="let v of vehicules" [value]="v.matricule">{{ v.matricule }} — {{ v.marqueModele }}</option>
+      </select>
+    </div>
+
+    <!-- Corps historique -->
+    <div class="histo-body">
+
+      <div *ngIf="historiqueLoading" class="loading-state"><div class="loader-ring"></div><p>Chargement…</p></div>
+
+      <div *ngIf="!historiqueLoading && historique.length === 0" class="empty-state">
+        <div class="empty-icon">📭</div>
+        <p class="empty-title">Aucune modification enregistrée</p>
+        <p>Les modifications futures seront tracées ici.</p>
       </div>
 
-    </div><!-- /recap-body -->
+      <div *ngIf="!historiqueLoading && historique.length > 0" class="histo-list">
+
+        <div *ngFor="let h of historique" class="histo-card" [class.histo-create]="h.action === 'CREATE'" [class.histo-update]="h.action === 'UPDATE'" [class.histo-delete]="h.action === 'DELETE'">
+          <div class="histo-card-left">
+            <span class="histo-action-icon">{{ getActionIcon(h.action) }}</span>
+          </div>
+          <div class="histo-card-body">
+            <div class="histo-card-header">
+              <span class="histo-badge" [ngClass]="getActionClass(h.action)">{{ h.actionLabel }}</span>
+              <span class="mat-badge" style="font-size:11px">{{ h.vehiculeMatricule }}</span>
+              <span *ngIf="h.vehiculeMarqueModele" style="font-size:12px;color:var(--text-muted)">{{ h.vehiculeMarqueModele }}</span>
+              <span class="histo-periode">{{ h.periodeLabel }}</span>
+            </div>
+            <p class="histo-desc">{{ h.description }}</p>
+            <div class="histo-meta">
+              <span class="histo-user">👤 {{ h.modifiePar }}</span>
+              <span class="histo-date">🕐 {{ h.modifieLe | date:'dd/MM/yyyy à HH:mm:ss' }}</span>
+            </div>
+            <!-- Détail toggle -->
+            <button class="btn-toggle-detail" (click)="voirDetailHistorique(h)" *ngIf="h.valeursAvant || h.valeursApres">
+              {{ showHistoriqueDetail?.id === h.id ? '▲ Masquer les détails' : '▼ Voir les détails' }}
+            </button>
+            <!-- Détail JSON -->
+            <div *ngIf="showHistoriqueDetail?.id === h.id" class="histo-detail">
+              <div *ngIf="h.valeursAvant" class="histo-json-panel histo-json-avant">
+                <div class="histo-json-label">Avant modification</div>
+                <pre class="histo-json">{{ formatJson(h.valeursAvant) }}</pre>
+              </div>
+              <div *ngIf="h.valeursApres" class="histo-json-panel histo-json-apres">
+                <div class="histo-json-label">Après modification</div>
+                <pre class="histo-json">{{ formatJson(h.valeursApres) }}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Footer stat -->
+    <div class="histo-footer" *ngIf="!historiqueLoading && historique.length > 0">
+      {{ historique.length }} entrée{{ historique.length > 1 ? 's' : '' }} dans l'historique
+    </div>
+
   </div>
 </div>

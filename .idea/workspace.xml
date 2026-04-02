@@ -5,7 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="777fc5d2-3bb5-4db8-8545-4efa7fe5d991" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/controller/HistoriqueModificationCarburantController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/controller/VerrouillageCarburantController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/dto/HistoriqueModificationDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/dto/VerrouillageDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/model/entity/HistoriqueModificationCarburant.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/model/entity/VerrouillageCarburant.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/repository/HistoriqueModificationCarburantRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/repository/VerrouillageCarburantRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/HistoriqueModificationService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/VerrouillageService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/CarburantVehiculeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/CarburantVehiculeService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -132,7 +143,7 @@
       <workItem from="1774801026314" duration="4245000" />
       <workItem from="1774807299998" duration="112000" />
       <workItem from="1774872084702" duration="1017000" />
-      <workItem from="1775137866987" duration="3958000" />
+      <workItem from="1775137866987" duration="4321000" />
     </task>
     <servers />
   </component>
