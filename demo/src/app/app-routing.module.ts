@@ -7,12 +7,18 @@ import { DashboardAdminComponent } from './dashboard/dashboard-admin/dashboard-a
 import { GestionutilisateurComponent } from './gestionutilisateur/gestionutilisateur.component';
 import { VehiculeListComponent } from './vehicule/vehicule-list/vehicule-list.component';
 import { CarburantListComponent } from './carburant/carburant-list/carburant-list.component';
+import { ProfileComponent } from './profile/profile.component';
+import { CarburantAnalyticsComponent } from './carburant/carburant-analytics/carburant-analytics.component';
+
 const routes: Routes = [
   // Route par défaut
   { path: '', redirectTo: '/login', pathMatch: 'full' },
 
   // Route publique
   { path: 'login', component: LoginComponent },
+
+
+  { path: 'profile', component: ProfileComponent },
 
   // Routes ADMIN (protégées)
   {
@@ -25,7 +31,10 @@ const routes: Routes = [
       { path: 'dashboardAdmin', component: DashboardAdminComponent },
       { path: 'vehicules', component: VehiculeListComponent },
       { path: 'carburant', component: CarburantListComponent },
+      { path: 'carburant-analytics', component: CarburantAnalyticsComponent },
+      
     ]
+      
   },
 
     // Route 404

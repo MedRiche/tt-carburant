@@ -5,24 +5,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="777fc5d2-3bb5-4db8-8545-4efa7fe5d991" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/CarburantExportService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/controller/CarburantAnalyticsController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/dto/analytics/AnomalieDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/dto/analytics/ComparaisonDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/dto/analytics/DashboardCarburantDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/dto/analytics/EvolutionDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/dto/analytics/HistoriqueRavitaillementDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/CarburantAnalyticsService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/controller/CarburantVehiculeController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/controller/CarburantVehiculeController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/dto/CarburantVehiculeDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/dto/CarburantVehiculeDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/model/entity/GestionCarburantVehicule.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/model/entity/GestionCarburantVehicule.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/repository/CarburantVehiculeRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/repository/CarburantVehiculeRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/CarburantVehiculeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/CarburantVehiculeService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/app/app-routing.module.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/app-routing.module.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo/src/app/app.module.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/app.module.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/app/carburant/carburant-form/carburant-form.component.css" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/carburant/carburant-form/carburant-form.component.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/app/carburant/carburant-form/carburant-form.component.html" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/carburant/carburant-form/carburant-form.component.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/app/carburant/carburant-form/carburant-form.component.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/carburant/carburant-form/carburant-form.component.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/app/carburant/carburant-list/carburant-list.component.css" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/carburant/carburant-list/carburant-list.component.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/app/carburant/carburant-list/carburant-list.component.html" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/carburant/carburant-list/carburant-list.component.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/app/carburant/carburant-list/carburant-list.component.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/carburant/carburant-list/carburant-list.component.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/app/models/carburant-vehicule.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/models/carburant-vehicule.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/app/services/carburant-vehicule.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/services/carburant-vehicule.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/app/profile/profile.component.css" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/profile/profile.component.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/app/profile/profile.component.html" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/profile/profile.component.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/app/profile/profile.component.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/profile/profile.component.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -148,6 +143,8 @@
       <workItem from="1774627014363" duration="1393000" />
       <workItem from="1774801026314" duration="4245000" />
       <workItem from="1774807299998" duration="112000" />
+      <workItem from="1774872084702" duration="1017000" />
+      <workItem from="1775137866987" duration="2638000" />
     </task>
     <servers />
   </component>

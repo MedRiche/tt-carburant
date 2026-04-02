@@ -1,0 +1,830 @@
+<!-- Structure principale -->
+<div class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-logo">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">Tunisie Telecom</div>
+        <div class="brand-sub">Gestion Parc — Espace Technicien</div>
+      </div>
+    </div>
+    <div class="user-pill">
+      <div class="user-avatar">AT</div>
+      <div class="user-info">
+        <div class="user-name">Ahmed Technicien</div>
+        <div class="user-role">Zone: DAF • Rôle: TECHNICIEN</div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-section">
+      <div class="nav-label">Tableau de bord</div>
+      <button class="nav-item" [class.active]="currentView === 'dashboard'" (click)="showView('dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Vue d'ensemble
+      </button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Carburant Véhicules</div>
+      <button class="nav-item" [class.active]="currentView === 'carburant-saisie'" (click)="showView('carburant-saisie')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M9 9h6v6H9z"/></svg>
+        Saisie mensuelle
+      </button>
+      <button class="nav-item" [class.active]="currentView === 'carburant-liste'" (click)="showView('carburant-liste')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        Liste véhicules
+        <span class="badge">17</span>
+      </button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Maintenance</div>
+      <button class="nav-item" [class.active]="currentView === 'maintenance-saisie'" (click)="showView('maintenance-saisie')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        Saisir maintenance
+      </button>
+      <button class="nav-item" [class.active]="currentView === 'maintenance-liste'" (click)="showView('maintenance-liste')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Historique maintenance
+      </button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Groupe Électrogène</div>
+      <button class="nav-item" [class.active]="currentView === 'ge-saisie'" (click)="showView('ge-saisie')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        Ravitaillement GE
+      </button>
+      <button class="nav-item" [class.active]="currentView === 'ge-liste'" (click)="showView('ge-liste')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Suivi GE
+        <span class="badge">45</span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="nav-item" style="color:var(--danger)" (click)="showToast('Déconnexion...')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Se déconnecter
+    </button>
+  </div>
+</div>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title">{{ topbarTitle }}</div>
+    <div class="topbar-right">
+      <span class="topbar-zone">Zone: DAF</span>
+      <span class="topbar-month">Mars 2026</span>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- DASHBOARD VIEW -->
+    <div *ngIf="currentView === 'dashboard'" class="view active">
+      <div class="stats-row">
+        <div class="stat-card highlight">
+          <div class="stat-label">Véhicules assignés</div>
+          <div class="stat-value">17</div>
+          <div class="stat-sub">Zone DAF • 2026</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">GE actifs</div>
+          <div class="stat-value">43</div>
+          <div class="stat-sub">Sur 45 enregistrés</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Maintenance en cours</div>
+          <div class="stat-value">3</div>
+          <div class="stat-sub">Dossiers ouverts</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Visites tech. exp.</div>
+          <div class="stat-value">2</div>
+          <div class="stat-sub" style="color:var(--danger)">Action requise</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+        <div class="form-panel" style="margin:0">
+          <div class="form-panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Alertes actives
+          </div>
+          <div class="alert alert-warn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div><strong>346724</strong> — Visite technique expirée (08/2025)</div>
+          </div>
+          <div class="alert alert-warn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div><strong>356814</strong> — Visite technique proche expiration (02/2026)</div>
+          </div>
+          <div class="alert alert-info">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div>Saisie carburant Mars 2026 en attente pour 17 véhicules</div>
+          </div>
+        </div>
+        <div class="form-panel" style="margin:0">
+          <div class="form-panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
+            Accès rapide
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button class="btn btn-primary" style="justify-content:flex-start" (click)="showView('carburant-saisie')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              Saisir carburant véhicule
+            </button>
+            <button class="btn" style="justify-content:flex-start" (click)="showView('maintenance-saisie')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+              Enregistrer une maintenance
+            </button>
+            <button class="btn" style="justify-content:flex-start" (click)="showView('ge-saisie')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              Ravitailler un groupe électrogène
+            </button>
+            <button class="btn" style="justify-content:flex-start" (click)="showView('carburant-liste')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M8 6h13M8 12h13M8 18h13"/></svg>
+              Consulter liste véhicules
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-hdr">
+        <div class="section-title">Mes véhicules — Zone DAF (aperçu)</div>
+        <button class="btn btn-sm" (click)="showView('carburant-liste')">Voir tout →</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Matricule</th><th>Marque / Modèle</th><th>Conducteur</th><th>Type Carburant</th><th>Coût/mois</th><th>Visite Tech.</th><th>Statut</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let v of getDashboardVehicles()">
+              <td class="td-mono">{{ v.mat }}</td>
+              <td>{{ v.modele }}</td>
+              <td>{{ v.prenom }} {{ v.nom }}</td>
+              <td><span [class]="v.type === 'Essence' ? 'badge badge-amber' : 'badge badge-blue'">{{ v.type }}</span></td>
+              <td class="td-mono">{{ v.cout }} TND</td>
+              <td>
+                <span [class]="getVehicleStatus(v.visite).class">{{ getVehicleStatus(v.visite).text }}</span>
+                {{ v.visite || '' }}
+              </td>
+              <td><button class="row-action" (click)="goToCarburantSaisie(v.mat)">Saisir</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CARBURANT SAISIE VIEW -->
+    <div *ngIf="currentView === 'carburant-saisie'" class="view active">
+      <div class="alert alert-info" style="margin-bottom:16px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <div>Les champs calculés (fond vert) sont calculés automatiquement selon les formules DAF. Seuls les champs <strong>blancs</strong> sont à saisir.</div>
+      </div>
+
+      <div class="form-panel">
+        <div class="form-panel-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M9 9h6v6H9z"/></svg>
+          Saisie carburant mensuelle — Véhicule
+        </div>
+
+        <div class="form-grid form-grid-4" style="margin-bottom:16px">
+          <div class="form-group">
+            <label class="form-label">Mois</label>
+            <select class="form-control" [(ngModel)]="fuelForm.mois" (ngModelChange)="calcCarburant()">
+              <option *ngFor="let m of [1,2,3,4,5,6,7,8,9,10,11,12]" [value]="m">{{ m === 1 ? 'Janvier' : m === 2 ? 'Février' : m === 3 ? 'Mars' : m === 4 ? 'Avril' : m === 5 ? 'Mai' : m === 6 ? 'Juin' : m === 7 ? 'Juillet' : m === 8 ? 'Août' : m === 9 ? 'Septembre' : m === 10 ? 'Octobre' : m === 11 ? 'Novembre' : 'Décembre' }} 2026</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Véhicule (matricule)</label>
+            <select class="form-control" [(ngModel)]="fuelForm.selectedVehicle" (ngModelChange)="fillVehicleData()">
+              <option [ngValue]="null">— Sélectionner —</option>
+              <option *ngFor="let v of vehicles" [ngValue]="v">{{ v.mat }} — {{ v.modele }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Type carburant</label>
+            <input class="form-control" [(ngModel)]="fuelForm.typeCarb" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Prix / litre (TND)</label>
+            <input class="form-control td-mono" [(ngModel)]="fuelForm.prix" readonly>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:12px">Données du mois précédent (auto-remplies)</div>
+
+        <div class="form-grid" style="margin-bottom:16px">
+          <div class="form-group">
+            <label class="form-label">Index démarrage mois-1</label>
+            <input class="form-control td-mono" [(ngModel)]="fuelForm.idxDem" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Montant restant réservoir mois-1 (TND)</label>
+            <input class="form-control td-mono" [(ngModel)]="fuelForm.montantRestantPrec" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ravitaillement mois précédent (TND)</label>
+            <input class="form-control td-mono" [(ngModel)]="fuelForm.ravitPrec" readonly>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:12px">Données à saisir — Mois en cours</div>
+
+        <div class="form-grid" style="margin-bottom:14px">
+          <div class="form-group">
+            <label class="form-label">Coût du mois (budget TND)</label>
+            <input class="form-control td-mono" [(ngModel)]="fuelForm.coutMois" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">★ Montant restant réservoir fin mois (TND)</label>
+            <input class="form-control td-mono" type="number" min="0" step="0.001" placeholder="0.000" [(ngModel)]="fuelForm.montantRestantFin" (ngModelChange)="calcCarburant()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">★ Index fin du mois</label>
+            <input class="form-control td-mono" type="number" min="0" placeholder="ex: 307100" [(ngModel)]="fuelForm.idxFin" (ngModelChange)="calcCarburant()">
+          </div>
+        </div>
+
+        <div class="form-grid" style="margin-bottom:14px">
+          <div class="form-group">
+            <label class="form-label">Total ravitaillement (L) — calculé</label>
+            <input class="form-control computed td-mono" [value]="fuelForm.totalRavit.toFixed(3) + ' L'" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Qté restante réservoir (L) — calculé</label>
+            <input class="form-control computed td-mono" [value]="fuelForm.qteRestante.toFixed(3) + ' L'" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Distance parcourue (km) — calculé</label>
+            <input class="form-control computed td-mono" [value]="fuelForm.distance.toFixed(0) + ' km'" readonly>
+          </div>
+        </div>
+
+        <div class="form-grid form-grid-2" style="margin-bottom:14px">
+          <div class="form-group">
+            <label class="form-label">% Consommation — calculé</label>
+            <input class="form-control computed td-mono" [value]="fuelForm.pctConso.toFixed(6) + ' L/km'" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Carburant demandé en cours (TND) — calculé</label>
+            <input class="form-control computed td-mono" [value]="fuelForm.carbDemande.toFixed(3) + ' TND'" readonly>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:12px">Données techniques complémentaires</div>
+
+        <div class="form-grid form-grid-4">
+          <div class="form-group">
+            <label class="form-label">★ Index vidange</label>
+            <input class="form-control td-mono" type="number" min="0" placeholder="km" [(ngModel)]="fuelForm.idxVidange">
+          </div>
+          <div class="form-group">
+            <label class="form-label">★ Date visite technique</label>
+            <input class="form-control" type="date" [(ngModel)]="fuelForm.visiteTech">
+          </div>
+          <div class="form-group">
+            <label class="form-label">★ Index pneumatique</label>
+            <input class="form-control td-mono" type="number" min="0" placeholder="km" [(ngModel)]="fuelForm.idxPneu">
+          </div>
+          <div class="form-group">
+            <label class="form-label">★ Index batterie</label>
+            <input class="form-control td-mono" type="number" min="0" placeholder="km" [(ngModel)]="fuelForm.idxBatt">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn" (click)="clearCarburantForm()">Réinitialiser</button>
+          <button class="btn btn-primary" (click)="saveCarburant()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Enregistrer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARBURANT LISTE VIEW -->
+    <div *ngIf="currentView === 'carburant-liste'" class="view active">
+      <div class="filter-row">
+        <select class="filter-select" [(ngModel)]="fuelListFilter.search" (ngModelChange)="renderCarburantListe()">
+          <option value="">Toutes les zones</option>
+          <option value="DAF" selected>DAF</option>
+          <option value="COMMERCIAL">COMMERCIAL</option>
+          <option value="CSC BARDO">CSC BARDO</option>
+          <option value="CSC BELVEDERE">CSC BELVÉDÈRE</option>
+          <option value="CSC KASBAH">CSC KASBAH</option>
+          <option value="DIVISION CLIENTELE">DIVISION CLIENTÈLE</option>
+          <option value="Réseaux&S.I">RÉSEAUX & S.I</option>
+          <option value="HACHED">HACHED</option>
+          <option value="BL NORD">BL NORD</option>
+        </select>
+        <select class="filter-select" [(ngModel)]="fuelListFilter.mois" (ngModelChange)="renderCarburantListe()">
+          <option value="3" selected>Mars 2026</option>
+          <option value="2">Février 2026</option>
+          <option value="1">Janvier 2026</option>
+        </select>
+        <input class="filter-input" type="search" placeholder="Rechercher matricule, conducteur..." [(ngModel)]="fuelListFilter.search" (ngModelChange)="renderCarburantListe()">
+        <div style="margin-left:auto;font-size:12px;color:var(--text2)" id="cl-count">{{ getFilteredVehicles().length }} véhicules</div>
+      </div>
+
+      <div class="table-wrap scroll-x">
+        <table>
+          <thead>
+            <tr>
+              <th>Matricule</th><th>Marque/Modèle</th><th>Conducteur</th><th>Type carb.</th><th>Prix</th>
+              <th>Coût/mois</th><th>Km parcourus</th><th>% Conso</th><th>Carb. demandé</th><th>Visite tech.</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let v of getFilteredVehicles()">
+              <td class="td-mono"><strong>{{ v.mat }}</strong></td>
+              <td>{{ v.modele }}</td>
+              <td>{{ v.prenom }} {{ v.nom }}</td>
+              <td><span [class]="v.type === 'Essence' ? 'badge badge-amber' : 'badge badge-blue'">{{ v.type }}</span></td>
+              <td class="td-mono">{{ v.prix.toFixed(3) }}</td>
+              <td class="td-mono">{{ v.cout }} TND</td>
+              <td class="td-mono">—</td>
+              <td class="td-mono">—</td>
+              <td class="td-mono">—</td>
+              <td>
+                <span [class]="getVehicleStatus(v.visite).class">{{ getVehicleStatus(v.visite).text }}</span>
+                <span style="font-size:11px;color:var(--text3)">{{ v.visite || '' }}</span>
+              </td>
+              <td><button class="row-action" (click)="goToCarburantSaisie(v.mat)">Saisir</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MAINTENANCE SAISIE VIEW -->
+    <div *ngIf="currentView === 'maintenance-saisie'" class="view active">
+      <div class="alert alert-info" style="margin-bottom:16px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <div>Saisissez les opérations de maintenance. Chaque dossier contient une liste de détails (Main d'œuvre + Pièces).</div>
+      </div>
+
+      <div class="form-panel">
+        <div class="form-panel-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          Nouveau dossier de maintenance
+        </div>
+
+        <div class="form-grid" style="margin-bottom:14px">
+          <div class="form-group">
+            <label class="form-label">★ N° Dossier</label>
+            <input class="form-control td-mono" [(ngModel)]="maintenanceForm.ndossier" placeholder="ex: 44">
+          </div>
+          <div class="form-group">
+            <label class="form-label">★ Véhicule (matricule)</label>
+            <select class="form-control" [(ngModel)]="maintenanceForm.vehicule">
+              <option value="">— Sélectionner —</option>
+              <option *ngFor="let v of vehicles" [value]="v.mat">{{ v.mat }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date intervention</label>
+            <input class="form-control" type="date" [(ngModel)]="maintenanceForm.date">
+          </div>
+        </div>
+        <div class="form-grid form-grid-2" style="margin-bottom:14px">
+          <div class="form-group">
+            <label class="form-label">★ Type d'intervention</label>
+            <select class="form-control" [(ngModel)]="maintenanceForm.type">
+              <option value="">— Sélectionner —</option>
+              <option>PREVENTIVE</option>
+              <option>CORRECTIVE</option>
+              <option>VISITE_TECHNIQUE</option>
+              <option>ACCIDENT</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Statut</label>
+            <select class="form-control" [(ngModel)]="maintenanceForm.statut">
+              <option>EN_COURS</option>
+              <option>TERMINEE</option>
+              <option>ANNULEE</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group full-width" style="margin-bottom:16px">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" rows="2" placeholder="Description de l'intervention..." [(ngModel)]="maintenanceForm.description"></textarea>
+        </div>
+      </div>
+
+      <div class="form-panel">
+        <div class="form-panel-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          Ajouter détails (Main d'œuvre / Pièces)
+        </div>
+
+        <div id="m-details-list" style="margin-bottom:14px">
+          <div *ngIf="getMoDetails().length > 0">
+            <div class="maint-section-label" style="border-radius:var(--radius) var(--radius) 0 0;margin-bottom:0">Main d'œuvre</div>
+            <div class="table-wrap" style="border-radius:0;margin-bottom:8px">
+              <table>
+                <thead><tr><th>N°</th><th>Marque</th><th>Désignation</th><th>Qté</th><th>Montant</th><th>Total HT</th><th></th></tr></thead>
+                <tbody>
+                  <tr *ngFor="let d of getMoDetails(); let i = index">
+                    <td class="td-mono">{{ d.numero }}</td>
+                    <td>{{ d.marque }}</td>
+                    <td>{{ d.designation }}</td>
+                    <td>{{ d.qte }}</td>
+                    <td class="td-mono">{{ d.montant.toFixed(3) }}</td>
+                    <td class="td-mono"><strong>{{ d.total.toFixed(3) }} TND</strong></td>
+                    <td><button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger);padding:3px 8px" (click)="removeDetail(i)">✕</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div *ngIf="getPieceDetails().length > 0">
+            <div class="maint-section-label" style="border-radius:var(--radius) var(--radius) 0 0;margin-bottom:0">Pièces</div>
+            <div class="table-wrap" style="border-radius:0;margin-bottom:8px">
+              <table>
+                <thead><tr><th>N° Pièce</th><th>Marque</th><th>Désignation</th><th>Qté</th><th>Montant</th><th>Total HT</th><th></th></tr></thead>
+                <tbody>
+                  <tr *ngFor="let d of getPieceDetails(); let i = index">
+                    <td class="td-mono">{{ d.npiece || d.numero }}</td>
+                    <td>{{ d.marque }}</td>
+                    <td>{{ d.designation }}</td>
+                    <td>{{ d.qte }}</td>
+                    <td class="td-mono">{{ d.montant.toFixed(3) }}</td>
+                    <td class="td-mono"><strong>{{ d.total.toFixed(3) }} TND</strong></td>
+                    <td><button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger);padding:3px 8px" (click)="removeDetail(i)">✕</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:var(--surface2);border-radius:var(--radius);padding:14px;border:1px solid var(--border)">
+          <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:10px">Nouveau détail</div>
+          <div class="form-grid form-grid-4" style="margin-bottom:10px">
+            <div class="form-group">
+              <label class="form-label">Type</label>
+              <select class="form-control" [(ngModel)]="newDetail.type">
+                <option value="MAIN_D_OEUVRE">Main d'œuvre</option>
+                <option value="PIECE">Pièce</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">N° (code)</label>
+              <input class="form-control td-mono" [(ngModel)]="newDetail.numero" placeholder="201">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Marque</label>
+              <select class="form-control" [(ngModel)]="newDetail.marque">
+                <option value="">— —</option>
+                <option>Citroen</option>
+                <option>Peugeot</option>
+                <option>TAS</option>
+                <option>Jumpy</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">N° Pièce</label>
+              <input class="form-control td-mono" [(ngModel)]="newDetail.npiece" placeholder="—">
+            </div>
+          </div>
+          <div class="form-grid" style="margin-bottom:10px">
+            <div class="form-group">
+              <label class="form-label">★ Désignation</label>
+              <input class="form-control" [(ngModel)]="newDetail.designation" placeholder="ex: Réparation serrure de porte">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Quantité</label>
+              <input class="form-control td-mono" type="number" min="1" [(ngModel)]="newDetail.qte" (ngModelChange)="calcDetailTotal()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">★ Montant unitaire (TND HT)</label>
+              <input class="form-control td-mono" type="number" min="0" step="0.001" placeholder="0.000" [(ngModel)]="newDetail.montant" (ngModelChange)="calcDetailTotal()">
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <span style="font-size:12px;color:var(--text2)">Total HT: </span>
+              <span style="font-family:'JetBrains Mono',monospace;font-weight:500;color:var(--primary)" id="d-total-preview">{{ (newDetail.qte * newDetail.montant).toFixed(3) }} TND</span>
+            </div>
+            <button class="btn btn-primary btn-sm" (click)="addDetail()">+ Ajouter</button>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <div style="margin-right:auto;font-size:13px;color:var(--text2)">
+            Total HTVA dossier: <strong id="m-total-htva" style="color:var(--primary);font-family:'JetBrains Mono',monospace">{{ getTempMaintenanceTotal() }} TND</strong>
+          </div>
+          <button class="btn" (click)="clearMaintenanceForm()">Réinitialiser</button>
+          <button class="btn btn-primary" (click)="saveMaintenance()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+            Soumettre dossier
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAINTENANCE LISTE VIEW -->
+    <div *ngIf="currentView === 'maintenance-liste'" class="view active">
+      <div class="filter-row">
+        <select class="filter-select" [(ngModel)]="maintenanceListFilter.zone" (ngModelChange)="renderMaintenanceListe()">
+          <option value="">Toutes les zones</option>
+          <option value="DAF" selected>DAF</option>
+        </select>
+        <select class="filter-select" [(ngModel)]="maintenanceListFilter.type" (ngModelChange)="renderMaintenanceListe()">
+          <option value="">Tous types</option>
+          <option>PREVENTIVE</option><option>CORRECTIVE</option>
+          <option>VISITE_TECHNIQUE</option><option>ACCIDENT</option>
+        </select>
+        <input class="filter-input" type="search" placeholder="Matricule, N° dossier..." [(ngModel)]="maintenanceListFilter.search" (ngModelChange)="renderMaintenanceListe()">
+        <button class="btn btn-primary btn-sm" style="margin-left:auto" (click)="showView('maintenance-saisie')">+ Nouveau dossier</button>
+      </div>
+
+      <div class="section-hdr"><div class="section-title">Liste globale des véhicules — Maintenance</div></div>
+      <div class="table-wrap scroll-x" style="margin-bottom:16px">
+        <table>
+          <thead>
+            <tr><th>Véhicule ID</th><th>Total HTVA</th><th>Marques (prestataires)</th><th>Détails</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of getFilteredMaintenance(); let i = index">
+              <td class="td-mono"><strong>{{ m.vehicleId }}</strong></td>
+              <td class="td-mono" style="color:var(--primary)">{{ m.totalHTVA.toFixed(3) }} TND</td>
+              <td>
+                <span *ngFor="let b of m.brands.split(',')" class="badge badge-gray" style="margin-right:4px">{{ b.trim() }}</span>
+              </td>
+              <td><button class="btn btn-sm btn-primary" (click)="showMaintenanceDetail(i)">Voir détails →</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Detail panel -->
+      <div class="detail-panel" [class.open]="selectedMaintenance !== null">
+        <div class="detail-header">
+          <div>
+            <div class="detail-vehicle-id">{{ selectedMaintenance?.vehicleId }}</div>
+            <div class="detail-meta">
+              <span *ngFor="let b of selectedMaintenance?.brands?.split(',')" class="badge badge-teal">{{ b.trim() }}</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div style="font-size:13px;color:var(--text2)">Total HTVA:
+              <strong style="color:var(--primary);font-family:'JetBrains Mono',monospace">{{ selectedMaintenance?.totalHTVA?.toFixed(3) }} TND</strong>
+            </div>
+            <button class="btn btn-sm" (click)="closeMaintenanceDetail()">✕ Fermer</button>
+          </div>
+        </div>
+
+        <div class="maint-section-label">Main d'œuvre</div>
+<div class="table-wrap scroll-x" style="margin-bottom:12px">
+  <table>
+    <thead>
+      <tr><th>N° Doss</th><th>Véhicule</th><th>Marque</th><th>N°</th><th>Désignation</th><th>Qté</th><th>Montant HT</th><th>Total HTVA</th></tr>
+    </thead>
+    <tbody>
+      <ng-container *ngIf="selectedMaintenance">
+        <tr *ngFor="let d of getMaintenanceMoDetails()">
+          <td>{{ d.ndossier }}</td><td class="td-mono">{{ d.vehicule }}</td><td>{{ d.marque || '—' }}</td>
+          <td class="td-mono">{{ d.numero || '—' }}</td><td>{{ d.designation }}</td>
+          <td>{{ d.qte }}</td><td class="td-mono">{{ d.montant.toFixed(3) }}</td>
+          <td class="td-mono"><strong>{{ d.total.toFixed(3) }}</strong></td>
+        </tr>
+        <tr *ngIf="getMaintenanceMoDetails().length === 0">
+          <td colspan="8" class="td-muted" style="text-align:center;padding:12px">Aucune main d'œuvre</td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
+</div>
+
+        <div class="maint-section-label">Pièces</div>
+<div class="table-wrap scroll-x">
+  <table>
+    <thead>
+      <tr><th>N° Doss</th><th>Véhicule</th><th>Marque</th><th>N°</th><th>Désignation</th><th>Qté</th><th>Montant HT</th><th>Total HTVA</th></tr>
+    </thead>
+    <tbody>
+      <ng-container *ngIf="selectedMaintenance">
+        <tr *ngFor="let d of getMaintenancePieceDetails()">
+          <td>{{ d.ndossier }}</td><td class="td-mono">{{ d.vehicule }}</td><td>{{ d.marque || '—' }}</td>
+          <td class="td-mono">{{ d.npiece || d.numero || '—' }}</td><td>{{ d.designation }}</td>
+          <td>{{ d.qte }}</td><td class="td-mono">{{ d.montant.toFixed(3) }}</td>
+          <td class="td-mono"><strong>{{ d.total.toFixed(3) }}</strong></td>
+        </tr>
+        <tr *ngIf="getMaintenancePieceDetails().length === 0">
+          <td colspan="8" class="td-muted" style="text-align:center;padding:12px">Aucune pièce</td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
+</div>
+      </div>
+    </div>
+
+    <!-- GE SAISIE VIEW -->
+    <div *ngIf="currentView === 'ge-saisie'" class="view active">
+      <div class="alert alert-info" style="margin-bottom:16px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <div>Gestion carburant GE — par <strong>semestre</strong> (S1: Jan–Juin, S2: Juil–Déc). Les formules sont analogues au carburant véhicule mais avec index en <strong>heures</strong> au lieu de km.</div>
+      </div>
+
+      <div class="form-panel">
+        <div class="form-panel-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Saisie ravitaillement — Groupe Électrogène
+        </div>
+
+        <div class="form-grid form-grid-4" style="margin-bottom:16px">
+          <div class="form-group">
+            <label class="form-label">Semestre</label>
+            <select class="form-control" [(ngModel)]="generatorForm.semestre" (ngModelChange)="calcGE()">
+              <option value="S1">S1 — 2026 (Jan–Jun)</option>
+              <option value="S2">S2 — 2026 (Jul–Déc)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">★ Site / GE</label>
+            <select class="form-control" [(ngModel)]="generatorForm.selectedGe" (ngModelChange)="fillGEData()">
+              <option [ngValue]="null">— Sélectionner —</option>
+              <option *ngFor="let ge of geData" [ngValue]="ge">{{ ge.site }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Type carburant</label>
+            <input class="form-control" [(ngModel)]="generatorForm.typeCarb" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Puissance (KVA)</label>
+            <input class="form-control td-mono" [(ngModel)]="generatorForm.puissance" readonly>
+          </div>
+        </div>
+
+        <div class="form-grid form-grid-4" style="margin-bottom:16px">
+          <div class="form-group">
+            <label class="form-label">Taux conso/heure (L)</label>
+            <input class="form-control td-mono" [value]="generatorForm.tauxConso" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Conso max semestre (L)</label>
+            <input class="form-control td-mono" [value]="generatorForm.consoMax" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">N° Carte Agilis</label>
+            <input class="form-control td-mono" [(ngModel)]="generatorForm.carte" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Utilisateur ROC</label>
+            <input class="form-control" [(ngModel)]="generatorForm.userRoc" readonly>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:12px">Données semestre précédent (auto-remplies)</div>
+
+        <div class="form-grid" style="margin-bottom:14px">
+          <div class="form-group">
+            <label class="form-label">Index heures semestre-1</label>
+            <input class="form-control td-mono" [(ngModel)]="generatorForm.idxPrec" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Montant restant réservoir sem-1 (TND)</label>
+            <input class="form-control td-mono" [(ngModel)]="generatorForm.montantRestantPrec" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ravitaillement sem. précédent (TND)</label>
+            <input class="form-control td-mono" [(ngModel)]="generatorForm.ravitPrec" readonly>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:12px">Données à saisir — Semestre en cours</div>
+
+        <div class="form-grid" style="margin-bottom:14px">
+          <div class="form-group">
+            <label class="form-label">★ Montant restant réservoir fin sem. (TND)</label>
+            <input class="form-control td-mono" type="number" min="0" step="0.001" placeholder="0.000" [(ngModel)]="generatorForm.montantRestantFin" (ngModelChange)="calcGE()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">★ Index fin semestre (heures)</label>
+            <input class="form-control td-mono" type="number" min="0" placeholder="ex: 1250" [(ngModel)]="generatorForm.idxFin" (ngModelChange)="calcGE()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Prix carburant GE (TND/L)</label>
+            <input class="form-control td-mono" type="number" step="0.001" [(ngModel)]="generatorForm.prix" (ngModelChange)="calcGE()">
+          </div>
+        </div>
+
+        <div class="form-grid form-grid-4" style="margin-bottom:14px">
+          <div class="form-group">
+            <label class="form-label">Total ravitaillement (L) — calculé</label>
+            <input class="form-control computed td-mono" [value]="generatorForm.totalRavit.toFixed(3) + ' L'" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Qté restante (L) — calculé</label>
+            <input class="form-control computed td-mono" [value]="generatorForm.qteRestante.toFixed(3) + ' L'" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nb heures travail — calculé</label>
+            <input class="form-control computed td-mono" [value]="generatorForm.nbHeures.toFixed(0) + ' h'" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">% Consommation — calculé</label>
+            <input class="form-control computed td-mono" [value]="generatorForm.pctConso.toFixed(3) + ' L/h'" readonly>
+          </div>
+        </div>
+
+        <div class="form-grid form-grid-2" style="margin-bottom:14px">
+          <div class="form-group">
+            <label class="form-label">Carburant demandé (TND) — calculé</label>
+            <input class="form-control computed td-mono" [value]="generatorForm.carbDemande.toFixed(3) + ' TND'" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Évaluation taux consommation</label>
+            <input class="form-control computed" [value]="generatorForm.eval" readonly>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn" (click)="clearGEForm()">Réinitialiser</button>
+          <button class="btn btn-primary" (click)="saveGE()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+            Enregistrer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GE LISTE VIEW -->
+    <div *ngIf="currentView === 'ge-liste'" class="view active">
+      <div class="filter-row">
+        <select class="filter-select" [(ngModel)]="geListFilter.semestre" (ngModelChange)="renderGEListe()">
+          <option value="S1">S1 — 2026 (Jan–Jun)</option>
+          <option value="S2">S2 — 2026 (Jul–Déc)</option>
+        </select>
+        <select class="filter-select" [(ngModel)]="geListFilter.carb" (ngModelChange)="renderGEListe()">
+          <option value="">Tous carburants</option>
+          <option>GASOIL ORDINAIRE</option>
+          <option>GASOIL SANS SOUFFRE</option>
+        </select>
+        <input class="filter-input" type="search" placeholder="Rechercher site..." [(ngModel)]="geListFilter.search" (ngModelChange)="renderGEListe()">
+        <button class="btn btn-primary btn-sm" style="margin-left:auto" (click)="showView('ge-saisie')">+ Ravitailler</button>
+      </div>
+
+      <div class="stats-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">
+        <div class="stat-card highlight">
+          <div class="stat-label">GE enregistrés</div>
+          <div class="stat-value">45</div>
+          <div class="stat-sub">Dont 2 démontés</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Gasoil Ordinaire</div>
+          <div class="stat-value">22</div>
+          <div class="stat-sub">Sites actifs</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Gasoil Sans Soufre</div>
+          <div class="stat-value">21</div>
+          <div class="stat-sub">Sites actifs</div>
+        </div>
+      </div>
+
+      <div class="table-wrap scroll-x">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>Site</th><th>Type carburant</th><th>Puissance (KVA)</th>
+              <th>Taux/h (L)</th><th>Conso max sem. (L)</th>
+              <th>Heures travail</th><th>% Conso</th><th>Statut</th><th>Carte Agilis</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let ge of getFilteredGe()">
+              <td style="color:var(--text3);font-size:12px">{{ ge.id }}</td>
+              <td><strong>{{ ge.site }}</strong></td>
+              <td><span [class]="ge.carb.includes('SANS') ? 'badge badge-blue' : 'badge badge-teal'">{{ ge.carb }}</span></td>
+              <td class="td-mono">{{ ge.kva }}</td>
+              <td class="td-mono">{{ ge.taux || '—' }}</td>
+              <td class="td-mono">{{ ge.max || '—' }}</td>
+              <td class="td-mono">0 h</td>
+              <td style="min-width:100px">
+                <div class="ge-status-bar"><div class="ge-status-fill" style="width:0%;background:var(--primary)"></div></div>
+              </td>
+              <td><span [class]="ge.kva === 'démonté' ? 'badge badge-gray' : 'badge badge-green'">{{ ge.kva === 'démonté' ? 'Démonté' : 'Actif' }}</span></td>
+              <td class="td-mono" style="font-size:11px">{{ ge.carte }}</td>
+              <td><button class="row-action" (click)="goToGESaisie(ge.id)">Saisir</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>

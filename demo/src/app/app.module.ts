@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 
 
@@ -20,6 +21,7 @@ import { ZoneService } from './services/zone.service';
 import { UtilisateurService } from './services/utilisateur.service';
 import { VehiculeService }       from './services/vehicule.service';
 import { CarburantVehiculeService } from './services/carburant-vehicule.service';
+import { CarburantAnalyticsService } from './services/carburant-analytics.service';
 
 
 // Guards
@@ -34,6 +36,8 @@ import { VehiculeFormComponent } from './vehicule/vehicule-form/vehicule-form.co
 import { CarburantListComponent } from './carburant/carburant-list/carburant-list.component';
 import { CarburantFormComponent } from './carburant/carburant-form/carburant-form.component';
 import { CarburantAdditionsComponent } from './carburant/carburant-additions/carburant-additions.component';
+import { CountByPipe } from './pipes/count-by.pipe';
+import { CarburantAnalyticsComponent } from './carburant/carburant-analytics/carburant-analytics.component';
 
 @NgModule({
   declarations: [
@@ -51,6 +55,8 @@ import { CarburantAdditionsComponent } from './carburant/carburant-additions/car
     CarburantListComponent,
     CarburantFormComponent,
     CarburantAdditionsComponent,
+    CountByPipe,
+    CarburantAnalyticsComponent,
 
   ],
     imports: [
@@ -58,7 +64,8 @@ import { CarburantAdditionsComponent } from './carburant/carburant-additions/car
     AppRoutingModule,
     FormsModule,
     ReactiveFormsModule,
-    HttpClientModule
+    HttpClientModule,
+    CommonModule,
 
   ],
  providers: [
@@ -68,6 +75,7 @@ import { CarburantAdditionsComponent } from './carburant/carburant-additions/car
     UtilisateurService,
     VehiculeService,
     CarburantVehiculeService,
+    CarburantAnalyticsService,
 
     
     // Guards

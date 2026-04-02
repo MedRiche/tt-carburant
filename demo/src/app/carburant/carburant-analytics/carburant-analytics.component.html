@@ -1,0 +1,326 @@
+<!-- src/app/carburant/carburant-analytics/carburant-analytics.component.html -->
+<div class="app-shell">
+
+  <!-- SIDEBAR (inchangé) -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">⛽</div>
+      <div class="brand-text">
+        <span class="brand-name">TT Carburant</span>
+        <span class="brand-sub">Tunisie Telecom</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" (click)="navigateTo('/admin/dashboardAdmin')">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span>
+        Dashboard
+      </a>
+      <a class="nav-item" (click)="navigateTo('/admin/utilisateurs')">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span>
+        Utilisateurs
+      </a>
+      <a class="nav-item" (click)="navigateTo('/admin/zones')">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/></svg></span>
+        Zones
+      </a>
+      <a class="nav-item" (click)="navigateTo('/admin/vehicules')">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>
+        Véhicules
+      </a>
+      <a class="nav-item" (click)="navigateTo('/admin/carburant')">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/></svg></span>
+        Saisie Carburant
+      </a>
+      <a class="nav-item active">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+        Analytiques
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-avatar">AD</div>
+      <div class="user-meta"><span class="user-name">Administrateur</span><span class="user-role">Admin</span></div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+
+    <!-- TOPBAR (inchangé) -->
+    <header class="topbar">
+      <div>
+        <h1 class="page-title">Analytiques Carburant</h1>
+        <p class="page-subtitle">Historique · Évolution · Anomalies · Comparaison · Dashboard</p>
+      </div>
+      <div class="topbar-filters">
+        <select class="filter-select" [(ngModel)]="annee">
+          <option *ngFor="let a of annees" [value]="a">{{ a }}</option>
+        </select>
+        <select class="filter-select" [(ngModel)]="mois">
+          <option *ngFor="let m of moisOptions" [value]="m">{{ moisLabels[m] }}</option>
+        </select>
+        <select class="filter-select" [(ngModel)]="filtreZoneId">
+          <option value="">Toutes les zones</option>
+          <option *ngFor="let z of zones" [value]="z.id">{{ z.nom }}</option>
+        </select>
+        <select class="filter-select" [(ngModel)]="filtreMatricule">
+          <option value="">Tous les véhicules</option>
+          <option *ngFor="let v of vehicules" [value]="v.matricule">{{ v.matricule }}</option>
+        </select>
+        <button class="btn-apply" (click)="setTab(activeTab)">🔄 Actualiser</button>
+      </div>
+    </header>
+
+    <!-- TABS (inchangé) -->
+    <div class="tabs-bar">
+      <button class="tab-btn" [class.active]="activeTab==='dashboard'"   (click)="setTab('dashboard')">📊 Dashboard</button>
+      <button class="tab-btn" [class.active]="activeTab==='historique'"  (click)="setTab('historique')">📋 Historique</button>
+      <button class="tab-btn" [class.active]="activeTab==='evolution'"   (click)="setTab('evolution')">📈 Évolution</button>
+      <button class="tab-btn" [class.active]="activeTab==='anomalies'"   (click)="setTab('anomalies')">
+        🚨 Anomalies
+        <span class="tab-badge" *ngIf="anomalies.length > 0">{{ anomalies.length }}</span>
+      </button>
+      <button class="tab-btn" [class.active]="activeTab==='comparaison'" (click)="setTab('comparaison')">🏆 Comparaison</button>
+    </div>
+
+    <div class="content-area">
+
+      <!-- ══════════════════════════════════════════════════════
+           TAB 1 : DASHBOARD (inchangé)
+      ══════════════════════════════════════════════════════ -->
+      <div *ngIf="activeTab==='dashboard'" class="tab-panel">
+        <!-- ... tout le contenu du dashboard reste identique ... -->
+        <div class="mode-toggle">
+          <button class="toggle-btn" [class.active]="dashboardMode==='mensuel'" (click)="dashboardMode='mensuel'; chargerDashboard()">Mensuel</button>
+          <button class="toggle-btn" [class.active]="dashboardMode==='annuel'"  (click)="dashboardMode='annuel';  chargerDashboard()">Annuel {{ annee }}</button>
+        </div>
+        <div *ngIf="dashboardLoading" class="loading-state"><div class="loader-ring"></div><p>Chargement du dashboard…</p></div>
+        <ng-container *ngIf="!dashboardLoading && dashboard">
+          <!-- KPI Row 1 -->
+          <div class="kpi-row-4">
+            <div class="kpi-card kpi-cyan"><div class="kpi-icon">🚗</div><div class="kpi-body"><span class="kpi-label">Véhicules saisis</span><span class="kpi-value">{{ dashboard.nbVehiculesSaisis }}</span></div></div>
+            <div class="kpi-card kpi-blue"><div class="kpi-icon">📍</div><div class="kpi-body"><span class="kpi-label">Total km parcourus</span><span class="kpi-value">{{ fmt0(dashboard.totalKm) }}</span></div></div>
+            <div class="kpi-card kpi-green"><div class="kpi-icon">⛽</div><div class="kpi-body"><span class="kpi-label">Total ravitaillement (L)</span><span class="kpi-value">{{ fmt1(dashboard.totalLitres) }}</span></div></div>
+            <div class="kpi-card" [ngClass]="dashboard.tauxBudgetGlobal > 100 ? 'kpi-red' : 'kpi-amber'"><div class="kpi-icon">💰</div><div class="kpi-body"><span class="kpi-label">Budget utilisé</span><span class="kpi-value">{{ fmt1(dashboard.tauxBudgetGlobal) }}%</span><span class="kpi-sub">{{ fmt3(dashboard.totalCoutDT) }} / {{ fmt3(dashboard.totalBudgetDT) }} DT</span></div></div>
+          </div>
+          <!-- KPI Row 2 -->
+          <div class="kpi-row-2">
+            <div class="kpi-card kpi-red"><div class="kpi-icon">⚠️</div><div class="kpi-body"><span class="kpi-label">Budgets dépassés</span><span class="kpi-value">{{ dashboard.nbBudgetsDepasses }}</span></div></div>
+            <div class="kpi-card kpi-purple"><div class="kpi-icon">🔍</div><div class="kpi-body"><span class="kpi-label">Anomalies détectées</span><span class="kpi-value">{{ dashboard.nbAnomalies }}</span></div></div>
+          </div>
+          <!-- Charts -->
+          <div class="charts-2col">
+            <div class="chart-card"><div class="chart-header"><h3 class="chart-title">Coût par Zone (DT)</h3></div><div class="chart-body chart-h280"><canvas id="chartZones"></canvas></div></div>
+            <div class="chart-card"><div class="chart-header"><h3 class="chart-title">Répartition par Type Carburant</h3></div><div class="chart-body chart-h280"><canvas id="chartCarburantTypes"></canvas></div></div>
+          </div>
+          <div class="chart-card" *ngIf="dashboardMode==='annuel'"><div class="chart-header"><h3 class="chart-title">Évolution mensuelle — Coût réel vs Budget</h3></div><div class="chart-body chart-h220"><canvas id="chartEvoDash"></canvas></div></div>
+          <div class="chart-card"><div class="chart-header"><h3 class="chart-title">Budget utilisé par Zone (Coût réel vs Budget)</h3></div><div class="chart-body chart-h220"><canvas id="chartBudgetZones"></canvas></div></div>
+          <!-- Heatmap -->
+          <div class="heatmap-table-wrap">
+            <div class="chart-header"><h3 class="chart-title">🗺️ Tableau de bord Zones</h3></div>
+            <div class="heatmap-scroll">
+              <table class="heatmap-table">
+                <thead><tr><th>Zone</th><th>Véhicules</th><th>Km totaux</th><th>Litres</th><th>Coût DT</th><th>Budget DT</th><th>% Budget</th><th>Rendement</th><th>Anomalies</th></tr></thead>
+                <tbody>
+                  <tr *ngFor="let z of dashboard.statsParZone">
+                    <td class="zone-cell">{{ z.zoneNom }}</td>
+                    <td class="num-cell">{{ z.nbVehicules }}</td>
+                    <td class="num-cell">{{ fmt0(z.totalKm) }}</td>
+                    <td class="num-cell">{{ fmt3(z.totalLitres) }}</td>
+                    <td class="num-cell">{{ fmt3(z.totalCout) }}</td>
+                    <td class="num-cell">{{ fmt3(z.totalBudget) }}</td>
+                    <td><div class="budget-bar-wrap"><div class="budget-bar" [style.width.%]="Math.min(z.tauxBudget, 100)" [style.background]="z.tauxBudget > 100 ? '#ef4444' : z.tauxBudget > 80 ? '#f59e0b' : '#00d4aa'"></div><span class="budget-pct" [class.over-budget]="z.tauxBudget > 100">{{ fmt1(z.tauxBudget) }}%</span></div></td>
+                    <td class="num-cell">{{ fmt3(z.rendementMoyen) }} L/100</td>
+                    <td><span *ngIf="z.nbAnomalies > 0" class="anomalie-badge">⚠️ {{ z.nbAnomalies }}</span><span *ngIf="z.nbAnomalies === 0" class="ok-badge">✓</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div *ngIf="dashboard.dernieresAnomalies.length > 0" class="anomalies-preview">
+            <div class="chart-header"><h3 class="chart-title">🔍 Dernières anomalies détectées</h3></div>
+            <div class="anomalie-list">
+              <div *ngFor="let a of dashboard.dernieresAnomalies" class="anomalie-row" [ngClass]="getSeveriteClass(a.severite)">
+                <span class="anomalie-sev">{{ a.severite }}</span>
+                <span class="anomalie-mat">{{ a.vehiculeMatricule }}</span>
+                <span class="anomalie-type">{{ getTypeAnomLabel(a.typeAnomalie) }}</span>
+                <span class="anomalie-desc">{{ a.description }}</span>
+                <span class="anomalie-periode">{{ a.periodeLabel }}</span>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════
+           TAB 2 : HISTORIQUE (avec filteredHistorique)
+      ══════════════════════════════════════════════════════ -->
+      <div *ngIf="activeTab==='historique'" class="tab-panel">
+        <div class="historique-toolbar">
+          <input class="search-input" type="text" placeholder="🔍 Rechercher matricule, marque, mois…" [(ngModel)]="historiqueSearch" />
+          <button class="btn-load" (click)="chargerHistorique()">Charger</button>
+        </div>
+        <div *ngIf="historiqueLoading" class="loading-state"><div class="loader-ring"></div></div>
+        <div *ngIf="!historiqueLoading && filteredHistorique.length === 0" class="empty-state">
+          <p>Aucun enregistrement trouvé. Sélectionnez un véhicule ou une zone et cliquez « Charger ».</p>
+        </div>
+        <div *ngIf="!historiqueLoading && filteredHistorique.length > 0" class="data-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>Statut</th><th>Véhicule</th><th>Zone</th><th>Période</th><th>Index Démarrage</th><th>Index Fin</th><th>Distance (km)</th><th>Ravit. Préc. (DT)</th><th>Restant Préc. (DT)</th><th>Ravit. Mois (DT)</th><th>Total L</th><th>Qté Rest. L</th><th>% Conso</th><th>Carb. Demandé (DT)</th><th>Restant Fin (DT)</th><th>Budget</th><th>% Budget</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let h of filteredHistorique" [ngClass]="getStatutClass(h.statut)">
+                <td><span class="statut-pill" [ngClass]="getStatutClass(h.statut)">{{ h.statut === 'NORMAL' ? '✓' : h.statut === 'CRITIQUE' ? '🔴' : '⚠️' }} {{ h.statut }}</span></td>
+                <td><span class="mat-badge">{{ h.vehiculeMatricule }}</span><br><small>{{ h.vehiculeMarqueModele }}</small></td>
+                <td><span *ngIf="h.vehiculeZoneNom" class="chip-zone">{{ h.vehiculeZoneNom }}</span></td>
+                <td class="mono-val">{{ h.periodeLabel }}</td>
+                <td class="mono-val">{{ h.indexDemarrageMois | number:'1.0-0' }}</td>
+                <td class="mono-val">{{ h.indexFinMois | number:'1.0-0' }}</td>
+                <td class="mono-val calc-val">{{ h.distanceParcourue | number:'1.0-0' }}</td>
+                <td class="mono-val">{{ fmt3(h.ravitaillementMoisPrecedent) }}</td>
+                <td class="mono-val">{{ fmt3(h.montantRestantMoisPrecedent) }}</td>
+                <td class="mono-val">{{ fmt3(h.ravitaillementMois) }}</td>
+                <td class="mono-val calc-val">{{ fmt3(h.totalRavitaillementLitres) }}</td>
+                <td class="mono-val calc-val">{{ fmt3(h.quantiteRestanteReservoir) }}</td>
+                <td class="mono-val"><span class="pct-badge" [class.pct-ok]="h.pourcentageConsommation <= 0.25" [class.pct-warn]="h.pourcentageConsommation > 0.25 && h.pourcentageConsommation <= 0.40" [class.pct-bad]="h.pourcentageConsommation > 0.40">{{ fmt3(h.pourcentageConsommation) }}</span></td>
+                <td class="mono-val demand-val">{{ fmt3(h.carburantDemandeDinars) }}</td>
+                <td class="mono-val">{{ fmt3(h.montantRestantReservoirFin) }}</td>
+                <td class="mono-val">{{ fmt3(h.coutDuMois) }}</td>
+                <td><div class="budget-bar-wrap"><div class="budget-bar" [style.width.%]="Math.min(h.tauxBudget, 100)" [style.background]="h.tauxBudget > 100 ? '#ef4444' : h.tauxBudget > 80 ? '#f59e0b' : '#22c55e'"></div><span class="budget-pct" [class.over-budget]="h.budgetDepasse">{{ fmt1(h.tauxBudget) }}%</span></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════
+           TAB 3 : ÉVOLUTION (inchangé)
+      ══════════════════════════════════════════════════════ -->
+      <div *ngIf="activeTab==='evolution'" class="tab-panel">
+        <div class="mode-toggle">
+          <button class="toggle-btn" [class.active]="evolutionMode==='zone'" (click)="evolutionMode='zone'; chargerEvolution()">Par Zone</button>
+          <button class="toggle-btn" [class.active]="evolutionMode==='vehicule'" (click)="evolutionMode='vehicule'; chargerEvolution()">Par Véhicule</button>
+        </div>
+        <div *ngIf="evolutionLoading" class="loading-state"><div class="loader-ring"></div></div>
+        <div *ngIf="!evolutionLoading && !evolutionData" class="empty-state"><p>Sélectionnez un véhicule ou une zone pour afficher l'évolution.</p></div>
+        <ng-container *ngIf="!evolutionLoading && evolutionData">
+          <div class="kpi-row-4">
+            <div class="kpi-card kpi-blue"><div class="kpi-icon">📍</div><div class="kpi-body"><span class="kpi-label">Total km</span><span class="kpi-value">{{ fmt0(evolutionData.totalKm) }}</span></div></div>
+            <div class="kpi-card kpi-cyan"><div class="kpi-icon">⛽</div><div class="kpi-body"><span class="kpi-label">Total litres</span><span class="kpi-value">{{ fmt3(evolutionData.totalLitres) }}</span></div></div>
+            <div class="kpi-card kpi-amber"><div class="kpi-icon">💰</div><div class="kpi-body"><span class="kpi-label">Total coût</span><span class="kpi-value">{{ fmt3(evolutionData.totalCout) }} DT</span></div></div>
+            <div class="kpi-card kpi-green"><div class="kpi-icon">🔢</div><div class="kpi-body"><span class="kpi-label">Moy. conso.</span><span class="kpi-value">{{ fmt3(evolutionData.moyenneConsommation) }} L/100</span></div></div>
+          </div>
+          <div class="charts-stack">
+            <div class="chart-card"><div class="chart-header"><h3 class="chart-title">⛽ Consommation mensuelle (Litres)</h3></div><div class="chart-body chart-h200"><canvas id="chartEvoConso"></canvas></div></div>
+            <div class="chart-card"><div class="chart-header"><h3 class="chart-title">💰 Coût mensuel vs Budget (DT)</h3></div><div class="chart-body chart-h200"><canvas id="chartEvoCout"></canvas></div></div>
+            <div class="chart-card"><div class="chart-header"><h3 class="chart-title">📍 Distance parcourue mensuelle (km)</h3></div><div class="chart-body chart-h200"><canvas id="chartEvoKm"></canvas></div></div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════
+           TAB 4 : ANOMALIES (avec filteredAnomalies)
+      ══════════════════════════════════════════════════════ -->
+      <div *ngIf="activeTab==='anomalies'" class="tab-panel">
+        <div class="anomalie-toolbar">
+          <div class="mode-toggle">
+            <button class="toggle-btn" [class.active]="anomaliesMode==='mensuel'" (click)="anomaliesMode='mensuel'; chargerAnomalies()">Mensuel</button>
+            <button class="toggle-btn" [class.active]="anomaliesMode==='annuel'"  (click)="anomaliesMode='annuel';  chargerAnomalies()">Annuel</button>
+          </div>
+          <select class="filter-select" [(ngModel)]="filtreTypeAnomalie">
+            <option value="">Tous types</option>
+            <option value="BUDGET_DEPASSE">Budget dépassé</option>
+            <option value="CONSO_ANORMALE">Conso. anormale</option>
+            <option value="KM_INCOHERENT">Km incohérent</option>
+            <option value="KM_ELEVE">Km excessifs</option>
+          </select>
+          <select class="filter-select" [(ngModel)]="filtreSeverite">
+            <option value="">Toute sévérité</option>
+            <option value="CRITIQUE">Critique</option>
+            <option value="ELEVEE">Élevée</option>
+            <option value="MOYENNE">Moyenne</option>
+            <option value="FAIBLE">Faible</option>
+          </select>
+        </div>
+        <div *ngIf="anomaliesLoading" class="loading-state"><div class="loader-ring"></div></div>
+        <div *ngIf="!anomaliesLoading && filteredAnomalies.length === 0" class="empty-state">
+          <div class="empty-icon">✅</div>
+          <p class="empty-title">Aucune anomalie détectée</p>
+          <p>Tous les véhicules respectent les seuils définis.</p>
+        </div>
+        <div *ngIf="!anomaliesLoading && anomalies.length > 0" class="anomalie-stats">
+          <div class="anom-kpi sev-critical">🔴 Critiques : {{ anomalies | countBy:'severite':'CRITIQUE' }}</div>
+          <div class="anom-kpi sev-high">🟠 Élevées : {{ anomalies | countBy:'severite':'ELEVEE' }}</div>
+          <div class="anom-kpi sev-medium">🟡 Moyennes : {{ anomalies | countBy:'severite':'MOYENNE' }}</div>
+          <div class="anom-kpi sev-low">🟢 Faibles : {{ anomalies | countBy:'severite':'FAIBLE' }}</div>
+        </div>
+        <div *ngIf="!anomaliesLoading && filteredAnomalies.length > 0" class="anomalie-cards">
+          <div *ngFor="let a of filteredAnomalies" class="anomalie-card" [ngClass]="'ac-' + a.severite.toLowerCase()">
+            <div class="ac-header">
+              <span class="ac-sev-badge" [ngClass]="getSeveriteClass(a.severite)">{{ a.severite }}</span>
+              <span class="ac-type">{{ getTypeAnomLabel(a.typeAnomalie) }}</span>
+              <span class="ac-periode">{{ a.periodeLabel }}</span>
+            </div>
+            <div class="ac-vehicle">
+              <span class="mat-badge">{{ a.vehiculeMatricule }}</span>
+              <span class="ac-marque">{{ a.vehiculeMarqueModele }}</span>
+              <span *ngIf="a.vehiculeZoneNom" class="chip-zone">{{ a.vehiculeZoneNom }}</span>
+            </div>
+            <p class="ac-desc">{{ a.description }}</p>
+            <div class="ac-metrics">
+              <span>Valeur réelle : <strong>{{ fmt3(a.valeurReelle) }}</strong></span>
+              <span>Seuil : <strong>{{ fmt3(a.valeurSeuil) }}</strong></span>
+              <span class="ac-ecart">Écart : +{{ fmt1(a.ecartPourcentage) }}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════
+           TAB 5 : COMPARAISON (avec comparaisonData et comparaisonItems)
+      ══════════════════════════════════════════════════════ -->
+      <div *ngIf="activeTab==='comparaison'" class="tab-panel">
+        <div class="mode-toggle">
+          <button class="toggle-btn" [class.active]="comparaisonMode==='mensuel'" (click)="comparaisonMode='mensuel'; chargerComparaison()">Mensuel</button>
+          <button class="toggle-btn" [class.active]="comparaisonMode==='annuel'"  (click)="comparaisonMode='annuel';  chargerComparaison()">Annuel</button>
+        </div>
+        <div *ngIf="comparaisonLoading" class="loading-state"><div class="loader-ring"></div></div>
+        <ng-container *ngIf="!comparaisonLoading && comparaisonData">
+          <div class="sub-tabs">
+            <button class="sub-tab" [class.active]="comparaisonOnglet==='consommation'" (click)="comparaisonOnglet='consommation'; buildComparaisonChart()">💰 Top Conso. DT</button>
+            <button class="sub-tab" [class.active]="comparaisonOnglet==='km'"          (click)="comparaisonOnglet='km'; buildComparaisonChart()">📍 Top Km</button>
+            <button class="sub-tab" [class.active]="comparaisonOnglet==='meilleur'"    (click)="comparaisonOnglet='meilleur'; buildComparaisonChart()">🥇 Meilleur Rend.</button>
+            <button class="sub-tab" [class.active]="comparaisonOnglet==='pire'"        (click)="comparaisonOnglet='pire'; buildComparaisonChart()">🥴 Pire Rend.</button>
+            <button class="sub-tab" [class.active]="comparaisonOnglet==='budget'"      (click)="comparaisonOnglet='budget'; buildComparaisonChart()">⚠️ Dépassements</button>
+          </div>
+          <div class="chart-card"><div class="chart-body chart-h240"><canvas id="chartComparaison"></canvas></div></div>
+          <div class="data-table-wrap" *ngIf="comparaisonItems.length">
+            <table class="data-table">
+              <thead><tr><th>#</th><th>Matricule</th><th>Marque</th><th>Zone</th><th>Km totaux</th><th>Litres</th><th>Coût DT</th><th>L/100km</th><th>DT/100km</th><th>% Budget</th><th>Anomalies</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let r of comparaisonItems; let i = index">
+                  <td><span class="rank-badge" [ngClass]="i===0?'gold':i===1?'silver':i===2?'bronze':''">{{ i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i+1) }}</span></td>
+                  <td><span class="mat-badge">{{ r.matricule }}</span></td>
+                  <td>{{ r.marqueModele }}</td>
+                  <td><span *ngIf="r.zoneNom" class="chip-zone">{{ r.zoneNom }}</span></td>
+                  <td class="mono-val">{{ fmt0(r.totalKm) }}</td>
+                  <td class="mono-val">{{ fmt3(r.totalLitres) }}</td>
+                  <td class="mono-val">{{ fmt3(r.totalCout) }}</td>
+                  <td class="mono-val" [class.good-val]="r.rendementLPour100km < comparaisonData!.seuilRendementAnomalie" [class.bad-val]="r.rendementLPour100km >= comparaisonData!.seuilRendementAnomalie">{{ fmt3(r.rendementLPour100km) }}</td>
+                  <td class="mono-val">{{ fmt3(r.rendementDTPour100km) }}</td>
+                  <td><span [class.over-budget]="r.tauxBudgetMoyen > 100">{{ fmt1(r.tauxBudgetMoyen) }}%</span></td>
+                  <td><span *ngIf="r.nbAnomalies > 0" class="anomalie-badge">⚠️ {{ r.nbAnomalies }}</span><span *ngIf="r.nbAnomalies === 0" class="ok-badge">✓</span></td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="comparaison-footer">
+              Moyenne globale L/100km : <strong>{{ fmt3(comparaisonData.moyenneGlobaleRendement) }}</strong>
+              · Seuil anomalie : <strong>{{ comparaisonData.seuilRendementAnomalie }} L/100km</strong>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+    </div><!-- /content-area -->
+  </main>
+</div>
