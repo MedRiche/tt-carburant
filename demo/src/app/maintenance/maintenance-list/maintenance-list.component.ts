@@ -13,6 +13,29 @@ import { MaintenanceService } from '../../services/maintenance.service';
 import { VehiculeService } from '../../services/vehicule.service';
 import { ZoneService } from '../../services/zone.service';
 
+// ── Interfaces pour les nouveaux onglets ──────────────────────────────────────
+
+export interface DesignationCount {
+  designation: string;
+  count: number;
+  type: 'MAIN_D_OEUVRE' | 'PIECE';
+}
+
+export interface MissingHtvaItem {
+  vehiculeId: string;
+  vehiculeMarque: string;
+  zoneNom?: string;
+  numeroDossier: string;
+  excelRow?: number;
+  numDossier?: number;
+  numero?: string | number;
+  designation: string;
+  quantite: number;
+  montantUnitaire: number;
+  totalHtva: number;
+  type: 'MAIN_D_OEUVRE' | 'PIECE';
+}
+
 @Component({
   selector: 'app-maintenance-list',
   standalone: false,
@@ -22,7 +45,7 @@ import { ZoneService } from '../../services/zone.service';
 export class MaintenanceListComponent implements OnInit {
 
   // ── Tabs ──────────────────────────────────────────────────────────────────
-  activeTab: 'global' | 'dossiers' | 'analytics' = 'global';
+  activeTab: 'global' | 'dossiers' | 'analytics' | 'desig-main' | 'desig-piece' | 'missing-htva' = 'global';
 
   // ── Données ───────────────────────────────────────────────────────────────
   globalList: GlobalVehicleListItem[] = [];
@@ -58,6 +81,39 @@ export class MaintenanceListComponent implements OnInit {
   searchDossiers = '';
   filtreStatut = '';
   filtreType = '';
+
+  // ── Designation Count - Main ──────────────────────────────────────────────
+  designationMainData: DesignationCount[] = [];
+  designationMainFiltree: DesignationCount[] = [];
+  filtreZoneDesigMain = '';
+  filtreVehiculeDesigMain = '';
+  searchDesigMain = '';
+  loadingDesigMain = false;
+
+  // ── Designation Count - Piece ─────────────────────────────────────────────
+  designationPieceData: DesignationCount[] = [];
+  designationPieceFiltree: DesignationCount[] = [];
+  filtreZoneDesigPiece = '';
+  filtreVehiculeDesigPiece = '';
+  searchDesigPiece = '';
+  loadingDesigPiece = false;
+
+  // ── Missing HTVA ──────────────────────────────────────────────────────────
+  missingHtvaData: MissingHtvaItem[] = [];
+  missingHtvaFiltree: MissingHtvaItem[] = [];
+  filtreZoneMissing = '';
+  filtreVehiculeMissing = '';
+  filtreTypeMissing = '';
+  loadingMissing = false;
+
+  // ── Analytics avancés ─────────────────────────────────────────────────────
+  top5MainDesignation: { designation: string; count: number; totalHtva: number }[] = [];
+  top5PieceDesignation: { designation: string; count: number; totalHtva: number }[] = [];
+  top5Vehicules: { matricule: string; marque: string; zone: string; totalHtva: number; nbDossiers: number }[] = [];
+  statsParType: { type: string; count: number; totalHtva: number }[] = [];
+  statsParZone: { zone: string; totalHtva: number; nbVehicules: number }[] = [];
+  totalHtvaGlobal2 = 0;
+  totalDossiers2 = 0;
 
   // ── Computed ──────────────────────────────────────────────────────────────
   get totalHtvaGlobal(): number {
@@ -109,18 +165,228 @@ export class MaintenanceListComponent implements OnInit {
   }
 
   chargerDashboard(): void {
-    if (this.dashboard) return;
     this.loadingDashboard = true;
     this.maintenanceService.getDashboard().subscribe({
       next: (d: any) => {
         this.dashboard = d as MaintenanceDashboard;
+        this.calculerAnalyticsAvances();
         this.loadingDashboard = false;
       },
       error: () => { this.loadingDashboard = false; }
     });
   }
 
-  // ── Filtres ───────────────────────────────────────────────────────────────
+  // ── Calcul Analytics Avancés ──────────────────────────────────────────────
+
+  calculerAnalyticsAvances(): void {
+    if (!this.tousLesDossiers.length) return;
+
+    // Top 5 désignations Main d'oeuvre
+    const moMap = new Map<string, { count: number; totalHtva: number }>();
+    const pieceMap = new Map<string, { count: number; totalHtva: number }>();
+    const vehiculeMap = new Map<string, { marque: string; zone: string; totalHtva: number; nbDossiers: number }>();
+
+    this.tousLesDossiers.forEach(m => {
+      // Véhicule
+      const vKey = m.vehiculeMatricule;
+      const vExist = vehiculeMap.get(vKey) || { marque: m.vehiculeMarqueModele || '', zone: m.vehiculeZoneNom || '', totalHtva: 0, nbDossiers: 0 };
+      vehiculeMap.set(vKey, { ...vExist, totalHtva: vExist.totalHtva + (m.coutTotalHtva || 0), nbDossiers: vExist.nbDossiers + 1 });
+
+      (m.details || []).forEach(d => {
+        const htva = (d.quantite || 1) * (d.montantUnitaire || 0);
+        if (d.type === TypeDetailMaintenance.MAIN_D_OEUVRE) {
+          const ex = moMap.get(d.designation) || { count: 0, totalHtva: 0 };
+          moMap.set(d.designation, { count: ex.count + (d.quantite || 1), totalHtva: ex.totalHtva + htva });
+        } else {
+          const ex = pieceMap.get(d.designation) || { count: 0, totalHtva: 0 };
+          pieceMap.set(d.designation, { count: ex.count + (d.quantite || 1), totalHtva: ex.totalHtva + htva });
+        }
+      });
+    });
+
+    this.top5MainDesignation = Array.from(moMap.entries())
+      .map(([designation, v]) => ({ designation, ...v }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    this.top5PieceDesignation = Array.from(pieceMap.entries())
+      .map(([designation, v]) => ({ designation, ...v }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    this.top5Vehicules = Array.from(vehiculeMap.entries())
+      .map(([matricule, v]) => ({ matricule, ...v }))
+      .sort((a, b) => b.totalHtva - a.totalHtva)
+      .slice(0, 5);
+
+    this.totalHtvaGlobal2 = this.tousLesDossiers.reduce((s, m) => s + (m.coutTotalHtva || 0), 0);
+    this.totalDossiers2 = this.tousLesDossiers.length;
+
+    // Stats par zone
+    const zoneMap = new Map<string, { totalHtva: number; vehicules: Set<string> }>();
+    this.tousLesDossiers.forEach(m => {
+      const z = m.vehiculeZoneNom || 'Sans zone';
+      const ex = zoneMap.get(z) || { totalHtva: 0, vehicules: new Set() };
+      ex.totalHtva += m.coutTotalHtva || 0;
+      ex.vehicules.add(m.vehiculeMatricule);
+      zoneMap.set(z, ex);
+    });
+    this.statsParZone = Array.from(zoneMap.entries())
+      .map(([zone, v]) => ({ zone, totalHtva: v.totalHtva, nbVehicules: v.vehicules.size }))
+      .sort((a, b) => b.totalHtva - a.totalHtva);
+  }
+
+  // ── Designation Count - Main ──────────────────────────────────────────────
+
+  chargerDesigMain(): void {
+    this.loadingDesigMain = true;
+    // Calculer depuis les dossiers existants
+    const map = new Map<string, number>();
+    let dossiers = this.tousLesDossiers;
+
+    if (this.filtreZoneDesigMain) {
+      dossiers = dossiers.filter(m => m.vehiculeZoneNom === this.filtreZoneDesigMain);
+    }
+    if (this.filtreVehiculeDesigMain) {
+      dossiers = dossiers.filter(m => m.vehiculeMatricule === this.filtreVehiculeDesigMain);
+    }
+
+    dossiers.forEach(m => {
+      (m.details || []).forEach(d => {
+        if (d.type === TypeDetailMaintenance.MAIN_D_OEUVRE) {
+          const key = d.designation.trim().toLowerCase();
+          map.set(key, (map.get(key) || 0) + (d.quantite || 1));
+        }
+      });
+    });
+
+    this.designationMainData = Array.from(map.entries())
+      .map(([designation, count]) => ({
+        designation: this.capitalizeFirst(designation),
+        count,
+        type: 'MAIN_D_OEUVRE' as const
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    this.filtrerDesigMain();
+    this.loadingDesigMain = false;
+  }
+
+  filtrerDesigMain(): void {
+    let data = [...this.designationMainData];
+    if (this.searchDesigMain) {
+      const q = this.searchDesigMain.toLowerCase();
+      data = data.filter(d => d.designation.toLowerCase().includes(q));
+    }
+    this.designationMainFiltree = data;
+  }
+
+  // ── Designation Count - Piece ─────────────────────────────────────────────
+
+  chargerDesigPiece(): void {
+    this.loadingDesigPiece = true;
+    const map = new Map<string, number>();
+    let dossiers = this.tousLesDossiers;
+
+    if (this.filtreZoneDesigPiece) {
+      dossiers = dossiers.filter(m => m.vehiculeZoneNom === this.filtreZoneDesigPiece);
+    }
+    if (this.filtreVehiculeDesigPiece) {
+      dossiers = dossiers.filter(m => m.vehiculeMatricule === this.filtreVehiculeDesigPiece);
+    }
+
+    dossiers.forEach(m => {
+      (m.details || []).forEach(d => {
+        if (d.type === TypeDetailMaintenance.PIECE) {
+          const key = d.designation.trim().toLowerCase();
+          map.set(key, (map.get(key) || 0) + (d.quantite || 1));
+        }
+      });
+    });
+
+    this.designationPieceData = Array.from(map.entries())
+      .map(([designation, count]) => ({
+        designation: this.capitalizeFirst(designation),
+        count,
+        type: 'PIECE' as const
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    this.filtrerDesigPiece();
+    this.loadingDesigPiece = false;
+  }
+
+  filtrerDesigPiece(): void {
+    let data = [...this.designationPieceData];
+    if (this.searchDesigPiece) {
+      const q = this.searchDesigPiece.toLowerCase();
+      data = data.filter(d => d.designation.toLowerCase().includes(q));
+    }
+    this.designationPieceFiltree = data;
+  }
+
+  // ── Missing HTVA ──────────────────────────────────────────────────────────
+
+  chargerMissingHtva(): void {
+    this.loadingMissing = true;
+    const missing: MissingHtvaItem[] = [];
+    let rowNum = 0;
+
+    this.tousLesDossiers.forEach(m => {
+      (m.details || []).forEach(d => {
+        const htva = d.totalHtva ?? 0;
+        const computed = (d.quantite || 1) * (d.montantUnitaire || 0);
+        // Missing HTVA = totalHtva is 0 but should have a value, OR montant is 0
+        if (htva === 0 || d.montantUnitaire === 0) {
+          rowNum++;
+          missing.push({
+            vehiculeId: m.vehiculeMatricule,
+            vehiculeMarque: m.vehiculeMarqueModele || '',
+            zoneNom: m.vehiculeZoneNom,
+            numeroDossier: m.numeroDossier,
+            excelRow: rowNum,
+            numDossier: parseInt(m.numeroDossier) || rowNum,
+            numero: d.numero || d.numeroPiece,
+            designation: d.designation,
+            quantite: d.quantite || 1,
+            montantUnitaire: d.montantUnitaire || 0,
+            totalHtva: htva,
+            type: d.type
+          });
+        }
+      });
+    });
+
+    this.missingHtvaData = missing;
+    this.filtrerMissing();
+    this.loadingMissing = false;
+  }
+
+  filtrerMissing(): void {
+    let data = [...this.missingHtvaData];
+    if (this.filtreZoneMissing) {
+      data = data.filter(d => d.zoneNom === this.filtreZoneMissing);
+    }
+    if (this.filtreVehiculeMissing) {
+      data = data.filter(d => d.vehiculeId === this.filtreVehiculeMissing);
+    }
+    if (this.filtreTypeMissing) {
+      data = data.filter(d => d.type === this.filtreTypeMissing);
+    }
+    this.missingHtvaFiltree = data;
+  }
+
+  // ── Navigation entre tabs ─────────────────────────────────────────────────
+
+  setTab(tab: typeof this.activeTab): void {
+    this.activeTab = tab;
+    if (tab === 'analytics') this.chargerDashboard();
+    if (tab === 'desig-main') this.chargerDesigMain();
+    if (tab === 'desig-piece') this.chargerDesigPiece();
+    if (tab === 'missing-htva') this.chargerMissingHtva();
+  }
+
+  // ── Filtres global ────────────────────────────────────────────────────────
 
   filtrerGlobal(): void {
     let list = [...this.globalList];
@@ -151,12 +417,8 @@ export class MaintenanceListComponent implements OnInit {
         (d.vehiculeMarqueModele || '').toLowerCase().includes(q)
       );
     }
-    if (this.filtreStatut) {
-      list = list.filter(d => d.statut === this.filtreStatut);
-    }
-    if (this.filtreType) {
-      list = list.filter(d => d.typeIntervention === this.filtreType);
-    }
+    if (this.filtreStatut) list = list.filter(d => d.statut === this.filtreStatut);
+    if (this.filtreType) list = list.filter(d => d.typeIntervention === this.filtreType);
     this.dossiersFiltres = list;
   }
 
@@ -206,9 +468,7 @@ export class MaintenanceListComponent implements OnInit {
       next: () => {
         this.chargerDossiers();
         this.chargerGlobalList();
-        if (this.selectedGlobalItem) {
-          this.ouvrirDetail(this.selectedGlobalItem);
-        }
+        if (this.selectedGlobalItem) this.ouvrirDetail(this.selectedGlobalItem);
       },
       error: (err: any) => alert(err.error?.message || 'Erreur lors de la suppression')
     });
@@ -219,9 +479,7 @@ export class MaintenanceListComponent implements OnInit {
     this.maintenanceSelectionnee = null;
     this.chargerDossiers();
     this.chargerGlobalList();
-    if (this.selectedGlobalItem) {
-      this.ouvrirDetail(this.selectedGlobalItem);
-    }
+    if (this.selectedGlobalItem) this.ouvrirDetail(this.selectedGlobalItem);
   }
 
   // ── Import / Export ───────────────────────────────────────────────────────
@@ -298,6 +556,30 @@ export class MaintenanceListComponent implements OnInit {
 
   getPieces(m: Maintenance): DetailMaintenance[] {
     return (m.details || []).filter(d => d.type === TypeDetailMaintenance.PIECE);
+  }
+
+  getMaxDesigMain(): number {
+    return this.designationMainFiltree.length ? this.designationMainFiltree[0].count : 1;
+  }
+
+  getMaxDesigPiece(): number {
+    return this.designationPieceFiltree.length ? this.designationPieceFiltree[0].count : 1;
+  }
+
+  capitalizeFirst(s: string): string {
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  getUniqueZones(): string[] {
+    const zones = new Set<string>();
+    this.tousLesDossiers.forEach(m => { if (m.vehiculeZoneNom) zones.add(m.vehiculeZoneNom); });
+    return Array.from(zones).sort();
+  }
+
+  getUniqueVehicules(): string[] {
+    const mats = new Set<string>();
+    this.tousLesDossiers.forEach(m => mats.add(m.vehiculeMatricule));
+    return Array.from(mats).sort();
   }
 
   navigateTo(route: string): void { this.router.navigate([route]); }
