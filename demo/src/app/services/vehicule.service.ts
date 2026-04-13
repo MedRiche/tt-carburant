@@ -44,4 +44,18 @@ export class VehiculeService {
   affecterZone(matricule: string, zoneId: number): Observable<any> {
     return this.http.patch(`${this.apiUrl}/${matricule}/zone/${zoneId}`, {}, { headers: this.headers() });
   }
+
+   importerExcel(file: File, zoneNom?: string): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (zoneNom) {
+      formData.append('zoneNom', zoneNom);
+    }
+    return this.http.post(`${this.apiUrl}/import`, formData, {
+      headers: new HttpHeaders({
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        // Ne pas mettre Content-Type pour FormData (le browser le fait automatiquement)
+      })
+    });
+  }
 }

@@ -1,15 +1,19 @@
+
 package com.example.ttcarburant.controller;
 
 import com.example.ttcarburant.dto.VehiculeDto;
 import com.example.ttcarburant.dto.VehiculeRequest;
 import com.example.ttcarburant.services.VehiculeService;
+import com.example.ttcarburant.services.VehiculeImportService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/vehicules")
@@ -18,9 +22,12 @@ import java.util.List;
 public class VehiculeController {
 
     private final VehiculeService vehiculeService;
+    private final VehiculeImportService importService;
 
-    public VehiculeController(VehiculeService vehiculeService) {
+    public VehiculeController(VehiculeService vehiculeService,
+                              VehiculeImportService importService) {
         this.vehiculeService = vehiculeService;
+        this.importService   = importService;
     }
 
     @GetMapping
@@ -34,7 +41,6 @@ public class VehiculeController {
         return ResponseEntity.ok(vehiculeService.getVehiculesByZone(zoneId));
     }
 
-    // ✅ FIX: explicit name in @PathVariable + :.+ to allow "/" in matricule
     @GetMapping("/{matricule:.+}")
     public ResponseEntity<?> getVehiculeById(
             @PathVariable("matricule") String matricule) {
@@ -56,7 +62,6 @@ public class VehiculeController {
         }
     }
 
-    // ✅ FIX: explicit name in @PathVariable + :.+ to allow "/" in matricule
     @PutMapping("/{matricule:.+}")
     public ResponseEntity<?> modifierVehicule(
             @PathVariable("matricule") String matricule,
@@ -69,7 +74,6 @@ public class VehiculeController {
         }
     }
 
-    // ✅ FIX: explicit name in @PathVariable + :.+ to allow "/" in matricule
     @DeleteMapping("/{matricule:.+}")
     public ResponseEntity<?> supprimerVehicule(
             @PathVariable("matricule") String matricule) {
@@ -90,6 +94,35 @@ public class VehiculeController {
             return ResponseEntity.ok(new SuccessResponse("Zone affectée avec succès", dto));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
+    // ── IMPORT EXCEL ──────────────────────────────────────────────────────────
+
+    /**
+     * Importe les véhicules depuis un fichier Excel (format DAF 2026).
+     * @param file    fichier .xlsx
+     * @param zoneNom nom de la zone à affecter (optionnel)
+     */
+    @PostMapping("/import")
+    public ResponseEntity<?> importerExcel(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "zoneNom", required = false) String zoneNom) {
+        try {
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(new ErrorResponse("Le fichier est vide."));
+            }
+            String filename = file.getOriginalFilename();
+            if (filename == null || !filename.toLowerCase().endsWith(".xlsx")) {
+                return ResponseEntity.badRequest()
+                        .body(new ErrorResponse("Seuls les fichiers .xlsx sont acceptés."));
+            }
+            Map<String, Object> result = importService.importerVehicules(file, zoneNom);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("Erreur import : " + e.getMessage()));
         }
     }
 
