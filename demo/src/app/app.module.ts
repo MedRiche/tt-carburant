@@ -22,6 +22,7 @@ import { UtilisateurService } from './services/utilisateur.service';
 import { VehiculeService }       from './services/vehicule.service';
 import { CarburantVehiculeService } from './services/carburant-vehicule.service';
 import { CarburantAnalyticsService } from './services/carburant-analytics.service';
+import { MaintenanceService } from './services/maintenance.service';
 
 
 // Guards
@@ -38,6 +39,8 @@ import { CarburantFormComponent } from './carburant/carburant-form/carburant-for
 import { CarburantAdditionsComponent } from './carburant/carburant-additions/carburant-additions.component';
 import { CountByPipe } from './pipes/count-by.pipe';
 import { CarburantAnalyticsComponent } from './carburant/carburant-analytics/carburant-analytics.component';
+import { MaintenanceListComponent } from './maintenance/maintenance-list/maintenance-list.component';
+import { MaintenanceFormComponent } from './maintenance/maintenance-form/maintenance-form.component';
 
 @NgModule({
   declarations: [
@@ -57,6 +60,8 @@ import { CarburantAnalyticsComponent } from './carburant/carburant-analytics/car
     CarburantAdditionsComponent,
     CountByPipe,
     CarburantAnalyticsComponent,
+    MaintenanceListComponent,
+    MaintenanceFormComponent,
 
   ],
     imports: [
@@ -76,6 +81,7 @@ import { CarburantAnalyticsComponent } from './carburant/carburant-analytics/car
     VehiculeService,
     CarburantVehiculeService,
     CarburantAnalyticsService,
+    MaintenanceService,
 
     
     // Guards

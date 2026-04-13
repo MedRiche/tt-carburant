@@ -9,7 +9,7 @@ import { VehiculeListComponent } from './vehicule/vehicule-list/vehicule-list.co
 import { CarburantListComponent } from './carburant/carburant-list/carburant-list.component';
 import { ProfileComponent } from './profile/profile.component';
 import { CarburantAnalyticsComponent } from './carburant/carburant-analytics/carburant-analytics.component';
-
+import { MaintenanceListComponent } from './maintenance/maintenance-list/maintenance-list.component';
 const routes: Routes = [
   // Route par défaut
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -32,6 +32,7 @@ const routes: Routes = [
       { path: 'vehicules', component: VehiculeListComponent },
       { path: 'carburant', component: CarburantListComponent },
       { path: 'carburant-analytics', component: CarburantAnalyticsComponent },
+      { path: 'maintenance', component: MaintenanceListComponent },
       
     ]
       
