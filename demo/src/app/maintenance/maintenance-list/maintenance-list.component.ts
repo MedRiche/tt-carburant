@@ -233,15 +233,27 @@ export class MaintenanceListComponent implements OnInit {
 
   chargerDashboard(): void {
     this.loadingDashboard = true;
-    this.maintenanceService.getDashboard().subscribe({
-      next: (d: any) => {
-        this.dashboard = d as MaintenanceDashboard;
-        this.chargerDossiersAvecDetails(() => {
-          this.calculerAnalyticsAvances();
-          this.loadingDashboard = false;
+    // Charger les détails d'abord, puis calculer les analytics depuis les données locales
+    // On essaie aussi le dashboard API mais on ne bloque pas si il échoue
+    this.chargerDossiersAvecDetails(() => {
+      this.calculerAnalyticsAvances();
+      // Essai optionnel du dashboard API pour statsParType et coutParPrestataire
+      try {
+        this.maintenanceService.getDashboard().subscribe({
+          next: (d: any) => {
+            this.dashboard = d as MaintenanceDashboard;
+            this.loadingDashboard = false;
+          },
+          error: () => {
+            // Dashboard API non disponible, on utilise les données calculées localement
+            this.dashboard = null;
+            this.loadingDashboard = false;
+          }
         });
-      },
-      error: () => { this.loadingDashboard = false; }
+      } catch {
+        this.dashboard = null;
+        this.loadingDashboard = false;
+      }
     });
   }
 
