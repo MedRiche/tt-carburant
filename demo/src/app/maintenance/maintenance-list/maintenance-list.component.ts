@@ -12,8 +12,7 @@ import { Zone } from '../../models/zone';
 import { MaintenanceService } from '../../services/maintenance.service';
 import { VehiculeService } from '../../services/vehicule.service';
 import { ZoneService } from '../../services/zone.service';
-
-// ── Interfaces pour les nouveaux onglets ──────────────────────────────────────
+import { forkJoin } from 'rxjs';
 
 export interface DesignationCount {
   designation: string;
@@ -44,45 +43,40 @@ export interface MissingHtvaItem {
 })
 export class MaintenanceListComponent implements OnInit {
 
-  // ── Tabs ──────────────────────────────────────────────────────────────────
   activeTab: 'global' | 'dossiers' | 'analytics' | 'desig-main' | 'desig-piece' | 'missing-htva' = 'global';
 
-  // ── Données ───────────────────────────────────────────────────────────────
   globalList: GlobalVehicleListItem[] = [];
   globalListFiltree: GlobalVehicleListItem[] = [];
   tousLesDossiers: Maintenance[] = [];
+  tousLesDossiersAvecDetails: Maintenance[] = []; // ← Dossiers with full details
   dossiersFiltres: Maintenance[] = [];
   vehicules: Vehicule[] = [];
   zones: Zone[] = [];
   dashboard: MaintenanceDashboard | null = null;
 
-  // ── Detail panel ──────────────────────────────────────────────────────────
   selectedGlobalItem: GlobalVehicleListItem | null = null;
   detailMaintenances: Maintenance[] = [];
   loadingDetail = false;
 
-  // ── Form ──────────────────────────────────────────────────────────────────
   showForm = false;
   maintenanceSelectionnee: Maintenance | null = null;
   matriculeDefaut = '';
 
-  // ── Loading ───────────────────────────────────────────────────────────────
   loadingGlobal = false;
   loadingDossiers = false;
   loadingDashboard = false;
+  loadingDetails = false; // ← Loading full details
   exportLoading = false;
 
-  // ── Filtres global ────────────────────────────────────────────────────────
   searchGlobal = '';
   filtreZoneGlobal = '';
   filtrePrestataire = '';
 
-  // ── Filtres dossiers ──────────────────────────────────────────────────────
   searchDossiers = '';
   filtreStatut = '';
   filtreType = '';
 
-  // ── Designation Count - Main ──────────────────────────────────────────────
+  // Designation Count - Main
   designationMainData: DesignationCount[] = [];
   designationMainFiltree: DesignationCount[] = [];
   filtreZoneDesigMain = '';
@@ -90,7 +84,7 @@ export class MaintenanceListComponent implements OnInit {
   searchDesigMain = '';
   loadingDesigMain = false;
 
-  // ── Designation Count - Piece ─────────────────────────────────────────────
+  // Designation Count - Piece
   designationPieceData: DesignationCount[] = [];
   designationPieceFiltree: DesignationCount[] = [];
   filtreZoneDesigPiece = '';
@@ -98,7 +92,7 @@ export class MaintenanceListComponent implements OnInit {
   searchDesigPiece = '';
   loadingDesigPiece = false;
 
-  // ── Missing HTVA ──────────────────────────────────────────────────────────
+  // Missing HTVA
   missingHtvaData: MissingHtvaItem[] = [];
   missingHtvaFiltree: MissingHtvaItem[] = [];
   filtreZoneMissing = '';
@@ -106,7 +100,7 @@ export class MaintenanceListComponent implements OnInit {
   filtreTypeMissing = '';
   loadingMissing = false;
 
-  // ── Analytics avancés ─────────────────────────────────────────────────────
+  // Analytics
   top5MainDesignation: { designation: string; count: number; totalHtva: number }[] = [];
   top5PieceDesignation: { designation: string; count: number; totalHtva: number }[] = [];
   top5Vehicules: { matricule: string; marque: string; zone: string; totalHtva: number; nbDossiers: number }[] = [];
@@ -115,7 +109,9 @@ export class MaintenanceListComponent implements OnInit {
   totalHtvaGlobal2 = 0;
   totalDossiers2 = 0;
 
-  // ── Computed ──────────────────────────────────────────────────────────────
+  // Track whether we've loaded details
+  private detailsLoaded = false;
+
   get totalHtvaGlobal(): number {
     return this.globalListFiltree.reduce((s, i) => s + (i.totalHtva || 0), 0);
   }
@@ -164,30 +160,102 @@ export class MaintenanceListComponent implements OnInit {
     });
   }
 
+  /**
+   * Load all dossiers WITH their details (needed for designation count & missing HTVA).
+   * Uses the getById() endpoint for each dossier to get full details.
+   */
+  chargerDossiersAvecDetails(callback?: () => void): void {
+    if (this.detailsLoaded) {
+      // Already loaded, just call callback
+      if (callback) callback();
+      return;
+    }
+
+    this.loadingDetails = true;
+
+    // First ensure we have the basic list
+    const ensureList = () => {
+      if (this.tousLesDossiers.length === 0) {
+        this.maintenanceService.getAll().subscribe({
+          next: dossiers => {
+            this.tousLesDossiers = dossiers;
+            this.dossiersFiltres = [...dossiers];
+            this.loadDetailsForAll(callback);
+          },
+          error: () => { this.loadingDetails = false; }
+        });
+      } else {
+        this.loadDetailsForAll(callback);
+      }
+    };
+
+    ensureList();
+  }
+
+  private loadDetailsForAll(callback?: () => void): void {
+    if (this.tousLesDossiers.length === 0) {
+      this.tousLesDossiersAvecDetails = [];
+      this.detailsLoaded = true;
+      this.loadingDetails = false;
+      if (callback) callback();
+      return;
+    }
+
+    // Load details for each dossier that has an id
+    const dossiersAvecId = this.tousLesDossiers.filter(d => d.id);
+    if (dossiersAvecId.length === 0) {
+      this.tousLesDossiersAvecDetails = [];
+      this.detailsLoaded = true;
+      this.loadingDetails = false;
+      if (callback) callback();
+      return;
+    }
+
+    const requests = dossiersAvecId.map(d => this.maintenanceService.getById(d.id!));
+
+    forkJoin(requests).subscribe({
+      next: (detailedDossiers) => {
+        this.tousLesDossiersAvecDetails = detailedDossiers;
+        this.detailsLoaded = true;
+        this.loadingDetails = false;
+        if (callback) callback();
+      },
+      error: (err) => {
+        console.error('Error loading details:', err);
+        // Fallback: use existing dossiers without details
+        this.tousLesDossiersAvecDetails = this.tousLesDossiers;
+        this.detailsLoaded = true;
+        this.loadingDetails = false;
+        if (callback) callback();
+      }
+    });
+  }
+
   chargerDashboard(): void {
     this.loadingDashboard = true;
     this.maintenanceService.getDashboard().subscribe({
       next: (d: any) => {
         this.dashboard = d as MaintenanceDashboard;
-        this.calculerAnalyticsAvances();
-        this.loadingDashboard = false;
+        this.chargerDossiersAvecDetails(() => {
+          this.calculerAnalyticsAvances();
+          this.loadingDashboard = false;
+        });
       },
       error: () => { this.loadingDashboard = false; }
     });
   }
 
-  // ── Calcul Analytics Avancés ──────────────────────────────────────────────
+  // ── Calcul Analytics ──────────────────────────────────────────────────────
 
   calculerAnalyticsAvances(): void {
-    if (!this.tousLesDossiers.length) return;
+    const dossiers = this.tousLesDossiersAvecDetails;
+    if (!dossiers.length) return;
 
-    // Top 5 désignations Main d'oeuvre
     const moMap = new Map<string, { count: number; totalHtva: number }>();
     const pieceMap = new Map<string, { count: number; totalHtva: number }>();
     const vehiculeMap = new Map<string, { marque: string; zone: string; totalHtva: number; nbDossiers: number }>();
 
-    this.tousLesDossiers.forEach(m => {
-      // Véhicule
+    dossiers.forEach(m => {
       const vKey = m.vehiculeMatricule;
       const vExist = vehiculeMap.get(vKey) || { marque: m.vehiculeMarqueModele || '', zone: m.vehiculeZoneNom || '', totalHtva: 0, nbDossiers: 0 };
       vehiculeMap.set(vKey, { ...vExist, totalHtva: vExist.totalHtva + (m.coutTotalHtva || 0), nbDossiers: vExist.nbDossiers + 1 });
@@ -219,12 +287,11 @@ export class MaintenanceListComponent implements OnInit {
       .sort((a, b) => b.totalHtva - a.totalHtva)
       .slice(0, 5);
 
-    this.totalHtvaGlobal2 = this.tousLesDossiers.reduce((s, m) => s + (m.coutTotalHtva || 0), 0);
-    this.totalDossiers2 = this.tousLesDossiers.length;
+    this.totalHtvaGlobal2 = dossiers.reduce((s, m) => s + (m.coutTotalHtva || 0), 0);
+    this.totalDossiers2 = dossiers.length;
 
-    // Stats par zone
     const zoneMap = new Map<string, { totalHtva: number; vehicules: Set<string> }>();
-    this.tousLesDossiers.forEach(m => {
+    dossiers.forEach(m => {
       const z = m.vehiculeZoneNom || 'Sans zone';
       const ex = zoneMap.get(z) || { totalHtva: 0, vehicules: new Set() };
       ex.totalHtva += m.coutTotalHtva || 0;
@@ -240,9 +307,15 @@ export class MaintenanceListComponent implements OnInit {
 
   chargerDesigMain(): void {
     this.loadingDesigMain = true;
-    // Calculer depuis les dossiers existants
+    this.chargerDossiersAvecDetails(() => {
+      this._computeDesigMain();
+      this.loadingDesigMain = false;
+    });
+  }
+
+  private _computeDesigMain(): void {
     const map = new Map<string, number>();
-    let dossiers = this.tousLesDossiers;
+    let dossiers = this.tousLesDossiersAvecDetails;
 
     if (this.filtreZoneDesigMain) {
       dossiers = dossiers.filter(m => m.vehiculeZoneNom === this.filtreZoneDesigMain);
@@ -269,7 +342,6 @@ export class MaintenanceListComponent implements OnInit {
       .sort((a, b) => b.count - a.count);
 
     this.filtrerDesigMain();
-    this.loadingDesigMain = false;
   }
 
   filtrerDesigMain(): void {
@@ -285,8 +357,15 @@ export class MaintenanceListComponent implements OnInit {
 
   chargerDesigPiece(): void {
     this.loadingDesigPiece = true;
+    this.chargerDossiersAvecDetails(() => {
+      this._computeDesigPiece();
+      this.loadingDesigPiece = false;
+    });
+  }
+
+  private _computeDesigPiece(): void {
     const map = new Map<string, number>();
-    let dossiers = this.tousLesDossiers;
+    let dossiers = this.tousLesDossiersAvecDetails;
 
     if (this.filtreZoneDesigPiece) {
       dossiers = dossiers.filter(m => m.vehiculeZoneNom === this.filtreZoneDesigPiece);
@@ -313,7 +392,6 @@ export class MaintenanceListComponent implements OnInit {
       .sort((a, b) => b.count - a.count);
 
     this.filtrerDesigPiece();
-    this.loadingDesigPiece = false;
   }
 
   filtrerDesigPiece(): void {
@@ -329,14 +407,19 @@ export class MaintenanceListComponent implements OnInit {
 
   chargerMissingHtva(): void {
     this.loadingMissing = true;
+    this.chargerDossiersAvecDetails(() => {
+      this._computeMissingHtva();
+      this.loadingMissing = false;
+    });
+  }
+
+  private _computeMissingHtva(): void {
     const missing: MissingHtvaItem[] = [];
     let rowNum = 0;
 
-    this.tousLesDossiers.forEach(m => {
+    this.tousLesDossiersAvecDetails.forEach(m => {
       (m.details || []).forEach(d => {
         const htva = d.totalHtva ?? 0;
-        const computed = (d.quantite || 1) * (d.montantUnitaire || 0);
-        // Missing HTVA = totalHtva is 0 but should have a value, OR montant is 0
         if (htva === 0 || d.montantUnitaire === 0) {
           rowNum++;
           missing.push({
@@ -351,7 +434,7 @@ export class MaintenanceListComponent implements OnInit {
             quantite: d.quantite || 1,
             montantUnitaire: d.montantUnitaire || 0,
             totalHtva: htva,
-            type: d.type
+            type: d.type as 'MAIN_D_OEUVRE' | 'PIECE'
           });
         }
       });
@@ -359,7 +442,6 @@ export class MaintenanceListComponent implements OnInit {
 
     this.missingHtvaData = missing;
     this.filtrerMissing();
-    this.loadingMissing = false;
   }
 
   filtrerMissing(): void {
@@ -466,6 +548,7 @@ export class MaintenanceListComponent implements OnInit {
     if (!confirm(`Supprimer le dossier ${m.numeroDossier} ?`)) return;
     this.maintenanceService.supprimer(m.id).subscribe({
       next: () => {
+        this.detailsLoaded = false; // Reset so details reload on next tab visit
         this.chargerDossiers();
         this.chargerGlobalList();
         if (this.selectedGlobalItem) this.ouvrirDetail(this.selectedGlobalItem);
@@ -477,6 +560,7 @@ export class MaintenanceListComponent implements OnInit {
   onSaved(): void {
     this.showForm = false;
     this.maintenanceSelectionnee = null;
+    this.detailsLoaded = false; // Reset so details reload on next tab visit
     this.chargerDossiers();
     this.chargerGlobalList();
     if (this.selectedGlobalItem) this.ouvrirDetail(this.selectedGlobalItem);
@@ -491,6 +575,7 @@ export class MaintenanceListComponent implements OnInit {
     this.maintenanceService.importerDataset(file).subscribe({
       next: (res: any) => {
         alert(`✅ Import terminé\nImportés: ${res.imported}\nIgnorés: ${res.skipped}\n${res.errors?.length ? 'Erreurs:\n' + res.errors.join('\n') : ''}`);
+        this.detailsLoaded = false;
         this.chargerGlobalList();
         this.chargerDossiers();
       },
@@ -572,13 +657,20 @@ export class MaintenanceListComponent implements OnInit {
 
   getUniqueZones(): string[] {
     const zones = new Set<string>();
-    this.tousLesDossiers.forEach(m => { if (m.vehiculeZoneNom) zones.add(m.vehiculeZoneNom); });
+    this.tousLesDossiersAvecDetails.forEach(m => { if (m.vehiculeZoneNom) zones.add(m.vehiculeZoneNom); });
+    // Fallback to basic dossiers if details not loaded
+    if (zones.size === 0) {
+      this.tousLesDossiers.forEach(m => { if (m.vehiculeZoneNom) zones.add(m.vehiculeZoneNom); });
+    }
     return Array.from(zones).sort();
   }
 
   getUniqueVehicules(): string[] {
     const mats = new Set<string>();
-    this.tousLesDossiers.forEach(m => mats.add(m.vehiculeMatricule));
+    this.tousLesDossiersAvecDetails.forEach(m => mats.add(m.vehiculeMatricule));
+    if (mats.size === 0) {
+      this.tousLesDossiers.forEach(m => mats.add(m.vehiculeMatricule));
+    }
     return Array.from(mats).sort();
   }
 
