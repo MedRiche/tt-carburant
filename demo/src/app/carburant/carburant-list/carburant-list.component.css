@@ -782,3 +782,22 @@ input.prefilled {
   display: flex; align-items: center; justify-content: center;
 }
 .btn-close-modal:hover { background: rgba(255,255,255,0.1); color: var(--text-primary, #e2e8f0); }
+.btn-analytics {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border-radius: 9px;
+  border: 1px solid rgba(0, 212, 170, 0.3);
+  background: rgba(0, 212, 170, 0.1);
+  color: var(--cyan, #00d4aa);
+  font-family: var(--font, 'DM Sans', sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-analytics:hover {
+  background: rgba(0, 212, 170, 0.18);
+  transform: translateY(-1px);
+}

@@ -106,4 +106,65 @@ export class CarburantVehiculeService {
     a.click();
     window.URL.revokeObjectURL(url);
   }
+
+
+  // Dashboard
+getDashboardKpi(annee: number, mois?: number): Observable<any> {
+  const params = { annee: annee.toString(), mois: mois?.toString() || '' };
+  return this.http.get<any>(`${this.api}/analytics/dashboard`, { params });
+}
+
+getEvolutionMensuelleConsommation(annee: number): Observable<any> {
+  return this.http.get<any>(`${this.api}/analytics/evolution-conso/${annee}`);
+}
+
+getEvolutionMensuelleCouts(annee: number): Observable<any> {
+  return this.http.get<any>(`${this.api}/analytics/evolution-couts/${annee}`);
+}
+
+getRepartitionDepensesParZone(annee: number, mois?: number): Observable<any> {
+  const params = { annee: annee.toString(), mois: mois?.toString() || '' };
+  return this.http.get<any>(`${this.api}/analytics/repartition-zones`, { params });
+}
+
+getRepartitionConsommationParTypeCarburant(annee: number, mois?: number): Observable<any> {
+  const params = { annee: annee.toString(), mois: mois?.toString() || '' };
+  return this.http.get<any>(`${this.api}/analytics/repartition-carburant`, { params });
+}
+
+// Véhicules
+getTopVehiculesConsommateurs(periode: 'mois'|'trimestre'|'annee', annee: number, mois?: number): Observable<any[]> {
+  const params = { periode, annee: annee.toString(), mois: mois?.toString() || '' };
+  return this.http.get<any[]>(`${this.api}/analytics/top-consommateurs`, { params });
+}
+
+getTopVehiculesCouteux(periode: 'mois'|'trimestre'|'annee', annee: number, mois?: number): Observable<any[]> {
+  const params = { periode, annee: annee.toString(), mois: mois?.toString() || '' };
+  return this.http.get<any[]>(`${this.api}/analytics/top-couteux`, { params });
+}
+
+getTopVehiculesRendement(periode: 'mois'|'trimestre'|'annee', annee: number, mois?: number): Observable<any[]> {
+  const params = { periode, annee: annee.toString(), mois: mois?.toString() || '' };
+  return this.http.get<any[]>(`${this.api}/analytics/top-rendement`, { params });
+}
+
+getTopVehiculesKilometrage(periode: 'mois'|'trimestre'|'annee', annee: number, mois?: number): Observable<any[]> {
+  const params = { periode, annee: annee.toString(), mois: mois?.toString() || '' };
+  return this.http.get<any[]>(`${this.api}/analytics/top-kilometrage`, { params });
+}
+
+getVehiculeAnalytics(matricule: string, annee: number): Observable<any> {
+  return this.http.get<any>(`${this.api}/analytics/vehicule/${matricule}/${annee}`);
+}
+
+// Zones
+getZoneStats(annee: number, mois?: number): Observable<any[]> {
+  const params = { annee: annee.toString(), mois: mois?.toString() || '' };
+  return this.http.get<any[]>(`${this.api}/analytics/zone-stats`, { params });
+}
+
+getComparaisonZones(annee: number, mois?: number): Observable<any[]> {
+  const params = { annee: annee.toString(), mois: mois?.toString() || '' };
+  return this.http.get<any[]>(`${this.api}/analytics/comparaison-zones`, { params });
+}
 }

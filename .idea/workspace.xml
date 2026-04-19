@@ -4,7 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="777fc5d2-3bb5-4db8-8545-4efa7fe5d991" name="Changes" comment="" />
+    <list default="true" id="777fc5d2-3bb5-4db8-8545-4efa7fe5d991" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/demo/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/demo/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/app/carburant/carburant-analytics/carburant-analytics.component.css" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/carburant/carburant-analytics/carburant-analytics.component.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/app/carburant/carburant-analytics/carburant-analytics.component.html" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/carburant/carburant-analytics/carburant-analytics.component.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/app/carburant/carburant-analytics/carburant-analytics.component.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/carburant/carburant-analytics/carburant-analytics.component.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/app/services/carburant-vehicule.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/services/carburant-vehicule.service.ts" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -136,7 +144,9 @@
       <workItem from="1775498856573" duration="4097000" />
       <workItem from="1776086608955" duration="2432000" />
       <workItem from="1776117623098" duration="637000" />
-      <workItem from="1776170551515" duration="511000" />
+      <workItem from="1776170551515" duration="1402000" />
+      <workItem from="1776267917937" duration="905000" />
+      <workItem from="1776300107324" duration="632000" />
     </task>
     <servers />
   </component>
