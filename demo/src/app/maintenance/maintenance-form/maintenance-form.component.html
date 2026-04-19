@@ -54,14 +54,15 @@
         </div>
       </div>
 
-      <!-- Section 2 : Récapitulatif des détails existants (affiché seulement si on a des détails) -->
+      <!-- Section 2 : Récapitulatif des détails existants (ÉDITABLES INLINE) -->
       <div class="form-section recap-section" *ngIf="(form.details?.length || 0) > 0">
         <h4 class="section-title">
           Récapitulatif
           <span class="detail-count">{{ form.details?.length }} ligne(s)</span>
+          <span style="font-size:10px;color:#60a5fa;text-transform:none;letter-spacing:0;font-weight:400;margin-left:8px">✏️ Cliquez sur une cellule pour modifier</span>
         </h4>
 
-        <!-- Main d'œuvre existante -->
+        <!-- Main d'œuvre existante — ÉDITABLES INLINE -->
         <div *ngIf="mainDoeuvreDetails.length > 0">
           <div class="sub-section-label mo-label">Main d'œuvre</div>
           <div class="recap-scroll">
@@ -78,21 +79,56 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let d of mainDoeuvreDetails; let i = index">
-                  <td>{{ d.marque || '—' }}</td>
-                  <td class="mono-val">{{ d.numero || '—' }}</td>
-                  <td class="desig-cell">{{ d.designation }}</td>
-                  <td class="mono-val" style="text-align:center">{{ d.quantite }}</td>
-                  <td class="mono-val" style="text-align:right">{{ fmt3(d.montantUnitaire) }}</td>
-                  <td class="mono-val htva-cell" style="text-align:right">{{ fmt3(d.quantite * d.montantUnitaire) }}</td>
-                  <td><button class="btn-remove" type="button" (click)="supprimerDetail((form.details || []).indexOf(d))">✕</button></td>
+                <tr *ngFor="let d of mainDoeuvreDetails; let i = index" class="detail-editable-row">
+                  <!-- Marque -->
+                  <td>
+                    <select class="inline-select" [(ngModel)]="d.marque">
+                      <option value="">—</option>
+                      <option value="TAS">TAS</option>
+                      <option value="Peugeot">Peugeot</option>
+                      <option value="Citroen">Citroën</option>
+                      <option value="mitshi">Mitshi</option>
+                      <option value="ranger">Ranger</option>
+                      <option value="jumpy">Jumpy</option>
+                      <option value="fiat">Fiat</option>
+                    </select>
+                  </td>
+                  <!-- N° prestation -->
+                  <td>
+                    <input class="inline-input mono" [(ngModel)]="d.numero" placeholder="N°"/>
+                  </td>
+                  <!-- Désignation -->
+                  <td>
+                    <input class="inline-input wide" [(ngModel)]="d.designation" placeholder="Désignation"/>
+                  </td>
+                  <!-- Quantité -->
+                  <td style="text-align:center">
+                    <input class="inline-input num" type="number" min="0.5" step="0.5"
+                           [(ngModel)]="d.quantite"
+                           (ngModelChange)="recalcDetail(d)"/>
+                  </td>
+                  <!-- Montant unitaire -->
+                  <td style="text-align:right">
+                    <input class="inline-input num" type="number" step="0.001" min="0"
+                           [(ngModel)]="d.montantUnitaire"
+                           (ngModelChange)="recalcDetail(d)"/>
+                  </td>
+                  <!-- Total HT calculé -->
+                  <td class="mono-val htva-cell" style="text-align:right">
+                    {{ fmt3((d.quantite || 0) * (d.montantUnitaire || 0)) }}
+                  </td>
+                  <!-- Supprimer -->
+                  <td>
+                    <button class="btn-remove" type="button"
+                            (click)="supprimerDetail(getGlobalIndex(d))">✕</button>
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- Pièces existantes -->
+        <!-- Pièces existantes — ÉDITABLES INLINE -->
         <div *ngIf="piecesDetails.length > 0" style="margin-top:8px">
           <div class="sub-section-label piece-label">Pièces</div>
           <div class="recap-scroll">
@@ -109,14 +145,49 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let d of piecesDetails; let i = index">
-                  <td>{{ d.marque || '—' }}</td>
-                  <td class="mono-val">{{ d.numeroPiece || '—' }}</td>
-                  <td class="desig-cell">{{ d.designation }}</td>
-                  <td class="mono-val" style="text-align:center">{{ d.quantite }}</td>
-                  <td class="mono-val" style="text-align:right">{{ fmt3(d.montantUnitaire) }}</td>
-                  <td class="mono-val htva-cell" style="text-align:right">{{ fmt3(d.quantite * d.montantUnitaire) }}</td>
-                  <td><button class="btn-remove" type="button" (click)="supprimerDetail((form.details || []).indexOf(d))">✕</button></td>
+                <tr *ngFor="let d of piecesDetails; let i = index" class="detail-editable-row">
+                  <!-- Marque -->
+                  <td>
+                    <select class="inline-select" [(ngModel)]="d.marque">
+                      <option value="">—</option>
+                      <option value="TAS">TAS</option>
+                      <option value="Peugeot">Peugeot</option>
+                      <option value="Citroen">Citroën</option>
+                      <option value="mitshi">Mitshi</option>
+                      <option value="ranger">Ranger</option>
+                      <option value="jumpy">Jumpy</option>
+                      <option value="fiat">Fiat</option>
+                    </select>
+                  </td>
+                  <!-- N° pièce -->
+                  <td>
+                    <input class="inline-input mono" [(ngModel)]="d.numeroPiece" placeholder="Réf."/>
+                  </td>
+                  <!-- Désignation -->
+                  <td>
+                    <input class="inline-input wide" [(ngModel)]="d.designation" placeholder="Désignation"/>
+                  </td>
+                  <!-- Quantité -->
+                  <td style="text-align:center">
+                    <input class="inline-input num" type="number" min="0.5" step="0.5"
+                           [(ngModel)]="d.quantite"
+                           (ngModelChange)="recalcDetail(d)"/>
+                  </td>
+                  <!-- Montant unitaire -->
+                  <td style="text-align:right">
+                    <input class="inline-input num" type="number" step="0.001" min="0"
+                           [(ngModel)]="d.montantUnitaire"
+                           (ngModelChange)="recalcDetail(d)"/>
+                  </td>
+                  <!-- Total HT calculé -->
+                  <td class="mono-val htva-cell" style="text-align:right">
+                    {{ fmt3((d.quantite || 0) * (d.montantUnitaire || 0)) }}
+                  </td>
+                  <!-- Supprimer -->
+                  <td>
+                    <button class="btn-remove" type="button"
+                            (click)="supprimerDetail(getGlobalIndex(d))">✕</button>
+                  </td>
                 </tr>
               </tbody>
             </table>

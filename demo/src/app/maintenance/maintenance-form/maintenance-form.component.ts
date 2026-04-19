@@ -67,6 +67,7 @@ export class MaintenanceFormComponent implements OnInit, OnChanges {
         typeIntervention: this.maintenance.typeIntervention,
         statut: this.maintenance.statut,
         description: this.maintenance.description || '',
+        // Deep copy des détails pour permettre l'édition inline sans affecter l'original
         details: JSON.parse(JSON.stringify(this.maintenance.details || []))
       };
     } else {
@@ -95,6 +96,8 @@ export class MaintenanceFormComponent implements OnInit, OnChanges {
     };
   }
 
+  // ── Getters pour filtrer par type ─────────────────────────
+
   get totalHtva(): number {
     return (this.form.details || []).reduce((s, d) => s + ((d.quantite || 0) * (d.montantUnitaire || 0)), 0);
   }
@@ -110,6 +113,27 @@ export class MaintenanceFormComponent implements OnInit, OnChanges {
   get newDetailTotal(): number {
     return (this.newDetail.quantite || 0) * (this.newDetail.montantUnitaire || 0);
   }
+
+  // ── Édition inline ────────────────────────────────────────
+
+  /**
+   * Recalcule le totalHtva d'un détail après modification inline.
+   * Appelé par (ngModelChange) sur quantite ou montantUnitaire.
+   */
+  recalcDetail(d: DetailMaintenance): void {
+    d.totalHtva = Math.round((d.quantite || 0) * (d.montantUnitaire || 0) * 1000) / 1000;
+  }
+
+  /**
+   * Retourne l'index global d'un détail dans form.details
+   * (car mainDoeuvreDetails / piecesDetails sont des sous-ensembles filtrés,
+   *  mais l'objet est le même par référence → indexOf fonctionne).
+   */
+  getGlobalIndex(d: DetailMaintenance): number {
+    return (this.form.details || []).indexOf(d);
+  }
+
+  // ── Ajout / Suppression ───────────────────────────────────
 
   ajouterDetail(): void {
     if (!this.newDetail.designation?.trim()) {
@@ -136,6 +160,8 @@ export class MaintenanceFormComponent implements OnInit, OnChanges {
     this.form.details?.splice(index, 1);
   }
 
+  // ── Soumission ────────────────────────────────────────────
+
   submit(): void {
     if (!this.form.vehiculeMatricule || !this.form.numeroDossier) {
       alert('Matricule et N° dossier sont obligatoires');
@@ -143,12 +169,12 @@ export class MaintenanceFormComponent implements OnInit, OnChanges {
     }
     this.submitting = true;
 
-    // Recalculate totalHtva for each detail
+    // Recalculer totalHtva pour chaque détail avant envoi
     const req: MaintenanceRequest = {
       ...this.form,
       details: (this.form.details || []).map(d => ({
         ...d,
-        totalHtva: d.quantite * d.montantUnitaire
+        totalHtva: Math.round((d.quantite || 0) * (d.montantUnitaire || 0) * 1000) / 1000
       }))
     };
 

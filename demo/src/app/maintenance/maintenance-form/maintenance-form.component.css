@@ -299,3 +299,94 @@ textarea.form-input { resize: vertical; min-height: 60px; }
   font-weight: 700;
   color: var(--amber, #f59e0b);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   ADDITIONS — Inline editable rows in maintenance-form
+   Paste at END of maintenance-form.component.css
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Editable detail row ────────────────────────────────────── */
+.detail-editable-row {
+  transition: background 0.15s;
+}
+
+.detail-editable-row:hover td {
+  background: rgba(249, 115, 22, 0.04);
+}
+
+/* Shared base for all inline inputs */
+.inline-input,
+.inline-select {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  padding: 4px 6px;
+  font-family: var(--font, 'DM Sans', sans-serif);
+  font-size: 11px;
+  color: var(--text-secondary, #94a3b8);
+  outline: none;
+  transition: all 0.18s;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Focus / hover state — reveals the input */
+.inline-input:hover,
+.inline-select:hover {
+  border-color: var(--border-light, #253755);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.inline-input:focus,
+.inline-select:focus {
+  border-color: rgba(249, 115, 22, 0.45);
+  background: rgba(249, 115, 22, 0.04);
+  color: var(--text-primary, #e2e8f0);
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.08);
+}
+
+/* Select option background */
+.inline-select option {
+  background: #1e293b;
+  color: var(--text-primary, #e2e8f0);
+}
+
+/* Width variants */
+.inline-input.wide {
+  min-width: 160px;
+  width: 100%;
+}
+
+.inline-input.mono,
+.inline-select.mono {
+  font-family: var(--mono, 'DM Mono', monospace);
+  min-width: 60px;
+  width: 80px;
+}
+
+.inline-input.num {
+  font-family: var(--mono, 'DM Mono', monospace);
+  width: 80px;
+  text-align: right;
+}
+
+/* Remove number input arrows */
+.inline-input.num::-webkit-inner-spin-button,
+.inline-input.num::-webkit-outer-spin-button {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.inline-input.num:hover::-webkit-inner-spin-button,
+.inline-input.num:hover::-webkit-outer-spin-button,
+.inline-input.num:focus::-webkit-inner-spin-button,
+.inline-input.num:focus::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+/* Edited cell highlight pulse */
+.inline-input:focus + .htva-cell,
+.detail-editable-row:focus-within .htva-cell {
+  color: #f97316;
+  font-weight: 700;
+}
