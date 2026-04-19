@@ -1,3 +1,5 @@
+// src/app/carburant/carburant-analytics/carburant-analytics.component.ts
+// MODIFIÉ : suppression des filtres "meilleur" et "budget" + nouveau graphique Top 3 barres groupées
 import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { CarburantAnalyticsService } from '../../services/carburant-analytics.service';
@@ -33,7 +35,6 @@ export class CarburantAnalyticsComponent implements OnInit, AfterViewInit, OnDes
   annees      = Array.from({ length: 6 }, (_, i) => new Date().getFullYear() - i);
   moisOptions = Array.from({ length: 12 }, (_, i) => i + 1);
   moisLabels  = MOIS_LABELS;
-  periodeMode: 'mois' | 'trimestre' | 'annee' = 'mois';
 
   vehicules: Vehicule[] = [];
   zones: Zone[] = [];
@@ -48,7 +49,9 @@ export class CarburantAnalyticsComponent implements OnInit, AfterViewInit, OnDes
   comparaisonData: ComparaisonData | null = null;
   comparaisonLoading = false;
   comparaisonMode: 'mensuel' | 'annuel' = 'mensuel';
-  comparaisonOnglet: 'consommation' | 'km' | 'meilleur' | 'pire' | 'budget' = 'consommation';
+
+  // ✅ MODIFIÉ : seulement 3 options (suppression 'meilleur' et 'budget')
+  comparaisonOnglet: 'consommation' | 'km' | 'pire' = 'consommation';
 
   evolutionData: EvolutionData | null = null;
   evolutionLoading = false;
@@ -59,10 +62,6 @@ export class CarburantAnalyticsComponent implements OnInit, AfterViewInit, OnDes
   historiqueSearch = '';
 
   anomalies: Anomalie[] = [];
-  anomaliesLoading = false;
-  anomaliesMode: 'mensuel' | 'annuel' = 'annuel';
-  filtreTypeAnomalie = '';
-  filtreSeverite = '';
 
   // ── Zone ──────────────────────────────────────────────────────────────────
   zoneTab: 'comparaison' | 'evolution' | 'carte' = 'comparaison';
@@ -133,7 +132,6 @@ export class CarburantAnalyticsComponent implements OnInit, AfterViewInit, OnDes
     this.destroyCharts();
     const d = this.dashboard;
 
-    // Chart évolution mensuelle coûts
     const c1 = document.getElementById('chartDashEvo') as HTMLCanvasElement;
     if (c1 && d.evolutionMensuelle?.length) {
       const labels = d.evolutionMensuelle.map(m => (MOIS_LABELS as any)[m.mois]?.substring(0, 3) || m.mois);
@@ -150,7 +148,6 @@ export class CarburantAnalyticsComponent implements OnInit, AfterViewInit, OnDes
       }));
     }
 
-    // Chart zones
     const c2 = document.getElementById('chartDashZones') as HTMLCanvasElement;
     if (c2 && d.statsParZone?.length) {
       const zones = d.statsParZone.slice(0, 8);
@@ -167,7 +164,6 @@ export class CarburantAnalyticsComponent implements OnInit, AfterViewInit, OnDes
       }));
     }
 
-    // Chart type carburant
     const c3 = document.getElementById('chartDashCarburant') as HTMLCanvasElement;
     if (c3 && d.consommationParTypeCarburant) {
       const types = Object.keys(d.consommationParTypeCarburant);
@@ -182,7 +178,6 @@ export class CarburantAnalyticsComponent implements OnInit, AfterViewInit, OnDes
       }));
     }
 
-    // Chart évolution consommation L
     const c4 = document.getElementById('chartDashConso') as HTMLCanvasElement;
     if (c4 && d.evolutionMensuelle?.length) {
       const labels = d.evolutionMensuelle.map(m => (MOIS_LABELS as any)[m.mois]?.substring(0, 3) || m.mois);
@@ -204,8 +199,8 @@ export class CarburantAnalyticsComponent implements OnInit, AfterViewInit, OnDes
     this.vehiculeTab = tab;
     this.destroyCharts();
     setTimeout(() => {
-      if (tab === 'top')       this.chargerComparaison();
-      if (tab === 'detail')    this.chargerEvolutionVehicule();
+      if (tab === 'top')        this.chargerComparaison();
+      if (tab === 'detail')     this.chargerEvolutionVehicule();
       if (tab === 'historique') this.chargerHistorique();
     }, 50);
   }
@@ -232,19 +227,26 @@ export class CarburantAnalyticsComponent implements OnInit, AfterViewInit, OnDes
     const data = this.comparaisonItems;
     if (!data.length) return;
 
-    // Chart Top comparaison
+    // Chart 1 : Classement véhicules (barres horizontales)
     const c1 = document.getElementById('chartTopVehicules') as HTMLCanvasElement;
     if (c1) {
       const colors = ['#3b82f6','#00d4aa','#8b5cf6','#f59e0b','#ef4444'];
+      const labelKey = this.comparaisonOnglet === 'km'
+        ? 'Km parcourus'
+        : this.comparaisonOnglet === 'pire'
+        ? 'L/100km'
+        : 'Coût (DT)';
+
       this.charts.push(new Chart(c1.getContext('2d'), {
         type: 'bar',
         data: {
           labels: data.map(r => r.matricule),
           datasets: [{
+            label: labelKey,
             data: data.map(r =>
-              this.comparaisonOnglet === 'km'       ? r.totalKm :
-              this.comparaisonOnglet === 'meilleur' || this.comparaisonOnglet === 'pire' ? r.rendementLPour100km :
-              this.comparaisonOnglet === 'budget'   ? r.tauxBudgetMoyen : r.totalCout),
+              this.comparaisonOnglet === 'km'   ? r.totalKm :
+              this.comparaisonOnglet === 'pire' ? r.rendementLPour100km :
+              r.totalCout),
             backgroundColor: colors.map(c => c + 'aa'),
             borderColor: colors,
             borderWidth: 2,
@@ -255,25 +257,90 @@ export class CarburantAnalyticsComponent implements OnInit, AfterViewInit, OnDes
       }));
     }
 
-    // Chart anomalies
-    const c2 = document.getElementById('chartAnomaliesVehicules') as HTMLCanvasElement;
-    if (c2) {
-      const items = this.comparaisonData.top5Consommation || [];
-      this.charts.push(new Chart(c2.getContext('2d'), {
-        type: 'radar',
-        data: {
-          labels: ['Consommation', 'Km parcourus', 'Rendement', '% Budget', 'Anomalies'],
-          datasets: items.slice(0, 3).map((r, i) => ({
-            label: r.matricule,
-            data: [r.totalCout, r.totalKm/100, r.rendementLPour100km, r.tauxBudgetMoyen, r.nbAnomalies * 10],
-            borderColor: ['#3b82f6','#00d4aa','#f59e0b'][i],
-            backgroundColor: ['#3b82f622','#00d4aa22','#f59e0b22'][i],
-            borderWidth: 2
-          }))
+    // ✅ Chart 2 NOUVEAU : Barres groupées multi-indicateurs pour les Top 3
+    this.buildTop3MultiBarChart();
+  }
+
+  /**
+   * ✅ NOUVEAU : Graphique barres groupées comparant les Top 3 véhicules
+   * sur 4 indicateurs normalisés : Coût DT, Km parcourus, L/100km, Nb anomalies
+   */
+  private buildTop3MultiBarChart(): void {
+    if (!this.comparaisonData) return;
+    const c2 = document.getElementById('chartTop3MultiBar') as HTMLCanvasElement;
+    if (!c2) return;
+
+    const top3 = (this.comparaisonData.top5Consommation || []).slice(0, 3);
+    if (!top3.length) return;
+
+    const colors = ['#3b82f6', '#00d4aa', '#f59e0b'];
+    const labels = ['Coût DT', 'Km parcourus', 'L / 100km', 'Anomalies'];
+
+    // Normaliser chaque indicateur sur 100 par rapport au max des 3
+    const maxCout  = Math.max(...top3.map(r => r.totalCout), 1);
+    const maxKm    = Math.max(...top3.map(r => r.totalKm), 1);
+    const maxL100  = Math.max(...top3.map(r => r.rendementLPour100km), 1);
+    const maxAnom  = Math.max(...top3.map(r => r.nbAnomalies), 1);
+
+    const datasets = top3.map((r, i) => ({
+      label: r.matricule,
+      data: [
+        Math.round(r.totalCout  / maxCout  * 100),
+        Math.round(r.totalKm   / maxKm   * 100),
+        Math.round(r.rendementLPour100km / maxL100 * 100),
+        Math.round(r.nbAnomalies / maxAnom * 100)
+      ],
+      backgroundColor: colors[i] + '99',
+      borderColor: colors[i],
+      borderWidth: 2,
+      borderRadius: 6
+    }));
+
+    this.charts.push(new Chart(c2.getContext('2d'), {
+      type: 'bar',
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false  // Légende custom au-dessus dans le HTML
+          },
+          tooltip: {
+            ...this.tooltipOpts(),
+            callbacks: {
+              label: (ctx: any) => {
+                const r = top3[ctx.datasetIndex];
+                const raw = [
+                  `Coût : ${this.fmt3(r.totalCout)} DT`,
+                  `Km : ${this.fmt0(r.totalKm)} km`,
+                  `Rend. : ${this.fmt3(r.rendementLPour100km)} L/100km`,
+                  `Anomalies : ${r.nbAnomalies}`
+                ][ctx.dataIndex];
+                return ` ${r.matricule} — ${raw}`;
+              }
+            }
+          }
         },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 } } }, tooltip: this.tooltipOpts() }, scales: { r: { grid: { color: '#1e2d47' }, ticks: { color: '#94a3b8', font: { size: 9 } }, pointLabels: { color: '#94a3b8', font: { size: 10 } } } } }
-      }));
-    }
+        scales: {
+          x: {
+            grid: { color: 'rgba(51,65,85,0.4)' },
+            ticks: { color: '#64748b', font: { size: 11 } }
+          },
+          y: {
+            grid: { color: 'rgba(51,65,85,0.4)' },
+            ticks: {
+              color: '#64748b',
+              font: { size: 10 },
+              callback: (v: number) => v + '%'
+            },
+            beginAtZero: true,
+            max: 100
+          }
+        },
+        animation: { duration: 700, easing: 'easeOutQuart' }
+      }
+    }));
   }
 
   chargerEvolutionVehicule(): void {
@@ -343,25 +410,6 @@ export class CarburantAnalyticsComponent implements OnInit, AfterViewInit, OnDes
       h.vehiculeMatricule.toLowerCase().includes(q) ||
       (h.vehiculeMarqueModele || '').toLowerCase().includes(q) ||
       h.periodeLabel.toLowerCase().includes(q)
-    );
-  }
-
-  chargerAnomalies(): void {
-    this.anomaliesLoading = true;
-    const zId = this.filtreZoneId ? +this.filtreZoneId : undefined;
-    const obs = this.anomaliesMode === 'mensuel'
-      ? this.analyticsService.getAnomalies(this.annee, this.mois, zId)
-      : this.analyticsService.getAnomaliesAnnee(this.annee, zId);
-    obs.subscribe({
-      next: d => { this.anomalies = d; this.anomaliesLoading = false; },
-      error: () => { this.anomaliesLoading = false; }
-    });
-  }
-
-  get filteredAnomalies(): Anomalie[] {
-    return this.anomalies.filter(a =>
-      (!this.filtreTypeAnomalie || a.typeAnomalie === this.filtreTypeAnomalie) &&
-      (!this.filtreSeverite || a.severite === this.filtreSeverite)
     );
   }
 
@@ -493,7 +541,7 @@ export class CarburantAnalyticsComponent implements OnInit, AfterViewInit, OnDes
       for (const z of zones) {
         const ratio = maxCout > 0 ? z.totalCout / maxCout : 0;
         const color = ratio > 0.7 ? '#ef4444' : ratio > 0.4 ? '#f59e0b' : '#22c55e';
-        html += `<div style="background:${color}22;border:1px solid ${color}44;border-radius:8px;padding:12px;cursor:pointer" onclick="void(0)">
+        html += `<div style="background:${color}22;border:1px solid ${color}44;border-radius:8px;padding:12px">
           <div style="font-size:12px;font-weight:600;color:${color};margin-bottom:4px">${z.zoneNom}</div>
           <div style="font-size:11px;color:#94a3b8">${z.nbVehicules} véh. · ${this.fmt3(z.totalCout)} DT</div>
           <div style="margin-top:6px;height:6px;border-radius:3px;background:#1e2d47"><div style="height:100%;border-radius:3px;background:${color};width:${Math.round(ratio*100)}%"></div></div>
@@ -504,15 +552,14 @@ export class CarburantAnalyticsComponent implements OnInit, AfterViewInit, OnDes
     }, 100);
   }
 
-  // ── Helpers communs ───────────────────────────────────────────────────────
+  // ── Helpers ───────────────────────────────────────────────────────────────
   get comparaisonItems(): VehiculeRank[] {
     if (!this.comparaisonData) return [];
     const map: Record<string, VehiculeRank[]> = {
       consommation: this.comparaisonData.top5Consommation,
       km:           this.comparaisonData.top5KmParcourus,
-      meilleur:     this.comparaisonData.meilleursRendements,
-      pire:         this.comparaisonData.piresRendements,
-      budget:       this.comparaisonData.plusGrandsBudgetDepasses
+      // ✅ Plus de 'meilleur' ni 'budget'
+      pire:         this.comparaisonData.piresRendements
     };
     return map[this.comparaisonOnglet] || [];
   }
@@ -556,6 +603,11 @@ export class CarburantAnalyticsComponent implements OnInit, AfterViewInit, OnDes
   fmt3(v?: number): string { return (v ?? 0).toLocaleString('fr-TN', { minimumFractionDigits: 3, maximumFractionDigits: 3 }); }
   fmt1(v?: number): string { return (v ?? 0).toLocaleString('fr-TN', { minimumFractionDigits: 1, maximumFractionDigits: 1 }); }
   fmt0(v?: number): string { return Math.round(v ?? 0).toLocaleString('fr-TN'); }
+
+  // Ajoutez cette propriété getter
+get hasTop3(): boolean {
+  return !!(this.comparaisonData?.top5Consommation?.length && this.comparaisonData.top5Consommation.length >= 1);
+}
 
   navigateTo(r: string): void { this.router.navigate([r]); }
   navigateToCarburant(): void { this.router.navigate(['/admin/carburant']); }
