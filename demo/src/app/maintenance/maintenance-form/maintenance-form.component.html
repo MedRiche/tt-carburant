@@ -54,7 +54,83 @@
         </div>
       </div>
 
-      <!-- Section 2 : Ajouter un détail -->
+      <!-- Section 2 : Récapitulatif des détails existants (affiché seulement si on a des détails) -->
+      <div class="form-section recap-section" *ngIf="(form.details?.length || 0) > 0">
+        <h4 class="section-title">
+          Récapitulatif
+          <span class="detail-count">{{ form.details?.length }} ligne(s)</span>
+        </h4>
+
+        <!-- Main d'œuvre existante -->
+        <div *ngIf="mainDoeuvreDetails.length > 0">
+          <div class="sub-section-label mo-label">Main d'œuvre</div>
+          <div class="recap-scroll">
+            <table class="recap-table">
+              <thead>
+                <tr>
+                  <th>Marque</th>
+                  <th>N°</th>
+                  <th>Désignation</th>
+                  <th style="text-align:center">Qté</th>
+                  <th style="text-align:right">Montant</th>
+                  <th style="text-align:right">Total HT</th>
+                  <th style="width:36px"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let d of mainDoeuvreDetails; let i = index">
+                  <td>{{ d.marque || '—' }}</td>
+                  <td class="mono-val">{{ d.numero || '—' }}</td>
+                  <td class="desig-cell">{{ d.designation }}</td>
+                  <td class="mono-val" style="text-align:center">{{ d.quantite }}</td>
+                  <td class="mono-val" style="text-align:right">{{ fmt3(d.montantUnitaire) }}</td>
+                  <td class="mono-val htva-cell" style="text-align:right">{{ fmt3(d.quantite * d.montantUnitaire) }}</td>
+                  <td><button class="btn-remove" type="button" (click)="supprimerDetail((form.details || []).indexOf(d))">✕</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Pièces existantes -->
+        <div *ngIf="piecesDetails.length > 0" style="margin-top:8px">
+          <div class="sub-section-label piece-label">Pièces</div>
+          <div class="recap-scroll">
+            <table class="recap-table">
+              <thead>
+                <tr>
+                  <th>Marque</th>
+                  <th>N° Pièce</th>
+                  <th>Désignation</th>
+                  <th style="text-align:center">Qté</th>
+                  <th style="text-align:right">Montant</th>
+                  <th style="text-align:right">Total HT</th>
+                  <th style="width:36px"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let d of piecesDetails; let i = index">
+                  <td>{{ d.marque || '—' }}</td>
+                  <td class="mono-val">{{ d.numeroPiece || '—' }}</td>
+                  <td class="desig-cell">{{ d.designation }}</td>
+                  <td class="mono-val" style="text-align:center">{{ d.quantite }}</td>
+                  <td class="mono-val" style="text-align:right">{{ fmt3(d.montantUnitaire) }}</td>
+                  <td class="mono-val htva-cell" style="text-align:right">{{ fmt3(d.quantite * d.montantUnitaire) }}</td>
+                  <td><button class="btn-remove" type="button" (click)="supprimerDetail((form.details || []).indexOf(d))">✕</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Grand total -->
+        <div class="grand-total">
+          <span>Total HTVA dossier :</span>
+          <strong class="grand-total-val">{{ fmt3(totalHtva) }} DT</strong>
+        </div>
+      </div>
+
+      <!-- Section 3 : Ajouter un nouveau détail -->
       <div class="form-section">
         <h4 class="section-title">Ajouter un détail</h4>
         <div class="detail-type-toggle">
@@ -80,6 +156,7 @@
               <option value="mitshi">Mitshi</option>
               <option value="ranger">Ranger</option>
               <option value="jumpy">Jumpy</option>
+              <option value="fiat">Fiat</option>
             </select>
           </div>
           <div class="form-group" *ngIf="newDetail.type === 'MAIN_D_OEUVRE'">
@@ -116,63 +193,12 @@
         </div>
       </div>
 
-      <!-- Section 3 : Récapitulatif des détails -->
-      <div class="form-section" *ngIf="(form.details?.length || 0) > 0">
-        <h4 class="section-title">Récapitulatif
-          <span class="detail-count">{{ form.details?.length }} ligne(s)</span>
-        </h4>
-
-        <!-- Main d'œuvre -->
-        <div *ngIf="mainDoeuvreDetails.length > 0">
-          <div class="sub-section-label mo-label">Main d'œuvre</div>
-          <table class="recap-table">
-            <thead><tr><th>Marque</th><th>N°</th><th>Désignation</th><th>Qté</th><th>Montant</th><th>Total HT</th><th></th></tr></thead>
-            <tbody>
-              <tr *ngFor="let d of mainDoeuvreDetails; let i = index">
-                <td>{{ d.marque || '—' }}</td>
-                <td class="mono-val">{{ d.numero || '—' }}</td>
-                <td>{{ d.designation }}</td>
-                <td class="mono-val center">{{ d.quantite }}</td>
-                <td class="mono-val">{{ fmt3(d.montantUnitaire) }}</td>
-                <td class="mono-val htva-cell">{{ fmt3(d.quantite * d.montantUnitaire) }}</td>
-                <td><button class="btn-remove" (click)="supprimerDetail((form.details || []).indexOf(d))">✕</button></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Pièces -->
-        <div *ngIf="piecesDetails.length > 0">
-          <div class="sub-section-label piece-label">Pièces</div>
-          <table class="recap-table">
-            <thead><tr><th>Marque</th><th>N° Pièce</th><th>Désignation</th><th>Qté</th><th>Montant</th><th>Total HT</th><th></th></tr></thead>
-            <tbody>
-              <tr *ngFor="let d of piecesDetails; let i = index">
-                <td>{{ d.marque || '—' }}</td>
-                <td class="mono-val">{{ d.numeroPiece || '—' }}</td>
-                <td>{{ d.designation }}</td>
-                <td class="mono-val center">{{ d.quantite }}</td>
-                <td class="mono-val">{{ fmt3(d.montantUnitaire) }}</td>
-                <td class="mono-val htva-cell">{{ fmt3(d.quantite * d.montantUnitaire) }}</td>
-                <td><button class="btn-remove" (click)="supprimerDetail((form.details || []).indexOf(d))">✕</button></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Total -->
-        <div class="grand-total">
-          <span>Total HTVA dossier :</span>
-          <strong class="grand-total-val">{{ fmt3(totalHtva) }} DT</strong>
-        </div>
-      </div>
-
     </div><!-- /modal-body -->
 
     <!-- Footer -->
     <div class="modal-footer">
       <button class="btn btn-secondary" type="button" (click)="cancel()" [disabled]="submitting">Annuler</button>
-       <button class="btn btn-primary" type="button" (click)="submit()" [disabled]="submitting">
+      <button class="btn btn-primary" type="button" (click)="submit()" [disabled]="submitting">
         {{ submitting ? 'Enregistrement…' : (isEditMode ? 'Modifier' : 'Créer le dossier') }}
       </button>
     </div>

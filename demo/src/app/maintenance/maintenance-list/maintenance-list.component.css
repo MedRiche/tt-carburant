@@ -309,4 +309,217 @@ td.center { text-align: center; }
   .analytics-kpi-row { grid-template-columns: repeat(2, 1fr); }
   .detail-panel { width: 100%; }
   .tabs-bar { overflow-x: auto; }
+
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ADDITIONS — paste at END of maintenance-list.component.css
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Export buttons (small) ─────────────────────────────── */
+.btn-export-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(59, 130, 246, 0.08);
+  color: #60a5fa;
+  font-family: var(--font, 'DM Sans', sans-serif);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-export-sm:hover:not(:disabled) { background: rgba(59, 130, 246, 0.15); transform: translateY(-1px); }
+.btn-export-sm:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Export combined (all sections) ────────────────────── */
+.btn-export-combined {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 212, 170, 0.3);
+  background: rgba(0, 212, 170, 0.08);
+  color: #00d4aa;
+  font-family: var(--font, 'DM Sans', sans-serif);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-export-combined:hover:not(:disabled) { background: rgba(0, 212, 170, 0.15); transform: translateY(-1px); }
+.btn-export-combined:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Detail table scroll wrapper ────────────────────────── */
+.detail-table-scroll {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 260px; /* ← scrollable vertically */
+  border-bottom: 1px solid var(--border, #1e2d47);
+}
+
+/* Scrollbar styling for detail panel */
+.detail-body::-webkit-scrollbar,
+.detail-table-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.detail-body::-webkit-scrollbar-track,
+.detail-table-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 3px;
+}
+.detail-body::-webkit-scrollbar-thumb,
+.detail-table-scroll::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.4);
+  border-radius: 3px;
+}
+.detail-body::-webkit-scrollbar-thumb:hover,
+.detail-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.6);
+}
+
+/* ── Detail panel — ensure it has a fixed max-height and scrolls ── */
+.detail-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* panel itself doesn't scroll */
+}
+
+.detail-body {
+  flex: 1;
+  overflow-y: auto; /* only the body scrolls */
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   ADDITIONS — paste at END of maintenance-form.component.css
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Recap section (existing details) ──────────────────── */
+.recap-section {
+  background: rgba(249, 115, 22, 0.03);
+  border-color: rgba(249, 115, 22, 0.2);
+}
+
+/* ── Scrollable recap table ─────────────────────────────── */
+.recap-scroll {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 220px;
+  border-radius: 6px;
+  border: 1px solid var(--border, #1e2d47);
+}
+
+.recap-scroll::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.recap-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+.recap-scroll::-webkit-scrollbar-thumb { background: rgba(100,116,139,0.4); border-radius: 3px; }
+
+/* ── Recap table style ──────────────────────────────────── */
+.recap-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  min-width: 560px;
+}
+
+.recap-table th {
+  padding: 7px 10px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted, #475569);
+  background: rgba(255,255,255,0.02);
+  border-bottom: 1px solid var(--border, #1e2d47);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.recap-table td {
+  padding: 7px 10px;
+  color: var(--text-secondary, #94a3b8);
+  border-bottom: 1px solid rgba(30, 45, 71, 0.4);
+  vertical-align: middle;
+}
+
+.recap-table tr:last-child td { border-bottom: none; }
+.recap-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+.desig-cell {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary, #e2e8f0);
+}
+
+.mono-val { font-family: var(--mono, 'DM Mono', monospace); font-size: 11px; }
+.htva-cell { color: var(--amber, #f59e0b); font-weight: 700; }
+
+.btn-remove {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 11px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.btn-remove:hover { background: rgba(239, 68, 68, 0.18); transform: scale(1.1); }
+
+/* ── Sub section labels ─────────────────────────────────── */
+.sub-section-label {
+  padding: 5px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  border-radius: 4px 4px 0 0;
+  margin-top: 6px;
+}
+.mo-label { background: rgba(59,130,246,0.08); color: #60a5fa; }
+.piece-label { background: rgba(249,115,22,0.08); color: #fb923c; }
+
+/* ── Grand total ────────────────────────────────────────── */
+.grand-total {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(245, 158, 11, 0.04);
+  border-top: 1px solid rgba(245, 158, 11, 0.12);
+  border-radius: 0 0 8px 8px;
+  font-size: 13px;
+  color: var(--text-secondary, #94a3b8);
+  margin-top: 4px;
+}
+.grand-total-val {
+  font-family: var(--mono, 'DM Mono', monospace);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--amber, #f59e0b);
 }

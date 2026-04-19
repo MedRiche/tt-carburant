@@ -48,7 +48,7 @@ export class MaintenanceListComponent implements OnInit {
   globalList: GlobalVehicleListItem[] = [];
   globalListFiltree: GlobalVehicleListItem[] = [];
   tousLesDossiers: Maintenance[] = [];
-  tousLesDossiersAvecDetails: Maintenance[] = []; // ← Dossiers with full details
+  tousLesDossiersAvecDetails: Maintenance[] = [];
   dossiersFiltres: Maintenance[] = [];
   vehicules: Vehicule[] = [];
   zones: Zone[] = [];
@@ -65,8 +65,11 @@ export class MaintenanceListComponent implements OnInit {
   loadingGlobal = false;
   loadingDossiers = false;
   loadingDashboard = false;
-  loadingDetails = false; // ← Loading full details
+  loadingDetails = false;
   exportLoading = false;
+  exportDesigMainLoading = false;
+  exportDesigPieceLoading = false;
+  exportGlobalLoading = false;
 
   searchGlobal = '';
   filtreZoneGlobal = '';
@@ -109,7 +112,6 @@ export class MaintenanceListComponent implements OnInit {
   totalHtvaGlobal2 = 0;
   totalDossiers2 = 0;
 
-  // Track whether we've loaded details
   private detailsLoaded = false;
 
   get totalHtvaGlobal(): number {
@@ -160,20 +162,12 @@ export class MaintenanceListComponent implements OnInit {
     });
   }
 
-  /**
-   * Load all dossiers WITH their details (needed for designation count & missing HTVA).
-   * Uses the getById() endpoint for each dossier to get full details.
-   */
   chargerDossiersAvecDetails(callback?: () => void): void {
     if (this.detailsLoaded) {
-      // Already loaded, just call callback
       if (callback) callback();
       return;
     }
-
     this.loadingDetails = true;
-
-    // First ensure we have the basic list
     const ensureList = () => {
       if (this.tousLesDossiers.length === 0) {
         this.maintenanceService.getAll().subscribe({
@@ -188,7 +182,6 @@ export class MaintenanceListComponent implements OnInit {
         this.loadDetailsForAll(callback);
       }
     };
-
     ensureList();
   }
 
@@ -200,8 +193,6 @@ export class MaintenanceListComponent implements OnInit {
       if (callback) callback();
       return;
     }
-
-    // Load details for each dossier that has an id
     const dossiersAvecId = this.tousLesDossiers.filter(d => d.id);
     if (dossiersAvecId.length === 0) {
       this.tousLesDossiersAvecDetails = [];
@@ -210,9 +201,7 @@ export class MaintenanceListComponent implements OnInit {
       if (callback) callback();
       return;
     }
-
     const requests = dossiersAvecId.map(d => this.maintenanceService.getById(d.id!));
-
     forkJoin(requests).subscribe({
       next: (detailedDossiers) => {
         this.tousLesDossiersAvecDetails = detailedDossiers;
@@ -220,9 +209,7 @@ export class MaintenanceListComponent implements OnInit {
         this.loadingDetails = false;
         if (callback) callback();
       },
-      error: (err) => {
-        console.error('Error loading details:', err);
-        // Fallback: use existing dossiers without details
+      error: () => {
         this.tousLesDossiersAvecDetails = this.tousLesDossiers;
         this.detailsLoaded = true;
         this.loadingDetails = false;
@@ -233,11 +220,8 @@ export class MaintenanceListComponent implements OnInit {
 
   chargerDashboard(): void {
     this.loadingDashboard = true;
-    // Charger les détails d'abord, puis calculer les analytics depuis les données locales
-    // On essaie aussi le dashboard API mais on ne bloque pas si il échoue
     this.chargerDossiersAvecDetails(() => {
       this.calculerAnalyticsAvances();
-      // Essai optionnel du dashboard API pour statsParType et coutParPrestataire
       try {
         this.maintenanceService.getDashboard().subscribe({
           next: (d: any) => {
@@ -245,7 +229,6 @@ export class MaintenanceListComponent implements OnInit {
             this.loadingDashboard = false;
           },
           error: () => {
-            // Dashboard API non disponible, on utilise les données calculées localement
             this.dashboard = null;
             this.loadingDashboard = false;
           }
@@ -286,18 +269,15 @@ export class MaintenanceListComponent implements OnInit {
 
     this.top5MainDesignation = Array.from(moMap.entries())
       .map(([designation, v]) => ({ designation, ...v }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
+      .sort((a, b) => b.count - a.count).slice(0, 5);
 
     this.top5PieceDesignation = Array.from(pieceMap.entries())
       .map(([designation, v]) => ({ designation, ...v }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
+      .sort((a, b) => b.count - a.count).slice(0, 5);
 
     this.top5Vehicules = Array.from(vehiculeMap.entries())
       .map(([matricule, v]) => ({ matricule, ...v }))
-      .sort((a, b) => b.totalHtva - a.totalHtva)
-      .slice(0, 5);
+      .sort((a, b) => b.totalHtva - a.totalHtva).slice(0, 5);
 
     this.totalHtvaGlobal2 = dossiers.reduce((s, m) => s + (m.coutTotalHtva || 0), 0);
     this.totalDossiers2 = dossiers.length;
@@ -328,14 +308,8 @@ export class MaintenanceListComponent implements OnInit {
   private _computeDesigMain(): void {
     const map = new Map<string, number>();
     let dossiers = this.tousLesDossiersAvecDetails;
-
-    if (this.filtreZoneDesigMain) {
-      dossiers = dossiers.filter(m => m.vehiculeZoneNom === this.filtreZoneDesigMain);
-    }
-    if (this.filtreVehiculeDesigMain) {
-      dossiers = dossiers.filter(m => m.vehiculeMatricule === this.filtreVehiculeDesigMain);
-    }
-
+    if (this.filtreZoneDesigMain) dossiers = dossiers.filter(m => m.vehiculeZoneNom === this.filtreZoneDesigMain);
+    if (this.filtreVehiculeDesigMain) dossiers = dossiers.filter(m => m.vehiculeMatricule === this.filtreVehiculeDesigMain);
     dossiers.forEach(m => {
       (m.details || []).forEach(d => {
         if (d.type === TypeDetailMaintenance.MAIN_D_OEUVRE) {
@@ -344,15 +318,9 @@ export class MaintenanceListComponent implements OnInit {
         }
       });
     });
-
     this.designationMainData = Array.from(map.entries())
-      .map(([designation, count]) => ({
-        designation: this.capitalizeFirst(designation),
-        count,
-        type: 'MAIN_D_OEUVRE' as const
-      }))
+      .map(([designation, count]) => ({ designation: this.capitalizeFirst(designation), count, type: 'MAIN_D_OEUVRE' as const }))
       .sort((a, b) => b.count - a.count);
-
     this.filtrerDesigMain();
   }
 
@@ -378,14 +346,8 @@ export class MaintenanceListComponent implements OnInit {
   private _computeDesigPiece(): void {
     const map = new Map<string, number>();
     let dossiers = this.tousLesDossiersAvecDetails;
-
-    if (this.filtreZoneDesigPiece) {
-      dossiers = dossiers.filter(m => m.vehiculeZoneNom === this.filtreZoneDesigPiece);
-    }
-    if (this.filtreVehiculeDesigPiece) {
-      dossiers = dossiers.filter(m => m.vehiculeMatricule === this.filtreVehiculeDesigPiece);
-    }
-
+    if (this.filtreZoneDesigPiece) dossiers = dossiers.filter(m => m.vehiculeZoneNom === this.filtreZoneDesigPiece);
+    if (this.filtreVehiculeDesigPiece) dossiers = dossiers.filter(m => m.vehiculeMatricule === this.filtreVehiculeDesigPiece);
     dossiers.forEach(m => {
       (m.details || []).forEach(d => {
         if (d.type === TypeDetailMaintenance.PIECE) {
@@ -394,15 +356,9 @@ export class MaintenanceListComponent implements OnInit {
         }
       });
     });
-
     this.designationPieceData = Array.from(map.entries())
-      .map(([designation, count]) => ({
-        designation: this.capitalizeFirst(designation),
-        count,
-        type: 'PIECE' as const
-      }))
+      .map(([designation, count]) => ({ designation: this.capitalizeFirst(designation), count, type: 'PIECE' as const }))
       .sort((a, b) => b.count - a.count);
-
     this.filtrerDesigPiece();
   }
 
@@ -428,7 +384,6 @@ export class MaintenanceListComponent implements OnInit {
   private _computeMissingHtva(): void {
     const missing: MissingHtvaItem[] = [];
     let rowNum = 0;
-
     this.tousLesDossiersAvecDetails.forEach(m => {
       (m.details || []).forEach(d => {
         const htva = d.totalHtva ?? 0;
@@ -451,22 +406,15 @@ export class MaintenanceListComponent implements OnInit {
         }
       });
     });
-
     this.missingHtvaData = missing;
     this.filtrerMissing();
   }
 
   filtrerMissing(): void {
     let data = [...this.missingHtvaData];
-    if (this.filtreZoneMissing) {
-      data = data.filter(d => d.zoneNom === this.filtreZoneMissing);
-    }
-    if (this.filtreVehiculeMissing) {
-      data = data.filter(d => d.vehiculeId === this.filtreVehiculeMissing);
-    }
-    if (this.filtreTypeMissing) {
-      data = data.filter(d => d.type === this.filtreTypeMissing);
-    }
+    if (this.filtreZoneMissing) data = data.filter(d => d.zoneNom === this.filtreZoneMissing);
+    if (this.filtreVehiculeMissing) data = data.filter(d => d.vehiculeId === this.filtreVehiculeMissing);
+    if (this.filtreTypeMissing) data = data.filter(d => d.type === this.filtreTypeMissing);
     this.missingHtvaFiltree = data;
   }
 
@@ -480,37 +428,19 @@ export class MaintenanceListComponent implements OnInit {
     if (tab === 'missing-htva') this.chargerMissingHtva();
   }
 
-  // ── Filtres global ────────────────────────────────────────────────────────
-
   filtrerGlobal(): void {
     let list = [...this.globalList];
     const q = this.searchGlobal.toLowerCase();
-    if (q) {
-      list = list.filter(i =>
-        i.vehiculeId.toLowerCase().includes(q) ||
-        (i.vehiculeMarque || '').toLowerCase().includes(q) ||
-        (i.zoneNom || '').toLowerCase().includes(q)
-      );
-    }
-    if (this.filtreZoneGlobal) {
-      list = list.filter(i => i.zoneNom === this.filtreZoneGlobal);
-    }
-    if (this.filtrePrestataire) {
-      list = list.filter(i => (i.brands || '').includes(this.filtrePrestataire));
-    }
+    if (q) list = list.filter(i => i.vehiculeId.toLowerCase().includes(q) || (i.vehiculeMarque || '').toLowerCase().includes(q) || (i.zoneNom || '').toLowerCase().includes(q));
+    if (this.filtreZoneGlobal) list = list.filter(i => i.zoneNom === this.filtreZoneGlobal);
+    if (this.filtrePrestataire) list = list.filter(i => (i.brands || '').includes(this.filtrePrestataire));
     this.globalListFiltree = list;
   }
 
   filtrerDossiers(): void {
     let list = [...this.tousLesDossiers];
     const q = this.searchDossiers.toLowerCase();
-    if (q) {
-      list = list.filter(d =>
-        (d.numeroDossier || '').toLowerCase().includes(q) ||
-        d.vehiculeMatricule.toLowerCase().includes(q) ||
-        (d.vehiculeMarqueModele || '').toLowerCase().includes(q)
-      );
-    }
+    if (q) list = list.filter(d => (d.numeroDossier || '').toLowerCase().includes(q) || d.vehiculeMatricule.toLowerCase().includes(q) || (d.vehiculeMarqueModele || '').toLowerCase().includes(q));
     if (this.filtreStatut) list = list.filter(d => d.statut === this.filtreStatut);
     if (this.filtreType) list = list.filter(d => d.typeIntervention === this.filtreType);
     this.dossiersFiltres = list;
@@ -522,7 +452,16 @@ export class MaintenanceListComponent implements OnInit {
     this.selectedGlobalItem = item;
     this.loadingDetail = true;
     this.maintenanceService.getByVehicule(item.vehiculeId).subscribe({
-      next: d => { this.detailMaintenances = d; this.loadingDetail = false; },
+      next: d => {
+        // Load full details for each maintenance
+        if (d.length === 0) { this.detailMaintenances = []; this.loadingDetail = false; return; }
+        const reqs = d.filter(m => m.id).map(m => this.maintenanceService.getById(m.id!));
+        if (reqs.length === 0) { this.detailMaintenances = d; this.loadingDetail = false; return; }
+        forkJoin(reqs).subscribe({
+          next: full => { this.detailMaintenances = full; this.loadingDetail = false; },
+          error: () => { this.detailMaintenances = d; this.loadingDetail = false; }
+        });
+      },
       error: () => { this.loadingDetail = false; }
     });
   }
@@ -547,8 +486,16 @@ export class MaintenanceListComponent implements OnInit {
   }
 
   editerDossier(m: Maintenance): void {
-    this.maintenanceSelectionnee = { ...m };
-    this.showForm = true;
+    // Load full details before editing
+    if (m.id && (!m.details || m.details.length === 0)) {
+      this.maintenanceService.getById(m.id).subscribe({
+        next: full => { this.maintenanceSelectionnee = { ...full }; this.showForm = true; },
+        error: () => { this.maintenanceSelectionnee = { ...m }; this.showForm = true; }
+      });
+    } else {
+      this.maintenanceSelectionnee = { ...m };
+      this.showForm = true;
+    }
   }
 
   voirDossier(m: Maintenance): void {
@@ -560,7 +507,7 @@ export class MaintenanceListComponent implements OnInit {
     if (!confirm(`Supprimer le dossier ${m.numeroDossier} ?`)) return;
     this.maintenanceService.supprimer(m.id).subscribe({
       next: () => {
-        this.detailsLoaded = false; // Reset so details reload on next tab visit
+        this.detailsLoaded = false;
         this.chargerDossiers();
         this.chargerGlobalList();
         if (this.selectedGlobalItem) this.ouvrirDetail(this.selectedGlobalItem);
@@ -572,7 +519,7 @@ export class MaintenanceListComponent implements OnInit {
   onSaved(): void {
     this.showForm = false;
     this.maintenanceSelectionnee = null;
-    this.detailsLoaded = false; // Reset so details reload on next tab visit
+    this.detailsLoaded = false;
     this.chargerDossiers();
     this.chargerGlobalList();
     if (this.selectedGlobalItem) this.ouvrirDetail(this.selectedGlobalItem);
@@ -598,12 +545,133 @@ export class MaintenanceListComponent implements OnInit {
   exporter(): void {
     this.exportLoading = true;
     this.maintenanceService.exporterExcel().subscribe({
-      next: (blob) => {
-        this.maintenanceService.downloadBlob(blob, 'maintenances.xlsx');
-        this.exportLoading = false;
-      },
+      next: (blob) => { this.maintenanceService.downloadBlob(blob, 'maintenances.xlsx'); this.exportLoading = false; },
       error: () => { alert('Erreur export'); this.exportLoading = false; }
     });
+  }
+
+  // ── Export Excel — Global Vehicle List ───────────────────────────────────
+
+  exporterGlobalList(): void {
+    this.exportGlobalLoading = true;
+    try {
+      this._exportGlobalListToExcel();
+    } catch (e) {
+      alert('Erreur export');
+    } finally {
+      this.exportGlobalLoading = false;
+    }
+  }
+
+  private _exportGlobalListToExcel(): void {
+    const rows: string[][] = [];
+    // Header
+    rows.push(['Véhicule ID', 'Marque / Modèle', 'Zone', 'Total HTVA (DT)', 'Brand(s)', 'Nb Dossiers']);
+    // Data
+    this.globalListFiltree.forEach(item => {
+      rows.push([
+        item.vehiculeId,
+        item.vehiculeMarque || '',
+        item.zoneNom || '—',
+        this.fmt3(item.totalHtva),
+        item.brands || '',
+        String(item.nbDossiers || 0)
+      ]);
+    });
+    // Total row
+    rows.push(['TOTAL', '', '', this.fmt3(this.totalHtvaGlobal), '', '']);
+    this._downloadCsv(rows, 'global_vehicle_list.csv');
+  }
+
+  // ── Export Excel — Designation Count Main ────────────────────────────────
+
+  exporterDesigMain(): void {
+    this.exportDesigMainLoading = true;
+    this.chargerDossiersAvecDetails(() => {
+      this._exportDesigMainToExcel();
+      this.exportDesigMainLoading = false;
+    });
+  }
+
+  private _exportDesigMainToExcel(): void {
+    const rows: string[][] = [];
+    rows.push(['Rang', 'Désignation (Main d\'œuvre)', 'Count (Occurrences)']);
+    this.designationMainFiltree.forEach((item, i) => {
+      rows.push([String(i + 1), item.designation, String(item.count)]);
+    });
+    this._downloadCsv(rows, 'designation_count_main_oeuvre.csv');
+  }
+
+  // ── Export Excel — Designation Count Piece ───────────────────────────────
+
+  exporterDesigPiece(): void {
+    this.exportDesigPieceLoading = true;
+    this.chargerDossiersAvecDetails(() => {
+      this._exportDesigPieceToExcel();
+      this.exportDesigPieceLoading = false;
+    });
+  }
+
+  private _exportDesigPieceToExcel(): void {
+    const rows: string[][] = [];
+    rows.push(['Rang', 'Désignation (Pièce)', 'Count (Occurrences)']);
+    this.designationPieceFiltree.forEach((item, i) => {
+      rows.push([String(i + 1), item.designation, String(item.count)]);
+    });
+    this._downloadCsv(rows, 'designation_count_pieces.csv');
+  }
+
+  // ── Export combiné — Global + Desig Main + Desig Piece ───────────────────
+
+  exporterTout(): void {
+    this.exportGlobalLoading = true;
+    this.chargerDossiersAvecDetails(() => {
+      this._exportCombine();
+      this.exportGlobalLoading = false;
+    });
+  }
+
+  private _exportCombine(): void {
+    // CSV with sections separated by blank lines
+    const allRows: string[][] = [];
+
+    // Section 1 — Global Vehicle List
+    allRows.push(['=== GLOBAL VEHICLE LIST ===']);
+    allRows.push(['Véhicule ID', 'Marque / Modèle', 'Zone', 'Total HTVA (DT)', 'Brand(s)', 'Nb Dossiers']);
+    this.globalListFiltree.forEach(item => {
+      allRows.push([item.vehiculeId, item.vehiculeMarque || '', item.zoneNom || '—', this.fmt3(item.totalHtva), item.brands || '', String(item.nbDossiers || 0)]);
+    });
+    allRows.push(['TOTAL', '', '', this.fmt3(this.totalHtvaGlobal), '', '']);
+    allRows.push([]);
+
+    // Section 2 — Designation Count Main
+    allRows.push(['=== DESIGNATION COUNT — MAIN D\'OEUVRE ===']);
+    allRows.push(['Rang', 'Désignation', 'Count']);
+    this.designationMainFiltree.forEach((item, i) => {
+      allRows.push([String(i + 1), item.designation, String(item.count)]);
+    });
+    allRows.push([]);
+
+    // Section 3 — Designation Count Piece
+    allRows.push(['=== DESIGNATION COUNT — PIÈCES ===']);
+    allRows.push(['Rang', 'Désignation', 'Count']);
+    this.designationPieceFiltree.forEach((item, i) => {
+      allRows.push([String(i + 1), item.designation, String(item.count)]);
+    });
+
+    this._downloadCsv(allRows, 'maintenance_export_complet.csv');
+  }
+
+  private _downloadCsv(rows: string[][], filename: string): void {
+    const bom = '\uFEFF'; // UTF-8 BOM for Excel
+    const csvContent = bom + rows.map(row => row.map(cell => `"${(cell || '').replace(/"/g, '""')}"`).join(';')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
@@ -612,17 +680,12 @@ export class MaintenanceListComponent implements OnInit {
   getStatutLabel(statut: string): string { return STATUT_LABELS[statut] || statut; }
 
   getTypeClass(type: string): string {
-    const m: Record<string, string> = {
-      PREVENTIVE: 'chip-preventive', CORRECTIVE: 'chip-corrective',
-      VISITE_TECHNIQUE: 'chip-visite', ACCIDENT: 'chip-accident'
-    };
+    const m: Record<string, string> = { PREVENTIVE: 'chip-preventive', CORRECTIVE: 'chip-corrective', VISITE_TECHNIQUE: 'chip-visite', ACCIDENT: 'chip-accident' };
     return m[type] || '';
   }
 
   getStatutClass(statut: string): string {
-    const m: Record<string, string> = {
-      EN_COURS: 'chip-en-cours', TERMINEE: 'chip-terminee', ANNULEE: 'chip-annulee'
-    };
+    const m: Record<string, string> = { EN_COURS: 'chip-en-cours', TERMINEE: 'chip-terminee', ANNULEE: 'chip-annulee' };
     return m[statut] || '';
   }
 
@@ -632,9 +695,7 @@ export class MaintenanceListComponent implements OnInit {
   }
 
   getBrandClass(brand: string): string {
-    const m: Record<string, string> = {
-      'TAS': 'chip-tas', 'Peugeot': 'chip-peugeot', 'Citroen': 'chip-citroen', 'Citroën': 'chip-citroen'
-    };
+    const m: Record<string, string> = { 'TAS': 'chip-tas', 'Peugeot': 'chip-peugeot', 'Citroen': 'chip-citroen', 'Citroën': 'chip-citroen' };
     return m[brand] || 'chip-other';
   }
 
@@ -655,34 +716,22 @@ export class MaintenanceListComponent implements OnInit {
     return (m.details || []).filter(d => d.type === TypeDetailMaintenance.PIECE);
   }
 
-  getMaxDesigMain(): number {
-    return this.designationMainFiltree.length ? this.designationMainFiltree[0].count : 1;
-  }
+  getMaxDesigMain(): number { return this.designationMainFiltree.length ? this.designationMainFiltree[0].count : 1; }
+  getMaxDesigPiece(): number { return this.designationPieceFiltree.length ? this.designationPieceFiltree[0].count : 1; }
 
-  getMaxDesigPiece(): number {
-    return this.designationPieceFiltree.length ? this.designationPieceFiltree[0].count : 1;
-  }
-
-  capitalizeFirst(s: string): string {
-    return s.charAt(0).toUpperCase() + s.slice(1);
-  }
+  capitalizeFirst(s: string): string { return s.charAt(0).toUpperCase() + s.slice(1); }
 
   getUniqueZones(): string[] {
     const zones = new Set<string>();
     this.tousLesDossiersAvecDetails.forEach(m => { if (m.vehiculeZoneNom) zones.add(m.vehiculeZoneNom); });
-    // Fallback to basic dossiers if details not loaded
-    if (zones.size === 0) {
-      this.tousLesDossiers.forEach(m => { if (m.vehiculeZoneNom) zones.add(m.vehiculeZoneNom); });
-    }
+    if (zones.size === 0) this.tousLesDossiers.forEach(m => { if (m.vehiculeZoneNom) zones.add(m.vehiculeZoneNom); });
     return Array.from(zones).sort();
   }
 
   getUniqueVehicules(): string[] {
     const mats = new Set<string>();
     this.tousLesDossiersAvecDetails.forEach(m => mats.add(m.vehiculeMatricule));
-    if (mats.size === 0) {
-      this.tousLesDossiers.forEach(m => mats.add(m.vehiculeMatricule));
-    }
+    if (mats.size === 0) this.tousLesDossiers.forEach(m => mats.add(m.vehiculeMatricule));
     return Array.from(mats).sort();
   }
 

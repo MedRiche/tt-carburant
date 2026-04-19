@@ -16,20 +16,11 @@
         Dashboard
       </a>
       <a class="nav-item" (click)="navigateTo('/admin/utilisateurs')">
-        <span class="nav-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-          </svg>
-        </span>
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span>
         Utilisateurs
       </a>
       <a class="nav-item" (click)="navigateTo('/admin/zones')">
-        <span class="nav-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
-          </svg>
-        </span>
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/></svg></span>
         Zones
       </a>
       <a class="nav-item" (click)="navigateTo('/admin/vehicules')">
@@ -45,7 +36,6 @@
         Maintenance
         <span class="nav-count">{{ globalList.length }}</span>
       </a>
-
     </nav>
     <div class="sidebar-footer">
       <div class="user-avatar">AD</div>
@@ -124,6 +114,16 @@
             <option value="Peugeot">Peugeot</option>
             <option value="Citroen">Citroën</option>
           </select>
+          <!-- Export Global List -->
+          <button class="btn-export-sm" (click)="exporterGlobalList()" [disabled]="exportGlobalLoading" title="Exporter Global Vehicle List en CSV/Excel">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            {{ exportGlobalLoading ? 'Export…' : 'Export CSV' }}
+          </button>
+          <!-- Export Combiné -->
+          <button class="btn-export-combined" (click)="exporterTout()" [disabled]="exportGlobalLoading" title="Exporter Global + Designation Count Main + Piece">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            Export Complet
+          </button>
         </div>
 
         <div *ngIf="loadingGlobal" class="state-loading"><div class="loader-ring"></div><p>Chargement…</p></div>
@@ -241,194 +241,106 @@
         <div *ngIf="loadingDashboard || loadingDetails" class="state-loading"><div class="loader-ring"></div><p>Chargement des analytiques…</p></div>
 
         <ng-container *ngIf="!loadingDashboard && !loadingDetails">
-          <!-- KPI Cards -->
           <div class="analytics-kpi-row">
             <div class="analytics-kpi kpi-orange">
               <div class="kpi-icon-big">📂</div>
-              <div class="kpi-body-big">
-                <span class="kpi-label-big">Total Dossiers</span>
-                <span class="kpi-val-big">{{ totalDossiers2 }}</span>
-              </div>
+              <div class="kpi-body-big"><span class="kpi-label-big">Total Dossiers</span><span class="kpi-val-big">{{ totalDossiers2 }}</span></div>
             </div>
             <div class="analytics-kpi kpi-amber">
               <div class="kpi-icon-big">💰</div>
-              <div class="kpi-body-big">
-                <span class="kpi-label-big">Total HTVA (DT)</span>
-                <span class="kpi-val-big" style="font-size:18px">{{ fmt3(totalHtvaGlobal2) }}</span>
-              </div>
+              <div class="kpi-body-big"><span class="kpi-label-big">Total HTVA (DT)</span><span class="kpi-val-big" style="font-size:18px">{{ fmt3(totalHtvaGlobal2) }}</span></div>
             </div>
             <div class="analytics-kpi kpi-blue">
               <div class="kpi-icon-big">🚗</div>
-              <div class="kpi-body-big">
-                <span class="kpi-label-big">Véhicules</span>
-                <span class="kpi-val-big">{{ globalList.length }}</span>
-              </div>
+              <div class="kpi-body-big"><span class="kpi-label-big">Véhicules</span><span class="kpi-val-big">{{ globalList.length }}</span></div>
             </div>
             <div class="analytics-kpi kpi-red">
               <div class="kpi-icon-big">⚠️</div>
-              <div class="kpi-body-big">
-                <span class="kpi-label-big">En cours</span>
-                <span class="kpi-val-big">{{ nbEnCours }}</span>
-              </div>
+              <div class="kpi-body-big"><span class="kpi-label-big">En cours</span><span class="kpi-val-big">{{ nbEnCours }}</span></div>
             </div>
           </div>
 
-          <!-- Top 5 Main d'oeuvre + Top 5 Pièces -->
           <div class="analytics-2col">
             <div class="analytics-card">
               <div class="analytics-card-header">
                 <span class="analytics-card-icon">🔧</span>
-                <div>
-                  <h3 class="analytics-card-title">Top 5 Désignations — Main d'œuvre</h3>
-                  <p class="analytics-card-sub">Par fréquence d'occurrence</p>
-                </div>
+                <div><h3 class="analytics-card-title">Top 5 Désignations — Main d'œuvre</h3><p class="analytics-card-sub">Par fréquence d'occurrence</p></div>
               </div>
               <div class="top5-list">
                 <div *ngFor="let item of top5MainDesignation; let i = index" class="top5-item">
-                  <div class="top5-rank" [ngClass]="'rank-'+i">
-                    {{ i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1) }}
-                  </div>
+                  <div class="top5-rank" [ngClass]="'rank-'+i">{{ i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1) }}</div>
                   <div class="top5-info">
                     <span class="top5-name">{{ item.designation }}</span>
-                    <div class="top5-bar-wrap">
-                      <div class="top5-bar top5-bar-mo" [style.width.%]="top5MainDesignation.length > 0 ? barPct(item.count, top5MainDesignation[0].count) : 0"></div>
-                    </div>
+                    <div class="top5-bar-wrap"><div class="top5-bar top5-bar-mo" [style.width.%]="top5MainDesignation.length > 0 ? barPct(item.count, top5MainDesignation[0].count) : 0"></div></div>
                   </div>
-                  <div class="top5-meta">
-                    <span class="top5-count">× {{ item.count }}</span>
-                    <span class="top5-htva">{{ fmt3(item.totalHtva) }} DT</span>
-                  </div>
+                  <div class="top5-meta"><span class="top5-count">× {{ item.count }}</span><span class="top5-htva">{{ fmt3(item.totalHtva) }} DT</span></div>
                 </div>
-                <div *ngIf="top5MainDesignation.length === 0" class="analytics-empty">
-                  Aucune donnée disponible
-                </div>
+                <div *ngIf="top5MainDesignation.length === 0" class="analytics-empty">Aucune donnée disponible</div>
               </div>
             </div>
-
             <div class="analytics-card">
               <div class="analytics-card-header">
                 <span class="analytics-card-icon">🔩</span>
-                <div>
-                  <h3 class="analytics-card-title">Top 5 Désignations — Pièces</h3>
-                  <p class="analytics-card-sub">Par fréquence d'occurrence</p>
-                </div>
+                <div><h3 class="analytics-card-title">Top 5 Désignations — Pièces</h3><p class="analytics-card-sub">Par fréquence d'occurrence</p></div>
               </div>
               <div class="top5-list">
                 <div *ngFor="let item of top5PieceDesignation; let i = index" class="top5-item">
-                  <div class="top5-rank" [ngClass]="'rank-'+i">
-                    {{ i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1) }}
-                  </div>
+                  <div class="top5-rank" [ngClass]="'rank-'+i">{{ i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1) }}</div>
                   <div class="top5-info">
                     <span class="top5-name">{{ item.designation }}</span>
-                    <div class="top5-bar-wrap">
-                      <div class="top5-bar top5-bar-piece" [style.width.%]="top5PieceDesignation.length > 0 ? barPct(item.count, top5PieceDesignation[0].count) : 0"></div>
-                    </div>
+                    <div class="top5-bar-wrap"><div class="top5-bar top5-bar-piece" [style.width.%]="top5PieceDesignation.length > 0 ? barPct(item.count, top5PieceDesignation[0].count) : 0"></div></div>
                   </div>
-                  <div class="top5-meta">
-                    <span class="top5-count">× {{ item.count }}</span>
-                    <span class="top5-htva">{{ fmt3(item.totalHtva) }} DT</span>
-                  </div>
+                  <div class="top5-meta"><span class="top5-count">× {{ item.count }}</span><span class="top5-htva">{{ fmt3(item.totalHtva) }} DT</span></div>
                 </div>
-                <div *ngIf="top5PieceDesignation.length === 0" class="analytics-empty">
-                  Aucune donnée disponible
-                </div>
+                <div *ngIf="top5PieceDesignation.length === 0" class="analytics-empty">Aucune donnée disponible</div>
               </div>
             </div>
           </div>
 
-          <!-- TOP 5 VÉHICULES + STATS PAR ZONE -->
           <div class="analytics-2col">
             <div class="analytics-card">
-              <div class="analytics-card-header">
-                <span class="analytics-card-icon">🚗</span>
-                <div>
-                  <h3 class="analytics-card-title">Top 5 Véhicules</h3>
-                  <p class="analytics-card-sub">Par coût HTVA total</p>
-                </div>
-              </div>
+              <div class="analytics-card-header"><span class="analytics-card-icon">🚗</span><div><h3 class="analytics-card-title">Top 5 Véhicules</h3><p class="analytics-card-sub">Par coût HTVA total</p></div></div>
               <div class="top5-list">
-                <div *ngFor="let item of top5Vehicules; let i = index" class="top5-item top5-vehicule">
-                  <div class="top5-rank" [ngClass]="'rank-'+i">
-                    {{ i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1) }}
-                  </div>
+                <div *ngFor="let item of top5Vehicules; let i = index" class="top5-item">
+                  <div class="top5-rank" [ngClass]="'rank-'+i">{{ i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1) }}</div>
                   <div class="top5-info">
-                    <div class="top5-vehicule-head">
-                      <span class="mat-badge" style="font-size:11px">{{ item.matricule }}</span>
-                      <span *ngIf="item.zone" class="chip chip-zone" style="font-size:10px">{{ item.zone }}</span>
-                    </div>
+                    <div class="top5-vehicule-head"><span class="mat-badge" style="font-size:11px">{{ item.matricule }}</span><span *ngIf="item.zone" class="chip chip-zone" style="font-size:10px">{{ item.zone }}</span></div>
                     <span class="top5-name" style="font-size:11px;color:var(--text-muted)">{{ item.marque }}</span>
-                    <div class="top5-bar-wrap">
-                      <div class="top5-bar top5-bar-vehicule" [style.width.%]="top5Vehicules.length > 0 ? barPct(item.totalHtva, top5Vehicules[0].totalHtva) : 0"></div>
-                    </div>
+                    <div class="top5-bar-wrap"><div class="top5-bar top5-bar-vehicule" [style.width.%]="top5Vehicules.length > 0 ? barPct(item.totalHtva, top5Vehicules[0].totalHtva) : 0"></div></div>
                   </div>
-                  <div class="top5-meta">
-                    <span class="top5-htva">{{ fmt3(item.totalHtva) }}</span>
-                    <span class="top5-count-small">{{ item.nbDossiers }} dossier{{ item.nbDossiers > 1 ? 's' : '' }}</span>
-                  </div>
+                  <div class="top5-meta"><span class="top5-htva">{{ fmt3(item.totalHtva) }}</span><span class="top5-count-small">{{ item.nbDossiers }} dossier{{ item.nbDossiers > 1 ? 's' : '' }}</span></div>
                 </div>
-                <div *ngIf="top5Vehicules.length === 0" class="analytics-empty">
-                  Aucune donnée disponible
-                </div>
+                <div *ngIf="top5Vehicules.length === 0" class="analytics-empty">Aucune donnée disponible</div>
               </div>
             </div>
-
             <div class="analytics-card">
-              <div class="analytics-card-header">
-                <span class="analytics-card-icon">📍</span>
-                <div>
-                  <h3 class="analytics-card-title">Coût par Zone</h3>
-                  <p class="analytics-card-sub">Répartition des coûts HTVA</p>
-                </div>
-              </div>
+              <div class="analytics-card-header"><span class="analytics-card-icon">📍</span><div><h3 class="analytics-card-title">Coût par Zone</h3><p class="analytics-card-sub">Répartition des coûts HTVA</p></div></div>
               <div class="zone-stats-list">
-                <div *ngFor="let z of statsParZone; let i = index" class="zone-stat-row">
-                  <div class="zone-stat-info">
-                    <span class="chip chip-zone" style="font-size:11px">{{ z.zone }}</span>
-                    <span class="zone-stat-nb">{{ z.nbVehicules }} véhicule{{ z.nbVehicules > 1 ? 's' : '' }}</span>
-                  </div>
-                  <div class="zone-stat-bar-wrap">
-                    <div class="zone-stat-bar" [style.width.%]="statsParZone.length > 0 ? barPct(z.totalHtva, statsParZone[0].totalHtva) : 0"></div>
-                  </div>
+                <div *ngFor="let z of statsParZone" class="zone-stat-row">
+                  <div class="zone-stat-info"><span class="chip chip-zone" style="font-size:11px">{{ z.zone }}</span><span class="zone-stat-nb">{{ z.nbVehicules }} véhicule{{ z.nbVehicules > 1 ? 's' : '' }}</span></div>
+                  <div class="zone-stat-bar-wrap"><div class="zone-stat-bar" [style.width.%]="statsParZone.length > 0 ? barPct(z.totalHtva, statsParZone[0].totalHtva) : 0"></div></div>
                   <span class="zone-stat-htva">{{ fmt3(z.totalHtva) }} DT</span>
                 </div>
-                <div *ngIf="statsParZone.length === 0" class="analytics-empty">
-                  Aucune donnée disponible
-                </div>
+                <div *ngIf="statsParZone.length === 0" class="analytics-empty">Aucune donnée disponible</div>
               </div>
             </div>
           </div>
 
-          <!-- Dashboard from API -->
           <div *ngIf="dashboard" class="analytics-2col">
             <div class="analytics-card">
-              <div class="analytics-card-header">
-                <span class="analytics-card-icon">🏷️</span>
-                <div>
-                  <h3 class="analytics-card-title">Par type d'intervention</h3>
-                </div>
-              </div>
+              <div class="analytics-card-header"><span class="analytics-card-icon">🏷️</span><div><h3 class="analytics-card-title">Par type d'intervention</h3></div></div>
               <div *ngFor="let t of dashboard.statsParType" class="type-row">
                 <span class="type-label">{{ getTypeLabel(t.type) }}</span>
-                <div class="mini-bar">
-                  <div class="mini-bar-fill" [style.width.%]="dashboard.statsParType.length > 0 ? barPct(t.totalHtva, dashboard.statsParType[0].totalHtva) : 0"></div>
-                </div>
+                <div class="mini-bar"><div class="mini-bar-fill" [style.width.%]="dashboard.statsParType.length > 0 ? barPct(t.totalHtva, dashboard.statsParType[0].totalHtva) : 0"></div></div>
                 <span class="type-count">{{ t.count }}</span>
                 <span class="type-htva">{{ fmt3(t.totalHtva) }} DT</span>
               </div>
             </div>
-
             <div class="analytics-card">
-              <div class="analytics-card-header">
-                <span class="analytics-card-icon">🏢</span>
-                <div>
-                  <h3 class="analytics-card-title">Coût par prestataire</h3>
-                </div>
-              </div>
+              <div class="analytics-card-header"><span class="analytics-card-icon">🏢</span><div><h3 class="analytics-card-title">Coût par prestataire</h3></div></div>
               <div *ngFor="let p of dashboard.coutParPrestataire" class="type-row">
                 <span class="type-label">{{ p.prestataire }}</span>
-                <div class="mini-bar">
-                  <div class="mini-bar-fill" [style.width.%]="dashboard.coutParPrestataire.length > 0 ? barPct(p.totalHtva, dashboard.coutParPrestataire[0].totalHtva) : 0"></div>
-                </div>
+                <div class="mini-bar"><div class="mini-bar-fill" [style.width.%]="dashboard.coutParPrestataire.length > 0 ? barPct(p.totalHtva, dashboard.coutParPrestataire[0].totalHtva) : 0"></div></div>
                 <span class="type-htva">{{ fmt3(p.totalHtva) }} DT</span>
               </div>
             </div>
@@ -446,12 +358,21 @@
               <p class="desig-sub">Nombre d'occurrences de chaque désignation de main d'œuvre</p>
             </div>
           </div>
-          <div class="desig-total-badge">
-            Total : <strong>{{ designationMainFiltree.length }}</strong> désignations distinctes
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <div class="desig-total-badge">Total : <strong>{{ designationMainFiltree.length }}</strong> désignations distinctes</div>
+            <!-- Export Desig Main -->
+            <button class="btn-export-sm" (click)="exporterDesigMain()" [disabled]="exportDesigMainLoading" title="Exporter en CSV">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              {{ exportDesigMainLoading ? 'Export…' : 'Export CSV' }}
+            </button>
+            <!-- Export Combiné -->
+            <button class="btn-export-combined" (click)="exporterTout()" [disabled]="exportGlobalLoading" title="Exporter Global + Designation Count Main + Piece">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Export Complet
+            </button>
           </div>
         </div>
 
-        <!-- Filtres -->
         <div class="filter-bar">
           <div class="search-wrap">
             <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -467,47 +388,24 @@
           </select>
         </div>
 
-        <div *ngIf="loadingDesigMain || loadingDetails" class="state-loading">
-          <div class="loader-ring"></div>
-          <p>Chargement des désignations…</p>
-        </div>
+        <div *ngIf="loadingDesigMain || loadingDetails" class="state-loading"><div class="loader-ring"></div><p>Chargement des désignations…</p></div>
 
         <div *ngIf="!loadingDesigMain && !loadingDetails && designationMainFiltree.length > 0" class="data-table-wrap">
           <table class="data-table desig-table">
-            <thead>
-              <tr>
-                <th style="width:60px">Rang</th>
-                <th>Designation</th>
-                <th style="width:220px">Count</th>
-                <th style="width:100px; text-align:right">Nb</th>
-              </tr>
-            </thead>
+            <thead><tr><th style="width:60px">Rang</th><th>Designation</th><th style="width:220px">Count</th><th style="width:100px; text-align:right">Nb</th></tr></thead>
             <tbody>
               <tr *ngFor="let item of designationMainFiltree; let i = index" class="table-row desig-row">
                 <td class="rank-col">{{ i + 1 }}</td>
-                <td>
-                  <div class="desig-name-cell">
-                    <span class="desig-tag desig-tag-mo">🔧</span>
-                    <span class="desig-name">{{ item.designation }}</span>
-                  </div>
-                </td>
-                <td>
-                  <div class="desig-bar-wrap">
-                    <div class="desig-bar desig-bar-mo" [style.width.%]="barPct(item.count, getMaxDesigMain())"></div>
-                    <span class="desig-bar-label">{{ item.count }}</span>
-                  </div>
-                </td>
-                <td style="text-align:right">
-                  <span class="desig-count-badge desig-count-mo">{{ item.count }}</span>
-                </td>
+                <td><div class="desig-name-cell"><span class="desig-tag desig-tag-mo">🔧</span><span class="desig-name">{{ item.designation }}</span></div></td>
+                <td><div class="desig-bar-wrap"><div class="desig-bar desig-bar-mo" [style.width.%]="barPct(item.count, getMaxDesigMain())"></div><span class="desig-bar-label">{{ item.count }}</span></div></td>
+                <td style="text-align:right"><span class="desig-count-badge desig-count-mo">{{ item.count }}</span></td>
               </tr>
             </tbody>
           </table>
         </div>
 
         <div *ngIf="!loadingDesigMain && !loadingDetails && designationMainFiltree.length === 0" class="state-empty">
-          <div class="empty-icon">🔧</div>
-          <p class="state-title">Aucune désignation Main d'œuvre</p>
+          <div class="empty-icon">🔧</div><p class="state-title">Aucune désignation Main d'œuvre</p>
         </div>
       </div>
 
@@ -521,12 +419,20 @@
               <p class="desig-sub">Nombre d'occurrences de chaque désignation de pièce</p>
             </div>
           </div>
-          <div class="desig-total-badge">
-            Total : <strong>{{ designationPieceFiltree.length }}</strong> désignations distinctes
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <div class="desig-total-badge">Total : <strong>{{ designationPieceFiltree.length }}</strong> désignations distinctes</div>
+            <!-- Export Desig Piece -->
+            <button class="btn-export-sm" (click)="exporterDesigPiece()" [disabled]="exportDesigPieceLoading" title="Exporter en CSV">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              {{ exportDesigPieceLoading ? 'Export…' : 'Export CSV' }}
+            </button>
+            <button class="btn-export-combined" (click)="exporterTout()" [disabled]="exportGlobalLoading" title="Exporter Global + Designation Count Main + Piece">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Export Complet
+            </button>
           </div>
         </div>
 
-        <!-- Filtres -->
         <div class="filter-bar">
           <div class="search-wrap">
             <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -542,47 +448,24 @@
           </select>
         </div>
 
-        <div *ngIf="loadingDesigPiece || loadingDetails" class="state-loading">
-          <div class="loader-ring"></div>
-          <p>Chargement des désignations…</p>
-        </div>
+        <div *ngIf="loadingDesigPiece || loadingDetails" class="state-loading"><div class="loader-ring"></div><p>Chargement des désignations…</p></div>
 
         <div *ngIf="!loadingDesigPiece && !loadingDetails && designationPieceFiltree.length > 0" class="data-table-wrap">
           <table class="data-table desig-table">
-            <thead>
-              <tr>
-                <th style="width:60px">Rang</th>
-                <th>Designation</th>
-                <th style="width:220px">Count</th>
-                <th style="width:100px; text-align:right">Nb</th>
-              </tr>
-            </thead>
+            <thead><tr><th style="width:60px">Rang</th><th>Designation</th><th style="width:220px">Count</th><th style="width:100px; text-align:right">Nb</th></tr></thead>
             <tbody>
               <tr *ngFor="let item of designationPieceFiltree; let i = index" class="table-row desig-row">
                 <td class="rank-col">{{ i + 1 }}</td>
-                <td>
-                  <div class="desig-name-cell">
-                    <span class="desig-tag desig-tag-piece">🔩</span>
-                    <span class="desig-name">{{ item.designation }}</span>
-                  </div>
-                </td>
-                <td>
-                  <div class="desig-bar-wrap">
-                    <div class="desig-bar desig-bar-piece" [style.width.%]="barPct(item.count, getMaxDesigPiece())"></div>
-                    <span class="desig-bar-label">{{ item.count }}</span>
-                  </div>
-                </td>
-                <td style="text-align:right">
-                  <span class="desig-count-badge desig-count-piece">{{ item.count }}</span>
-                </td>
+                <td><div class="desig-name-cell"><span class="desig-tag desig-tag-piece">🔩</span><span class="desig-name">{{ item.designation }}</span></div></td>
+                <td><div class="desig-bar-wrap"><div class="desig-bar desig-bar-piece" [style.width.%]="barPct(item.count, getMaxDesigPiece())"></div><span class="desig-bar-label">{{ item.count }}</span></div></td>
+                <td style="text-align:right"><span class="desig-count-badge desig-count-piece">{{ item.count }}</span></td>
               </tr>
             </tbody>
           </table>
         </div>
 
         <div *ngIf="!loadingDesigPiece && !loadingDetails && designationPieceFiltree.length === 0" class="state-empty">
-          <div class="empty-icon">🔩</div>
-          <p class="state-title">Aucune désignation Pièce</p>
+          <div class="empty-icon">🔩</div><p class="state-title">Aucune désignation Pièce</p>
         </div>
       </div>
 
@@ -594,12 +477,8 @@
             <h2 class="missing-title">Missing HTVA</h2>
             <p class="missing-sub">Lignes avec montant HTVA manquant ou nul — nécessitent correction</p>
           </div>
-          <div class="missing-count-badge" *ngIf="missingHtvaFiltree.length > 0">
-            {{ missingHtvaFiltree.length }} ligne{{ missingHtvaFiltree.length > 1 ? 's' : '' }} concernée{{ missingHtvaFiltree.length > 1 ? 's' : '' }}
-          </div>
+          <div class="missing-count-badge" *ngIf="missingHtvaFiltree.length > 0">{{ missingHtvaFiltree.length }} ligne{{ missingHtvaFiltree.length > 1 ? 's' : '' }} concernée{{ missingHtvaFiltree.length > 1 ? 's' : '' }}</div>
         </div>
-
-        <!-- Filtres -->
         <div class="filter-bar">
           <select class="filter-select" [(ngModel)]="filtreZoneMissing" (ngModelChange)="filtrerMissing()">
             <option value="">Toutes les zones</option>
@@ -615,60 +494,26 @@
             <option value="PIECE">Pièce</option>
           </select>
         </div>
-
-        <div *ngIf="loadingMissing || loadingDetails" class="state-loading">
-          <div class="loader-ring"></div>
-          <p>Analyse des montants HTVA…</p>
-        </div>
-
+        <div *ngIf="loadingMissing || loadingDetails" class="state-loading"><div class="loader-ring"></div><p>Analyse des montants HTVA…</p></div>
         <div *ngIf="!loadingMissing && !loadingDetails && missingHtvaFiltree.length > 0" class="data-table-wrap">
           <table class="data-table missing-table">
-            <thead>
-              <tr>
-                <th>Véhicule</th>
-                <th>Type</th>
-                <th>Excel Row</th>
-                <th>N° Doss</th>
-                <th>N°</th>
-                <th>Designation</th>
-                <th style="text-align:right">Qté</th>
-                <th style="text-align:right">Montant</th>
-                <th style="text-align:right">Total HTVA</th>
-                <th>Open</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Véhicule</th><th>Type</th><th>Excel Row</th><th>N° Doss</th><th>N°</th><th>Designation</th><th style="text-align:right">Qté</th><th style="text-align:right">Montant</th><th style="text-align:right">Total HTVA</th><th>Open</th></tr></thead>
             <tbody>
-              <tr *ngFor="let item of missingHtvaFiltree; let i = index" class="table-row missing-row">
-                <td>
-                  <span class="mat-badge">{{ item.vehiculeId }}</span>
-                  <div *ngIf="item.zoneNom" style="margin-top:3px"><span class="chip chip-zone" style="font-size:10px">{{ item.zoneNom }}</span></div>
-                </td>
-                <td>
-                  <span class="chip" [ngClass]="item.type === 'MAIN_D_OEUVRE' ? 'chip-mo' : 'chip-piece'">
-                    {{ item.type === 'MAIN_D_OEUVRE' ? "Main d'œuvre" : 'Pièce' }}
-                  </span>
-                </td>
+              <tr *ngFor="let item of missingHtvaFiltree" class="table-row missing-row">
+                <td><span class="mat-badge">{{ item.vehiculeId }}</span><div *ngIf="item.zoneNom" style="margin-top:3px"><span class="chip chip-zone" style="font-size:10px">{{ item.zoneNom }}</span></div></td>
+                <td><span class="chip" [ngClass]="item.type === 'MAIN_D_OEUVRE' ? 'chip-mo' : 'chip-piece'">{{ item.type === 'MAIN_D_OEUVRE' ? "Main d'œuvre" : 'Pièce' }}</span></td>
                 <td class="mono-val">{{ item.excelRow }}</td>
                 <td class="mono-val">{{ item.numDossier }}</td>
                 <td class="mono-val">{{ item.numero || '—' }}</td>
                 <td class="missing-desig">{{ item.designation }}</td>
                 <td class="mono-val" style="text-align:right">{{ item.quantite }}</td>
-                <td class="mono-val" style="text-align:right">
-                  <span [class.missing-zero]="item.montantUnitaire === 0">{{ fmt3(item.montantUnitaire) }}</span>
-                </td>
-                <td class="mono-val" style="text-align:right">
-                  <span class="missing-htva-badge">{{ fmt3(item.totalHtva) }}</span>
-                </td>
-                <td>
-                  <button class="btn-goto" (click)="ouvrirDetail({ vehiculeId: item.vehiculeId, vehiculeMarque: item.vehiculeMarque, totalHtva: 0, brands: '', zoneNom: item.zoneNom, nbDossiers: 1 })">
-                    Go to line →
-                  </button>
-                </td>
+                <td class="mono-val" style="text-align:right"><span [class.missing-zero]="item.montantUnitaire === 0">{{ fmt3(item.montantUnitaire) }}</span></td>
+                <td class="mono-val" style="text-align:right"><span class="missing-htva-badge">{{ fmt3(item.totalHtva) }}</span></td>
+                <td><button class="btn-goto" (click)="ouvrirDetail({ vehiculeId: item.vehiculeId, vehiculeMarque: item.vehiculeMarque, totalHtva: 0, brands: '', zoneNom: item.zoneNom, nbDossiers: 1 })">Go to line →</button></td>
               </tr>
             </tbody>
           </table>
         </div>
-
         <div *ngIf="!loadingMissing && !loadingDetails && missingHtvaFiltree.length === 0" class="state-empty missing-ok">
           <div class="missing-ok-icon">✅</div>
           <p class="state-title" style="color:#4ade80">Aucun HTVA manquant détecté !</p>
@@ -680,7 +525,7 @@
   </main>
 </div>
 
-<!-- ═══ PANEL DÉTAIL VÉHICULE ═══ -->
+<!-- ═══ PANEL DÉTAIL VÉHICULE (scrollable) ═══ -->
 <div *ngIf="selectedGlobalItem" class="detail-overlay" (click)="fermerDetail()">
   <div class="detail-panel" (click)="$event.stopPropagation()">
 
@@ -692,7 +537,7 @@
           <span *ngFor="let b of getBrands(selectedGlobalItem.brands)" class="chip" [ngClass]="getBrandClass(b)">{{ b }}</span>
         </div>
       </div>
-      <div style="display:flex;gap:10px;align-items:center">
+      <div style="display:flex;gap:10px;align-items:center;flex-shrink:0">
         <span class="htva-total">Total HTVA : {{ fmt3(selectedGlobalItem.totalHtva) }} DT</span>
         <button class="btn-new btn-sm" (click)="ouvrirCreationPourVehicule(selectedGlobalItem.vehiculeId)">+ Dossier</button>
         <button class="btn-close-panel" (click)="fermerDetail()">✕</button>
@@ -704,6 +549,10 @@
       <span class="detail-subtitle">{{ detailMaintenances.length }} dossier(s) — {{ fmt3(selectedGlobalItem.totalHtva) }} DT HTVA</span>
     </div>
 
+    <!-- Loading indicator inside panel -->
+    <div *ngIf="loadingDetail" class="state-loading" style="padding:40px 0"><div class="loader-ring"></div></div>
+
+    <!-- Scrollable body -->
     <div class="detail-body" *ngIf="!loadingDetail">
       <div *ngFor="let m of detailMaintenances" class="dossier-block">
         <div *ngFor="let brand of getBrands(m.brands || '')" class="brand-section-header" [ngClass]="getBrandClass(brand)">{{ brand }}</div>
@@ -714,53 +563,63 @@
           <span class="chip" [ngClass]="getTypeClass(m.typeIntervention)">{{ getTypeLabel(m.typeIntervention) }}</span>
           <span class="dossier-htva">{{ fmt3(m.coutTotalHtva) }} DT</span>
           <div style="margin-left:auto;display:flex;gap:6px">
-            <button class="btn-act btn-edit sm" (click)="editerDossier(m)">✏️</button>
-            <button class="btn-act btn-delete sm" (click)="supprimerDossier(m)">🗑</button>
+            <button class="btn-act btn-edit" (click)="editerDossier(m)">✏️</button>
+            <button class="btn-act btn-delete" (click)="supprimerDossier(m)">🗑</button>
           </div>
         </div>
 
+        <!-- Main d'œuvre section -->
         <div *ngIf="getMainDoeuvre(m).length > 0" class="detail-section">
           <div class="section-label mo-label">Main d'œuvre</div>
-          <table class="detail-table">
-            <thead><tr><th>N° Doss</th><th>Véhicule</th><th>Marque</th><th>N°</th><th>Désignation</th><th>Qté</th><th>Montant HT</th><th>Total HTVA</th></tr></thead>
-            <tbody>
-              <tr *ngFor="let d of getMainDoeuvre(m)" [class.missing-row-light]="!d.totalHtva || d.totalHtva === 0">
-                <td class="mono-val">{{ d.numeroDossier }}</td>
-                <td class="mono-val">{{ m.vehiculeMatricule }}</td>
-                <td>{{ d.marque || '—' }}</td>
-                <td class="mono-val">{{ d.numero || '—' }}</td>
-                <td>{{ d.designation }}</td>
-                <td class="mono-val center">{{ d.quantite }}</td>
-                <td class="mono-val">{{ fmt3(d.montantUnitaire) }}</td>
-                <td class="mono-val htva-val" [class.htva-missing]="!d.totalHtva || d.totalHtva === 0">
-                  {{ fmt3(d.totalHtva || 0) }}
-                  <span *ngIf="!d.totalHtva || d.totalHtva === 0" class="missing-badge-inline">MISSING</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="detail-table-scroll">
+            <table class="detail-table">
+              <thead><tr><th>N° Doss</th><th>Véhicule</th><th>Marque</th><th>N°</th><th>Désignation</th><th>Qté</th><th>Montant HT</th><th>Total HTVA</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let d of getMainDoeuvre(m)" [class.missing-row-light]="!d.totalHtva || d.totalHtva === 0">
+                  <td class="mono-val">{{ d.numeroDossier }}</td>
+                  <td class="mono-val">{{ m.vehiculeMatricule }}</td>
+                  <td>{{ d.marque || '—' }}</td>
+                  <td class="mono-val">{{ d.numero || '—' }}</td>
+                  <td>{{ d.designation }}</td>
+                  <td class="mono-val center">{{ d.quantite }}</td>
+                  <td class="mono-val">{{ fmt3(d.montantUnitaire) }}</td>
+                  <td class="mono-val htva-val" [class.htva-missing]="!d.totalHtva || d.totalHtva === 0">
+                    {{ fmt3(d.totalHtva || 0) }}
+                    <span *ngIf="!d.totalHtva || d.totalHtva === 0" class="missing-badge-inline">MISSING</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
+        <!-- Pièces section -->
         <div *ngIf="getPieces(m).length > 0" class="detail-section">
           <div class="section-label piece-label">Pièces</div>
-          <table class="detail-table">
-            <thead><tr><th>N° Doss</th><th>Véhicule</th><th>Marque</th><th>N° Pièce</th><th>Désignation</th><th>Qté</th><th>Montant HT</th><th>Total HTVA</th></tr></thead>
-            <tbody>
-              <tr *ngFor="let d of getPieces(m)" [class.missing-row-light]="!d.totalHtva || d.totalHtva === 0">
-                <td class="mono-val">{{ d.numeroDossier }}</td>
-                <td class="mono-val">{{ m.vehiculeMatricule }}</td>
-                <td>{{ d.marque || '—' }}</td>
-                <td class="mono-val">{{ d.numeroPiece || '—' }}</td>
-                <td>{{ d.designation }}</td>
-                <td class="mono-val center">{{ d.quantite }}</td>
-                <td class="mono-val">{{ fmt3(d.montantUnitaire) }}</td>
-                <td class="mono-val htva-val" [class.htva-missing]="!d.totalHtva || d.totalHtva === 0">
-                  {{ fmt3(d.totalHtva || 0) }}
-                  <span *ngIf="!d.totalHtva || d.totalHtva === 0" class="missing-badge-inline">MISSING</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="detail-table-scroll">
+            <table class="detail-table">
+              <thead><tr><th>N° Doss</th><th>Véhicule</th><th>Marque</th><th>N° Pièce</th><th>Désignation</th><th>Qté</th><th>Montant HT</th><th>Total HTVA</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let d of getPieces(m)" [class.missing-row-light]="!d.totalHtva || d.totalHtva === 0">
+                  <td class="mono-val">{{ d.numeroDossier }}</td>
+                  <td class="mono-val">{{ m.vehiculeMatricule }}</td>
+                  <td>{{ d.marque || '—' }}</td>
+                  <td class="mono-val">{{ d.numeroPiece || '—' }}</td>
+                  <td>{{ d.designation }}</td>
+                  <td class="mono-val center">{{ d.quantite }}</td>
+                  <td class="mono-val">{{ fmt3(d.montantUnitaire) }}</td>
+                  <td class="mono-val htva-val" [class.htva-missing]="!d.totalHtva || d.totalHtva === 0">
+                    {{ fmt3(d.totalHtva || 0) }}
+                    <span *ngIf="!d.totalHtva || d.totalHtva === 0" class="missing-badge-inline">MISSING</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div *ngIf="getMainDoeuvre(m).length === 0 && getPieces(m).length === 0" style="padding:12px 16px;font-size:12px;color:var(--text-muted);font-style:italic">
+          Aucun détail chargé pour ce dossier.
         </div>
 
         <div class="dossier-subtotal">Total HTVA: <strong>{{ fmt3(m.coutTotalHtva) }} DT</strong></div>
@@ -771,8 +630,6 @@
         <button class="btn-new" (click)="ouvrirCreationPourVehicule(selectedGlobalItem!.vehiculeId)">+ Créer un dossier</button>
       </div>
     </div>
-
-    <div *ngIf="loadingDetail" class="state-loading"><div class="loader-ring"></div></div>
   </div>
 </div>
 
