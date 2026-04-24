@@ -10,6 +10,7 @@ import { CarburantListComponent } from './carburant/carburant-list/carburant-lis
 import { ProfileComponent } from './profile/profile.component';
 import { CarburantAnalyticsComponent } from './carburant/carburant-analytics/carburant-analytics.component';
 import { MaintenanceListComponent } from './maintenance/maintenance-list/maintenance-list.component';
+import { GroupeElectrogeneListComponent } from './groupe-electrogene/groupe-electrogene-list/groupe-electrogene-list.component';
 const routes: Routes = [
   // Route par défaut
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -33,6 +34,7 @@ const routes: Routes = [
       { path: 'carburant', component: CarburantListComponent },
       { path: 'carburant-analytics', component: CarburantAnalyticsComponent },
       { path: 'maintenance', component: MaintenanceListComponent },
+      { path: 'groupes-electrogenes', component: GroupeElectrogeneListComponent },
       
     ]
       

@@ -23,6 +23,7 @@ import { VehiculeService }       from './services/vehicule.service';
 import { CarburantVehiculeService } from './services/carburant-vehicule.service';
 import { CarburantAnalyticsService } from './services/carburant-analytics.service';
 import { MaintenanceService } from './services/maintenance.service';
+import { GroupeElectrogeneService } from './services/groupe-electrogene.service';
 
 
 // Guards
@@ -41,7 +42,9 @@ import { CountByPipe } from './pipes/count-by.pipe';
 import { CarburantAnalyticsComponent } from './carburant/carburant-analytics/carburant-analytics.component';
 import { MaintenanceListComponent } from './maintenance/maintenance-list/maintenance-list.component';
 import { MaintenanceFormComponent } from './maintenance/maintenance-form/maintenance-form.component';
-
+import { GroupeElectrogeneListComponent } from './groupe-electrogene/groupe-electrogene-list/groupe-electrogene-list.component';
+import { GestionCarburantGEFormComponent } from './groupe-electrogene/gestion-carburant-ge-form/gestion-carburant-ge-form.component';
+import { GroupeElectrogeneFormComponent } from './groupe-electrogene/groupe-electrogene-form/groupe-electrogene-form.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -62,6 +65,12 @@ import { MaintenanceFormComponent } from './maintenance/maintenance-form/mainten
     CarburantAnalyticsComponent,
     MaintenanceListComponent,
     MaintenanceFormComponent,
+    GroupeElectrogeneListComponent,
+    GestionCarburantGEFormComponent,
+    GroupeElectrogeneFormComponent,
+
+
+    
 
   ],
     imports: [
@@ -82,6 +91,7 @@ import { MaintenanceFormComponent } from './maintenance/maintenance-form/mainten
     CarburantVehiculeService,
     CarburantAnalyticsService,
     MaintenanceService,
+    GroupeElectrogeneService,
 
     
     // Guards

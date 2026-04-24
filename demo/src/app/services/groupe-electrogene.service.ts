@@ -77,15 +77,13 @@ export class GroupeElectrogeneService {
     return this.http.delete(`${this.carbUrl}/${id}`, { headers: this.headers() });
   }
 
-  // Import Excel
-  importerExcel(file: File, zoneNom?: string): Observable<any> {
-    const formData = new FormData();
-    formData.append('file', file);
-    if (zoneNom) formData.append('zoneNom', zoneNom);
-    return this.http.post(`${this.geUrl}/import`, formData, {
-      headers: new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem('token')}` })
-    });
-  }
+importerExcel(file: File): Observable<any> {
+  const formData = new FormData();
+  formData.append('file', file);
+  return this.http.post(`${this.geUrl}/import`, formData, {
+    headers: new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem('token')}` })
+  });
+}
 
   downloadBlob(blob: Blob, filename: string): void {
     const url = window.URL.createObjectURL(blob);

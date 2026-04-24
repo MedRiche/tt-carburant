@@ -1,0 +1,51 @@
+<div class="modal-overlay" (click)="cancel()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ mode === 'edit' ? 'Modifier le groupe' : 'Nouveau groupe électrogène' }}</h3>
+      <button class="btn-close" (click)="cancel()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Site <span class="req">*</span></label>
+          <input class="form-input" [(ngModel)]="form.site" placeholder="Ex: HACHED 1" [disabled]="mode === 'edit'"/>
+        </div>
+        <div class="form-group">
+          <label>Type carburant</label>
+          <select class="form-input" [(ngModel)]="form.typeCarburant">
+            <option *ngFor="let t of typeOptions" [value]="t">{{ getTypeLabel(t) }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Puissance (KVA)</label><input class="form-input" type="number" step="1" [(ngModel)]="form.puissanceKVA"/></div>
+        <div class="form-group"><label>Taux conso (L/h)</label><input class="form-input" type="number" step="0.1" [(ngModel)]="form.tauxConsommationParHeure"/></div>
+        <div class="form-group"><label>Conso max semestre (L)</label><input class="form-input" type="number" step="1" [(ngModel)]="form.consommationTotaleMaxParSemestre"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Prix carburant (DT/L)</label><input class="form-input" type="number" step="0.001" [(ngModel)]="form.prixCarburant"/></div>
+        <div class="form-group"><label>Zone</label>
+          <select class="form-input" [(ngModel)]="form.zoneId">
+            <option [value]="null">— Aucune —</option>
+            <option *ngFor="let z of zones" [value]="z.id">{{ z.nom }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-section">
+        <h4 class="section-title">Carte Agilis</h4>
+        <div class="form-row">
+          <div class="form-group"><label>Type carte</label><input class="form-input" [(ngModel)]="form.typeCarte"/></div>
+          <div class="form-group"><label>Numéro carte</label><input class="form-input" [(ngModel)]="form.numeroCarte"/></div>
+          <div class="form-group"><label>Date expiration</label><input class="form-input" type="month" [(ngModel)]="form.dateExpiration"/></div>
+          <div class="form-group"><label>Code PIN</label><input class="form-input" [(ngModel)]="form.codePIN"/></div>
+          <div class="form-group"><label>Code PUK</label><input class="form-input" [(ngModel)]="form.codePUK"/></div>
+          <div class="form-group"><label>Utilisateur ROC</label><input class="form-input" [(ngModel)]="form.utilisateurRoc"/></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="cancel()">Annuler</button>
+      <button class="btn btn-primary" (click)="submit()" [disabled]="submitting">{{ submitting ? 'Envoi...' : 'Enregistrer' }}</button>
+    </div>
+  </div>
+</div>
