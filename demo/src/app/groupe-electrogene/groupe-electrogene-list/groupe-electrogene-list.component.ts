@@ -24,13 +24,18 @@ export class GroupeElectrogeneListComponent implements OnInit {
 
   // Filtres
   searchText = '';
-  filtreZone = '';
 
   // Modal / form
   showForm            = false;
   selectedGE: GroupeElectrogene | null       = null;
   formMode: 'create' | 'edit' | 'fuel'       = 'create';
   selectedFuelSaisie: GestionCarburantGE | null = null;
+
+  // ✅ NOUVEAU : Modal détail carte Agilis
+  showDetailModal = false;
+  detailGE: GroupeElectrogene | null = null;
+  showPin = false;
+  showPuk = false;
 
   // Import
   showImportModal = false;
@@ -88,7 +93,7 @@ export class GroupeElectrogeneListComponent implements OnInit {
   chargerSaisies(): void {
     this.carbService.getAllSaisies().subscribe({
       next:  (s) => (this.saisies = s),
-      error: ()  => {}        // saisies are secondary – don't block the page
+      error: ()  => {}
     });
   }
 
@@ -97,26 +102,16 @@ export class GroupeElectrogeneListComponent implements OnInit {
     this.chargerSaisies();
   }
 
-  // ── Filtrage ────────────────────────────────────────────────────────────
+  // ── Filtrage (sans zone) ─────────────────────────────────────────────────
 
   get filteredGroupes(): GroupeElectrogene[] {
-    let list = [...this.groupes];
-
-    if (this.searchText) {
-      const q = this.searchText.toLowerCase();
-      list = list.filter(
-        (g) =>
-          g.site.toLowerCase().includes(q) ||
-          (g.utilisateurRoc ?? '').toLowerCase().includes(q) ||
-          (g.zoneNom ?? '').toLowerCase().includes(q)
-      );
-    }
-
-    if (this.filtreZone) {
-      list = list.filter((g) => String(g.zoneId) === this.filtreZone);
-    }
-
-    return list;
+    if (!this.searchText) return [...this.groupes];
+    const q = this.searchText.toLowerCase();
+    return this.groupes.filter(
+      (g) =>
+        g.site.toLowerCase().includes(q) ||
+        (g.utilisateurRoc ?? '').toLowerCase().includes(q)
+    );
   }
 
   // ── Saisies carburant ────────────────────────────────────────────────────
@@ -165,6 +160,58 @@ export class GroupeElectrogeneListComponent implements OnInit {
   onFormSaved(): void {
     this.showForm = false;
     this.loadAll();
+  }
+
+  // ── Modal Détail Carte Agilis ─────────────────────────────────────────────
+
+  openDetail(ge: GroupeElectrogene): void {
+    this.detailGE       = ge;
+    this.showDetailModal = true;
+    this.showPin        = false;
+    this.showPuk        = false;
+  }
+
+  closeDetail(): void {
+    this.showDetailModal = false;
+    this.detailGE        = null;
+    this.showPin         = false;
+    this.showPuk         = false;
+  }
+
+  togglePin(event: Event): void {
+    event.stopPropagation();
+    this.showPin = !this.showPin;
+  }
+
+  togglePuk(event: Event): void {
+    event.stopPropagation();
+    this.showPuk = !this.showPuk;
+  }
+
+  /**
+   * Formate la date d'expiration "yyyy-MM" → "MM/yyyy"
+   * pour l'affichage dans le modal.
+   */
+  formatDateExp(raw?: string): string {
+    if (!raw) return '—';
+    // Format retourné par le backend : "2028-08"
+    const parts = raw.split('-');
+    if (parts.length === 2) return `${parts[1]}/${parts[0]}`;
+    return raw;
+  }
+
+  /**
+   * Retourne true si la carte expire dans moins de 6 mois.
+   */
+  isExpiringSoon(raw?: string): boolean {
+    if (!raw) return false;
+    try {
+      const [year, month] = raw.split('-').map(Number);
+      const exp = new Date(year, month - 1, 1);
+      const sixMonthsFromNow = new Date();
+      sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
+      return exp <= sixMonthsFromNow;
+    } catch { return false; }
   }
 
   // ── Import Excel ──────────────────────────────────────────────────────────

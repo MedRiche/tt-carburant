@@ -1,38 +1,241 @@
-<div class="modal-overlay" (click)="cancel()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>Saisie carburant — {{ groupe?.site }}</h3>
-      <button class="btn-close" (click)="cancel()">✕</button>
+<!-- src/app/groupe-electrogene/gestion-carburant-ge-page/gestion-carburant-ge-page.component.html -->
+<div class="app-shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">⚡</div>
+      <div class="brand-text">
+        <span class="brand-name">TT Énergie</span>
+        <span class="brand-sub">Gestion Carburant GE</span>
+      </div>
     </div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group">
+    <nav class="sidebar-nav">
+      <a class="nav-item" (click)="navigateTo('/admin/dashboardAdmin')"><span class="nav-icon">📊</span> Dashboard</a>
+      <a class="nav-item" (click)="navigateTo('/admin/utilisateurs')"><span class="nav-icon">👥</span> Utilisateurs</a>
+      <a class="nav-item" (click)="navigateTo('/admin/zones')"><span class="nav-icon">📍</span> Zones</a>
+      <a class="nav-item" (click)="navigateTo('/admin/vehicules')"><span class="nav-icon">🚗</span> Véhicules</a>
+      <a class="nav-item" (click)="navigateTo('/admin/carburant')"><span class="nav-icon">⛽</span> Carburant</a>
+      <a class="nav-item" (click)="navigateTo('/admin/maintenance')"><span class="nav-icon">🔧</span> Maintenance</a>
+      <a class="nav-item" (click)="navigateTo('/admin/groupes-electrogenes')"><span class="nav-icon">⚡</span> Groupes électrogènes</a>
+      <a class="nav-item active"><span class="nav-icon">📊</span> Gestion Carburant</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-avatar">AD</div>
+      <div class="user-meta">
+        <span class="user-name">Admin</span>
+        <span class="user-role">Admin</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main-content">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="btn-back" (click)="navigateTo('/admin/groupes-electrogenes')">
+          ← Retour
+        </button>
+        <div>
+          <h1 class="page-title">Gestion Carburant — Groupes Électrogènes</h1>
+          <p class="page-subtitle">Saisie et calcul semestriel par site</p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <!-- Filtre Semestre -->
+        <div class="filter-group">
           <label>Année</label>
-          <select class="form-input" [(ngModel)]="form.annee">
+          <select class="filter-select" [(ngModel)]="filtreAnnee" (change)="onFiltreChange()">
             <option *ngFor="let a of anneeOptions" [value]="a">{{ a }}</option>
           </select>
         </div>
-        <div class="form-group">
+        <div class="filter-group">
           <label>Semestre</label>
-          <select class="form-input" [(ngModel)]="form.semestre">
-  <option *ngFor="let s of semestreOptions" [value]="s">{{ getSemestreLabel(s) }}</option>
-</select>
+          <select class="filter-select" [(ngModel)]="filtreSemestre" (change)="onFiltreChange()">
+            <option value="PREMIER">1er Semestre</option>
+            <option value="DEUXIEME">2ème Semestre</option>
+          </select>
+        </div>
+        <div class="pill pill-violet">
+          {{ saisiesFiltrees.length }} saisies
         </div>
       </div>
-      <div class="form-section">
-        <h4 class="section-title">Données du semestre</h4>
-        <div class="form-row">
-          <div class="form-group"><label>Index heure début semestre</label><input class="form-input" type="number" step="0.1" [(ngModel)]="form.indexHeureSemestrePrecedent"/></div>
-          <div class="form-group"><label>Montant restant réservoir (préc.)</label><input class="form-input" type="number" step="0.001" [(ngModel)]="form.montantCarburantRestantReservoirPrecedent"/></div>
-          <div class="form-group"><label>Ravitaillement sem. préc. (DT)</label><input class="form-input" type="number" step="0.001" [(ngModel)]="form.ravitaillementSemestrePrecedentDinars"/></div>
-          <div class="form-group"><label>Montant restant Agilis fin sem.</label><input class="form-input" type="number" step="0.001" [(ngModel)]="form.montantRestantAgilisFinSemestre"/></div>
-          <div class="form-group"><label>Index fin semestre</label><input class="form-input" type="number" step="0.1" [(ngModel)]="form.indexFinSemestre"/></div>
-        </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content-area">
+
+      <!-- Loading -->
+      <div *ngIf="loading" class="state-empty">
+        <div class="loader-ring"></div>
+        <p>Chargement des données…</p>
       </div>
+
+      <!-- Tableau principal type Excel -->
+      <div *ngIf="!loading" class="excel-table-wrap">
+
+        <!-- En-tête de section -->
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-icon">📋</span>
+            <div>
+              <span class="section-title">
+                Semestre {{ filtreSemestre === 'PREMIER' ? '1' : '2' }} — {{ filtreAnnee }}
+              </span>
+              <span class="section-sub">{{ groupes.length }} sites configurés</span>
+            </div>
+          </div>
+          <button class="btn-new-saisie" (click)="openSaisieForm(null)">
+            + Nouvelle saisie
+          </button>
+        </div>
+
+        <div class="table-scroll">
+          <table class="excel-table">
+            <thead>
+              <tr class="head-row-1">
+                <th rowspan="2" class="th-site">Site</th>
+                <th rowspan="2" class="th-type">Type Carburant</th>
+                <th rowspan="2" class="th-num">Taux Conso (L/h)</th>
+                <th rowspan="2" class="th-num">Conso Max Sem. (L)</th>
+                <th rowspan="2" class="th-num">Prix (DT/L)</th>
+                <th colspan="5" class="th-group th-saisie">Données à saisir</th>
+                <th colspan="6" class="th-group th-calc">Calculés automatiquement</th>
+                <th rowspan="2" class="th-actions">Actions</th>
+              </tr>
+              <tr class="head-row-2">
+                <!-- Saisies -->
+                <th class="th-sub">Index Début (h)</th>
+                <th class="th-sub">Montant Réserv. Préc. (DT)</th>
+                <th class="th-sub">Ravitaillement Préc. (DT)</th>
+                <th class="th-sub">Montant Fin Sem. (DT)</th>
+                <th class="th-sub">Index Fin (h)</th>
+                <!-- Calculés -->
+                <th class="th-sub th-calc-cell">Total Ravit. (L)</th>
+                <th class="th-sub th-calc-cell">Qté Restante (L)</th>
+                <th class="th-sub th-calc-cell">Nb Heures Travail</th>
+                <th class="th-sub th-calc-cell">% Conso</th>
+                <th class="th-sub th-calc-cell">Carburant Demandé (DT)</th>
+                <th class="th-sub th-calc-cell">Évaluation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let ge of groupes">
+                <tr class="data-row" [class.row-has-saisie]="getSaisie(ge.site)">
+                  <!-- Site -->
+                  <td class="td-site">
+                    <span class="site-badge">{{ ge.site }}</span>
+                  </td>
+                  <!-- Type carburant -->
+                  <td>
+                    <span class="chip-carb-sm">{{ getTypeLabel(ge.typeCarburant) }}</span>
+                  </td>
+                  <!-- Taux conso -->
+                  <td class="td-num">{{ ge.tauxConsommationParHeure ?? '—' }}</td>
+                  <!-- Conso max -->
+                  <td class="td-num">{{ ge.consommationTotaleMaxParSemestre ?? '—' }}</td>
+                  <!-- Prix -->
+                  <td class="td-num">
+                    <span *ngIf="ge.prixCarburant" class="prix-val">{{ ge.prixCarburant }}</span>
+                    <span *ngIf="!ge.prixCarburant" class="u-none">—</span>
+                  </td>
+
+                  <!-- ── Saisies (remplies ou vides) ── -->
+                  <ng-container *ngIf="getSaisie(ge.site) as s; else noSaisie">
+                    <td class="td-num td-input">{{ s.indexHeureSemestrePrecedent ?? '—' }}</td>
+                    <td class="td-num td-input">{{ s.montantCarburantRestantReservoirPrecedent ?? '—' }}</td>
+                    <td class="td-num td-input">{{ s.ravitaillementSemestrePrecedentDinars ?? '—' }}</td>
+                    <td class="td-num td-input">{{ s.montantRestantAgilisFinSemestre ?? '—' }}</td>
+                    <td class="td-num td-input">{{ s.indexFinSemestre ?? '—' }}</td>
+
+                    <!-- ── Calculés ── -->
+                    <td class="td-num td-calc">
+                      {{ s.totalRavitaillementLitres != null ? (s.totalRavitaillementLitres | number:'1.0-1') : '—' }}
+                    </td>
+                    <td class="td-num td-calc">
+                      {{ s.quantiteRestanteReservoirAgilis != null ? (s.quantiteRestanteReservoirAgilis | number:'1.0-1') : '—' }}
+                    </td>
+                    <td class="td-num td-calc">
+                      {{ s.nbHeuresTravail != null ? (s.nbHeuresTravail | number:'1.0-1') : '—' }}
+                    </td>
+                    <td class="td-num td-calc">
+                      <span *ngIf="s.pourcentageConsommation != null"
+                            [class]="getPctClass(s.pourcentageConsommation)">
+                        {{ s.pourcentageConsommation | number:'1.0-1' }}%
+                      </span>
+                      <span *ngIf="s.pourcentageConsommation == null" class="u-none">—</span>
+                    </td>
+                    <td class="td-num td-calc">
+                      {{ s.carburantDemandeDinarsCours != null ? (s.carburantDemandeDinarsCours | number:'1.0-0') + ' DT' : '—' }}
+                    </td>
+                    <td class="td-eval">
+                      <span *ngIf="s.evaluationTauxConsommation" class="eval-badge"
+                            [class.eval-ok]="s.evaluationTauxConsommation === 'OUI'"
+                            [class.eval-no]="s.evaluationTauxConsommation === 'NON'">
+                        {{ s.evaluationTauxConsommation === 'OUI' ? '✅ OUI' : '❌ NON' }}
+                      </span>
+                      <span *ngIf="!s.evaluationTauxConsommation" class="u-none">—</span>
+                    </td>
+                    <!-- Actions -->
+                    <td>
+                      <div class="row-actions">
+                        <button class="btn-act btn-edit" title="Modifier" (click)="openSaisieForm(ge, s)">✏️</button>
+                        <button class="btn-act btn-delete" title="Supprimer" (click)="deleteSaisie(s.id!, ge.site)">🗑</button>
+                      </div>
+                    </td>
+                  </ng-container>
+
+                  <!-- Pas de saisie -->
+                  <ng-template #noSaisie>
+                    <td class="td-num td-empty" colspan="5">—</td>
+                    <td class="td-num td-calc" colspan="6">—</td>
+                    <td>
+                      <button class="btn-act btn-saisir" (click)="openSaisieForm(ge)">
+                        ⛽ Saisir
+                      </button>
+                    </td>
+                  </ng-template>
+                </tr>
+              </ng-container>
+
+              <!-- Ligne totaux -->
+              <tr class="totals-row" *ngIf="saisiesFiltrees.length > 0">
+                <td colspan="5" class="totals-label">TOTAUX</td>
+                <td colspan="5" class="td-calc">—</td>
+                <td class="td-calc totals-val">{{ totalRavit | number:'1.0-0' }} L</td>
+                <td class="td-calc">—</td>
+                <td class="td-calc totals-val">{{ totalHeures | number:'1.0-0' }} h</td>
+                <td class="td-calc">—</td>
+                <td class="td-calc totals-val">{{ totalDemande | number:'1.0-0' }} DT</td>
+                <td class="td-calc">—</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+      <!-- Aucune donnée -->
+      <div *ngIf="!loading && groupes.length === 0" class="state-empty">
+        <div class="state-icon">⚡</div>
+        <p class="state-title">Aucun groupe électrogène configuré</p>
+        <button class="btn-back" (click)="navigateTo('/admin/groupes-electrogenes')">
+          ← Aller aux groupes électrogènes
+        </button>
+      </div>
+
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="cancel()">Annuler</button>
-      <button class="btn btn-primary" (click)="submit()" [disabled]="submitting">{{ submitting ? 'Envoi...' : 'Enregistrer' }}</button>
-    </div>
-  </div>
+  </main>
 </div>
+
+<!-- ══ FORMULAIRE SAISIE ══ -->
+<app-gestion-carburant-ge-form
+  *ngIf="showSaisieForm"
+  [groupe]="selectedGE"
+  [saisie]="selectedSaisie"
+  (onSave)="onSaisieSaved()"
+  (onCancel)="showSaisieForm = false">
+</app-gestion-carburant-ge-form>

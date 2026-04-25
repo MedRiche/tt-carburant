@@ -10,7 +10,6 @@
         <span class="brand-sub">Groupes électrogènes</span>
       </div>
     </div>
-
     <nav class="sidebar-nav">
       <a class="nav-item" (click)="navigateTo('/admin/dashboardAdmin')">
         <span class="nav-icon">📊</span> Dashboard
@@ -34,7 +33,6 @@
         <span class="nav-icon">⚡</span> Groupes électrogènes
       </a>
     </nav>
-
     <div class="sidebar-footer">
       <div class="user-avatar">AD</div>
       <div class="user-meta">
@@ -57,6 +55,15 @@
         <div class="pill pill-cyan">
           {{ filteredGroupes.length }} groupe{{ filteredGroupes.length > 1 ? 's' : '' }}
         </div>
+
+        <!-- ✅ NOUVEAU : Bouton Gestion Carburant → page dédiée -->
+        <button class="btn-gestion" (click)="navigateTo('/admin/gestion-carburant-ge')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+          Gestion Carburant
+        </button>
+
         <button class="btn-import" (click)="ouvrirImport()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -84,13 +91,9 @@
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
           <input class="search-input"
-                 placeholder="Rechercher site, utilisateur ROC, zone…"
+                 placeholder="Rechercher site, utilisateur ROC…"
                  [(ngModel)]="searchText"/>
         </div>
-        <select class="filter-select" [(ngModel)]="filtreZone">
-          <option value="">Toutes les zones</option>
-          <option *ngFor="let z of zones" [value]="z.id">{{ z.nom }}</option>
-        </select>
       </div>
 
       <!-- ── État : chargement ── -->
@@ -106,7 +109,7 @@
         <button class="btn-new" (click)="chargerGroupes()">Réessayer</button>
       </div>
 
-      <!-- ── État : liste vide (mais pas d'erreur) ── -->
+      <!-- ── État : liste vide ── -->
       <div *ngIf="!loading && !loadError && filteredGroupes.length === 0" class="state-empty">
         <div class="state-icon">⚡</div>
         <p class="state-title">Aucun groupe électrogène</p>
@@ -119,15 +122,12 @@
           <thead>
             <tr>
               <th>Site</th>
-              <th>Type carburant</th>
+              <th>Type Carburant</th>
               <th>Puissance (KVA)</th>
-              <th>Taux conso (L/h)</th>
-              <th>Conso max sem. (L)</th>
+              <th>Taux Conso (L/h)</th>
+              <th>Conso Max Sem. (L)</th>
               <th>Prix (DT/L)</th>
-              <th>Zone</th>
-              <th>Utilisateur ROC</th>
               <th>Actions</th>
-              <th>Saisies carburant</th>
             </tr>
           </thead>
           <tbody>
@@ -137,33 +137,24 @@
               <td class="mono-val">{{ ge.puissanceKVA ?? '—' }}</td>
               <td class="mono-val">{{ ge.tauxConsommationParHeure ?? '—' }}</td>
               <td class="mono-val">{{ ge.consommationTotaleMaxParSemestre ?? '—' }}</td>
-              <td class="mono-val">{{ ge.prixCarburant ?? '—' }}</td>
-              <td>
-                <span *ngIf="ge.zoneNom"  class="chip chip-zone">{{ ge.zoneNom }}</span>
-                <span *ngIf="!ge.zoneNom" class="u-none">—</span>
+              <td class="mono-val">
+                <span *ngIf="ge.prixCarburant" class="prix-badge">{{ ge.prixCarburant }}</span>
+                <span *ngIf="!ge.prixCarburant" class="u-none">—</span>
               </td>
-              <td>{{ ge.utilisateurRoc || '—' }}</td>
               <td>
                 <div class="row-actions">
-                  <button class="btn-act btn-edit"   title="Modifier"          (click)="openEditGE(ge)">✏️</button>
-                  <button class="btn-act btn-delete"  title="Supprimer"         (click)="deleteGE(ge.site)">🗑</button>
-                  <button class="btn-act btn-fuel"    title="Saisir carburant"  (click)="openFuelForm(ge)">⛽ Saisir</button>
-                </div>
-              </td>
-              <td>
-                <div class="fuel-saisies">
-                  <div *ngFor="let s of getSaisiesForSite(ge.site)" class="fuel-item">
-                    <span class="chip chip-sm">{{ s.annee }} — {{ semestreLabels[s.semestre] }}</span>
-                    <span class="mono-val">
-                      {{ s.totalRavitaillementLitres != null ? (s.totalRavitaillementLitres | number:'1.0-0') + ' L' : '—' }}
-                    </span>
-                    <span class="mono-val amber">
-                      {{ s.carburantDemandeDinarsCours != null ? (s.carburantDemandeDinarsCours | number:'1.0-0') + ' DT' : '—' }}
-                    </span>
-                    <button class="btn-icon"     title="Modifier saisie"    (click)="openFuelForm(ge, s)">✏️</button>
-                    <button class="btn-icon red"  title="Supprimer saisie"   (click)="deleteSaisie(s.id!, ge.site)">🗑</button>
-                  </div>
-                  <div *ngIf="getSaisiesForSite(ge.site).length === 0" class="u-none">Aucune saisie</div>
+                  <!-- Détail carte Agilis -->
+                  <button class="btn-act btn-detail" title="Détail carte Agilis" (click)="openDetail(ge)">
+                    🪪 Détail
+                  </button>
+                  <!-- Saisir carburant -->
+                  <button class="btn-act btn-fuel" title="Saisir carburant" (click)="openFuelForm(ge)">
+                    ⛽ Saisir
+                  </button>
+                  <!-- Modifier -->
+                  <button class="btn-act btn-edit" title="Modifier" (click)="openEditGE(ge)">✏️</button>
+                  <!-- Supprimer -->
+                  <button class="btn-act btn-delete" title="Supprimer" (click)="deleteGE(ge.site)">🗑</button>
                 </div>
               </td>
             </tr>
@@ -175,7 +166,7 @@
   </main>
 </div>
 
-<!-- ══════════════════ FORMULAIRE GROUPE (création / modification) ══════════════════ -->
+<!-- ══════════════════ FORMULAIRE GROUPE ══════════════════ -->
 <app-groupe-electrogene-form
   *ngIf="showForm && (formMode === 'create' || formMode === 'edit')"
   [mode]="formMode === 'edit' ? 'edit' : 'create'"
@@ -193,6 +184,100 @@
   (onSave)="onFormSaved()"
   (onCancel)="showForm = false">
 </app-gestion-carburant-ge-form>
+
+<!-- ══════════════════ MODAL DÉTAIL CARTE AGILIS ══════════════════ -->
+<div *ngIf="showDetailModal && detailGE" class="detail-modal-overlay" (click)="closeDetail()">
+  <div class="detail-modal" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="detail-header">
+      <div class="detail-header-left">
+        <div class="detail-icon">🪪</div>
+        <div>
+          <h3 class="detail-title">Carte Agilis</h3>
+          <span class="detail-site-badge">{{ detailGE.site }}</span>
+        </div>
+      </div>
+      <button class="detail-close" (click)="closeDetail()">✕</button>
+    </div>
+
+    <!-- Body : grille de cartes style maintenance -->
+    <div class="detail-body">
+
+      <!-- Ligne 1 : Type carte + Numéro carte -->
+      <div class="detail-grid">
+        <div class="detail-card">
+          <div class="detail-card-label">
+            <span class="detail-card-icon">💳</span>
+            Type Carte
+          </div>
+          <div class="detail-card-value">{{ detailGE.typeCarte || '—' }}</div>
+        </div>
+        <div class="detail-card detail-card-wide">
+          <div class="detail-card-label">
+            <span class="detail-card-icon">🔢</span>
+            Numéro Carte
+          </div>
+          <div class="detail-card-value mono">{{ detailGE.numeroCarte || '—' }}</div>
+        </div>
+      </div>
+
+      <!-- Ligne 2 : Date exp + PIN + PUK -->
+      <div class="detail-grid detail-grid-3">
+        <div class="detail-card">
+          <div class="detail-card-label">
+            <span class="detail-card-icon">📅</span>
+            Date Expiration
+          </div>
+          <div class="detail-card-value">
+            <span class="exp-badge" [class.exp-warning]="isExpiringSoon(detailGE.dateExpiration)">
+              {{ formatDateExp(detailGE.dateExpiration) }}
+            </span>
+          </div>
+        </div>
+        <div class="detail-card">
+          <div class="detail-card-label">
+            <span class="detail-card-icon">🔐</span>
+            Code PIN
+          </div>
+          <div class="detail-card-value mono pin-blur" (click)="togglePin($event)">
+            {{ showPin ? (detailGE.codePIN || '—') : '••••' }}
+          </div>
+          <div class="detail-card-hint">Cliquez pour afficher</div>
+        </div>
+        <div class="detail-card">
+          <div class="detail-card-label">
+            <span class="detail-card-icon">🔑</span>
+            Code PUK
+          </div>
+          <div class="detail-card-value mono puk-blur" (click)="togglePuk($event)">
+            {{ showPuk ? (detailGE.codePUK || '—') : '••••••••' }}
+          </div>
+          <div class="detail-card-hint">Cliquez pour afficher</div>
+        </div>
+      </div>
+
+      <!-- Ligne 3 : Utilisateur ROC (pleine largeur) -->
+      <div class="detail-card detail-card-full">
+        <div class="detail-card-label">
+          <span class="detail-card-icon">👤</span>
+          Utilisateur ROC
+        </div>
+        <div class="detail-card-value">{{ detailGE.utilisateurRoc || '—' }}</div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="detail-footer">
+      <button class="btn-act btn-edit" (click)="openEditGE(detailGE); closeDetail()">
+        ✏️ Modifier
+      </button>
+      <button class="detail-close-btn" (click)="closeDetail()">Fermer</button>
+    </div>
+
+  </div>
+</div>
 
 <!-- ══════════════════ MODAL IMPORT EXCEL ══════════════════ -->
 <div *ngIf="showImportModal" class="import-modal-overlay" (click)="fermerImport()">
@@ -212,13 +297,10 @@
     </div>
 
     <div class="import-modal-body">
-
       <div class="import-info-banner">
-        ⚡ Sélectionnez le fichier Excel. Les sites existants seront mis à jour,
-        les nouveaux seront créés.
+        ⚡ Sélectionnez le fichier Excel. Les sites existants seront mis à jour, les nouveaux seront créés.
       </div>
 
-      <!-- Résultat -->
       <div *ngIf="importResult" class="import-result import-result-success">
         <div class="import-result-header">✅ Import terminé</div>
         <div class="import-result-stats">
@@ -241,13 +323,11 @@
         </div>
       </div>
 
-      <!-- Spinner -->
       <div *ngIf="importLoading" class="import-loading">
         <div class="import-spinner"></div>
         <span>Import en cours…</span>
       </div>
 
-      <!-- Sélecteur fichier -->
       <div *ngIf="!importLoading" class="import-file-section">
         <label class="btn-import" style="display:inline-flex;cursor:pointer;padding:10px 20px;">
           📂 Choisir le fichier Excel
@@ -255,7 +335,6 @@
         </label>
         <p class="import-note">Seuls les fichiers .xlsx sont acceptés.</p>
       </div>
-
     </div>
 
     <div class="import-modal-footer">
