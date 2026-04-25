@@ -1,4 +1,3 @@
-// com.example.ttcarburant.services.GroupeElectrogeneImportService.java
 package com.example.ttcarburant.services;
 
 import com.example.ttcarburant.model.entity.GroupeElectrogene;
@@ -8,6 +7,8 @@ import com.example.ttcarburant.repository.GroupeElectrogeneRepository;
 import com.example.ttcarburant.repository.ZoneRepository;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,32 +21,24 @@ import java.util.*;
 @Service
 public class GroupeElectrogeneImportService {
 
+    private static final Logger log = LoggerFactory.getLogger(GroupeElectrogeneImportService.class);
+
     private final GroupeElectrogeneRepository geRepo;
     private final ZoneRepository zoneRepo;
 
     public GroupeElectrogeneImportService(GroupeElectrogeneRepository geRepo, ZoneRepository zoneRepo) {
-        this.geRepo = geRepo;
+        this.geRepo   = geRepo;
         this.zoneRepo = zoneRepo;
     }
 
     /**
-     * Détecte si la feuille est au format "DEUXIEME SEMESTRE" (carte Agilis avant le type carburant)
-     * en inspectant la cellule de l'en-tête (ligne 1, index 0).
-     *
-     * Format PREMIER SEMESTRE (colonnes 0-22) :
-     *   0=id, 1=Site, 2=TypeCarburant, 3=Puissance, 4=TauxConso, 5=ConsoMax,
-     *   6..15=données semestrielles, 16=TypeCarte, 17=NuméroC, 18=DateExp, 19=PIN, 20=PUK, 21=UserROC
-     *
-     * Format DEUXIEME SEMESTRE (colonnes 0-22) :
-     *   0=id, 1=Site, 2=TypeCarte, 3=NuméroCarte, 4=DateExp, 5=PIN, 6=PUK, 7=UserROC,
-     *   8=TypeCarburant, 9=Puissance, 10=TauxConso, 11=ConsoMax,
-     *   12..21=données semestrielles
+     * Détecte si la feuille est au format "DEUXIEME SEMESTRE"
+     * en inspectant la cellule d'en-tête (ligne 1, index 2).
      */
     private boolean isDeuxiemeSemestreFormat(Sheet sheet) {
         Row header = sheet.getRow(1);
         if (header == null) return false;
         String cell2 = getStringCell(header.getCell(2));
-        // Dans le format S2, la colonne 2 contient "Type Carte", pas "Type Carburant"
         return cell2 != null && cell2.toLowerCase().contains("carte");
     }
 
@@ -61,9 +54,9 @@ public class GroupeElectrogeneImportService {
         }
 
         try (InputStream is = file.getInputStream(); Workbook wb = new XSSFWorkbook(is)) {
-            // Traiter toutes les feuilles du classeur
             for (int si = 0; si < wb.getNumberOfSheets(); si++) {
                 Sheet sheet = wb.getSheetAt(si);
+                log.info("Import feuille #{} : '{}'", si, sheet.getSheetName());
                 boolean isS2 = isDeuxiemeSemestreFormat(sheet);
 
                 for (Row row : sheet) {
@@ -82,91 +75,123 @@ public class GroupeElectrogeneImportService {
                     String utilisateurRoc;
 
                     if (isS2) {
-                        // Format DEUXIEME SEMESTRE
-                        site            = getStringCell(row.getCell(1));
-                        typeCarte       = getStringCell(row.getCell(2));
-                        numeroCarte     = getStringCell(row.getCell(3));
-                        dateExpStr      = getStringCell(row.getCell(4));
-                        codePIN         = getStringCell(row.getCell(5));
-                        codePUK         = getStringCell(row.getCell(6));
-                        utilisateurRoc  = getStringCell(row.getCell(7));
-                        typeCarburantStr= getStringCell(row.getCell(8));
-                        puissanceStr    = getStringCell(row.getCell(9));
-                        tauxConso       = getDoubleCell(row.getCell(10));
-                        consoMax        = getDoubleCell(row.getCell(11));
+                        site             = getStringCell(row.getCell(1));
+                        typeCarte        = getStringCell(row.getCell(2));
+                        numeroCarte      = getStringCell(row.getCell(3));
+                        dateExpStr       = getStringCell(row.getCell(4));
+                        codePIN          = getStringCellForPin(row.getCell(5));   // FIX: PIN numérique
+                        codePUK          = getStringCellForPin(row.getCell(6));   // FIX: PUK numérique
+                        utilisateurRoc   = getStringCell(row.getCell(7));
+                        typeCarburantStr = getStringCell(row.getCell(8));
+                        puissanceStr     = getStringCell(row.getCell(9));
+                        tauxConso        = getDoubleCell(row.getCell(10));
+                        consoMax         = getDoubleCell(row.getCell(11));
                     } else {
-                        // Format PREMIER SEMESTRE
-                        site            = getStringCell(row.getCell(1));
-                        typeCarburantStr= getStringCell(row.getCell(2));
-                        puissanceStr    = getStringCell(row.getCell(3));
-                        tauxConso       = getDoubleCell(row.getCell(4));
-                        consoMax        = getDoubleCell(row.getCell(5));
-                        typeCarte       = getStringCell(row.getCell(16));
-                        numeroCarte     = getStringCell(row.getCell(17));
-                        dateExpStr      = getStringCell(row.getCell(18));
-                        codePIN         = getStringCell(row.getCell(19));
-                        codePUK         = getStringCell(row.getCell(20));
-                        utilisateurRoc  = getStringCell(row.getCell(21));
+                        site             = getStringCell(row.getCell(1));
+                        typeCarburantStr = getStringCell(row.getCell(2));
+                        puissanceStr     = getStringCell(row.getCell(3));
+                        tauxConso        = getDoubleCell(row.getCell(4));
+                        consoMax         = getDoubleCell(row.getCell(5));
+                        typeCarte        = getStringCell(row.getCell(16));
+                        numeroCarte      = getStringCell(row.getCell(17));
+                        dateExpStr       = getStringCell(row.getCell(18));
+                        codePIN          = getStringCellForPin(row.getCell(19)); // FIX: PIN numérique
+                        codePUK          = getStringCellForPin(row.getCell(20)); // FIX: PUK numérique
+                        utilisateurRoc   = getStringCell(row.getCell(21));
                     }
 
                     if (site == null || site.isBlank()) continue;
 
-                    // Ignorer les sites "démonté" si la puissance l'indique
+                    // Ignorer les lignes "démonté"
                     Double puissance = null;
                     if (puissanceStr != null && !puissanceStr.equalsIgnoreCase("démonté")) {
-                        try { puissance = Double.parseDouble(puissanceStr.trim()); } catch (NumberFormatException ignored) {}
+                        try { puissance = Double.parseDouble(puissanceStr.trim()); }
+                        catch (NumberFormatException ignored) {}
                     }
 
+                    // FIX PRINCIPAL : typeCarburant ne peut jamais être null en base
+                    TypeCarburant typeCarburant = parseTypeCarburant(typeCarburantStr);
+
                     boolean exists = geRepo.existsBySite(site);
-                    GroupeElectrogene ge = exists ? geRepo.findById(site).orElse(new GroupeElectrogene()) : new GroupeElectrogene();
+                    GroupeElectrogene ge = exists
+                            ? geRepo.findById(site).orElse(new GroupeElectrogene())
+                            : new GroupeElectrogene();
 
                     ge.setSite(site);
-                    ge.setTypeCarburant(parseTypeCarburant(typeCarburantStr));
+                    ge.setTypeCarburant(typeCarburant);           // jamais null
                     ge.setPuissanceKVA(puissance);
                     ge.setTauxConsommationParHeure(tauxConso);
                     ge.setConsommationTotaleMaxParSemestre(consoMax);
                     ge.setTypeCarte(typeCarte);
                     ge.setNumeroCarte(numeroCarte);
                     ge.setDateExpiration(parseDate(dateExpStr));
-                    ge.setCodePIN(codePIN != null ? String.valueOf(codePIN) : null);
-                    ge.setCodePUK(codePUK != null ? String.valueOf(codePUK) : null);
+                    ge.setCodePIN(codePIN);
+                    ge.setCodePUK(codePUK);
                     ge.setUtilisateurRoc(utilisateurRoc);
                     if (zone != null) ge.setZone(zone);
 
-                    // Ne pas écraser le prix carburant si déjà défini
-                    if (ge.getPrixCarburant() == null) {
-                        ge.setPrixCarburant(null); // Sera saisi manuellement
-                    }
+                    // Ne pas écraser le prix carburant s'il est déjà défini
+                    // (le prix est saisi manuellement, pas dans l'Excel)
 
-                    geRepo.save(ge);
-                    if (exists) updated++; else imported++;
+                    try {
+                        geRepo.save(ge);
+                        if (exists) updated++; else imported++;
+                        log.debug("Site '{}' {} avec succès", site, exists ? "mis à jour" : "importé");
+                    } catch (Exception e) {
+                        skipped++;
+                        errors.add("Erreur ligne " + (row.getRowNum() + 1) + " (site=" + site + ") : " + e.getMessage());
+                        log.error("Erreur import site '{}' : {}", site, e.getMessage());
+                    }
                 }
             }
         }
 
+        log.info("Import terminé : {} créés, {} mis à jour, {} ignorés, {} erreurs",
+                imported, updated, skipped, errors.size());
+
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("imported", imported);
-        result.put("updated", updated);
-        result.put("skipped", skipped);
-        result.put("errors", errors);
+        result.put("updated",  updated);
+        result.put("skipped",  skipped);
+        result.put("errors",   errors);
         return result;
     }
+
+    // ── Helpers cellules ─────────────────────────────────────────────────────
 
     private String getStringCell(Cell c) {
         if (c == null) return null;
         return switch (c.getCellType()) {
             case STRING -> {
                 String v = c.getStringCellValue().trim();
-                // Nettoyer les caractères invisibles (zero-width no-break space, etc.)
                 v = v.replaceAll("[\\p{Cf}\\p{Zs}\\uFEFF\\u200B]", "").trim();
                 yield v.isBlank() ? null : v;
             }
             case NUMERIC -> {
-                long lv = (long) c.getNumericCellValue();
-                yield String.valueOf(lv);
+                // Retourner la valeur numérique sous forme de chaîne
+                double d = c.getNumericCellValue();
+                // Si c'est un entier (ex: 630, 400), éviter le ".0"
+                if (d == Math.floor(d) && !Double.isInfinite(d)) {
+                    yield String.valueOf((long) d);
+                }
+                yield String.valueOf(d);
             }
             default -> null;
         };
+    }
+
+    /**
+     * FIX : Lecture spéciale pour PIN/PUK qui sont stockés comme nombres dans Excel.
+     * Ex : la valeur Excel 177 doit donner "0177" (padding avec zéros si nécessaire),
+     * mais en pratique on stocke juste la valeur brute.
+     */
+    private String getStringCellForPin(Cell c) {
+        if (c == null) return null;
+        if (c.getCellType() == CellType.NUMERIC) {
+            long val = (long) c.getNumericCellValue();
+            return String.valueOf(val);
+        }
+        return getStringCell(c);
     }
 
     private Double getDoubleCell(Cell c) {
@@ -181,33 +206,36 @@ public class GroupeElectrogeneImportService {
     }
 
     /**
-     * Parse une date au format "MM/yyyy" (ex: "08/2028") vers LocalDate (1er du mois).
-     * CORRIGÉ : le format original contenait déjà "MM/yyyy", pas besoin d'ajouter "01/".
+     * Parse une date au format "MM/yyyy" vers LocalDate (1er du mois).
      */
     private LocalDate parseDate(String dateStr) {
         if (dateStr == null || dateStr.isBlank()) return null;
         try {
-            // Nettoyer les caractères invisibles
             dateStr = dateStr.replaceAll("[\\p{Cf}\\p{Zs}\\uFEFF\\u200B]", "").trim();
             DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MM/yyyy");
-            // YearMonth -> premier jour du mois
             return java.time.YearMonth.parse(dateStr, fmt).atDay(1);
         } catch (Exception e) {
-            // Tenter format dd/MM/yyyy en fallback
             try {
                 return LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
             } catch (Exception ex) {
+                log.warn("Date invalide ignorée : '{}'", dateStr);
                 return null;
             }
         }
     }
 
+    /**
+     * FIX IMPORTANT : typeCarburant retourne toujours une valeur non-null.
+     * La valeur par défaut est GASOIL_ORDINAIRE.
+     */
     private TypeCarburant parseTypeCarburant(String raw) {
-        if (raw == null) return TypeCarburant.GASOIL_ORDINAIRE;
-        String s = raw.toUpperCase().replaceAll("[\\p{Cf}\\s]+", " ").trim();
-        if (s.contains("ESSENCE")) return TypeCarburant.ESSENCE;
-        if (s.contains("SANS SOUFFRE") || s.contains("SANS SOUFRE")) return TypeCarburant.GASOIL_SANS_SOUFRE;
-        if (s.contains("SUPER SANS PLOMB")) return TypeCarburant.SUPER_SANS_PLOMB;
+        if (raw == null || raw.isBlank()) return TypeCarburant.GASOIL_ORDINAIRE;
+        String s = raw.toUpperCase()
+                .replaceAll("[\\p{Cf}\\s]+", " ")
+                .trim();
+        if (s.contains("ESSENCE"))                                    return TypeCarburant.ESSENCE;
+        if (s.contains("SANS SOUFRE") || s.contains("SANS SOUFRE")) return TypeCarburant.GASOIL_SANS_SOUFRE;
+        if (s.contains("SUPER SANS PLOMB"))                          return TypeCarburant.SUPER_SANS_PLOMB;
         return TypeCarburant.GASOIL_ORDINAIRE;
     }
 }

@@ -244,7 +244,7 @@ public class VehiculeImportService {
         if (s.contains("ESSENCE") || s.contains("SUPER SAN") || s.contains("SP"))
             return TypeCarburant.ESSENCE;
         if (s.contains("50"))       return TypeCarburant.GASOIL_50;
-        if (s.contains("SOUFRE") || s.contains("SOUFFRE") || s.contains("SS"))
+        if (s.contains("SOUFRE") || s.contains("SOUFRE") || s.contains("SS"))
             return TypeCarburant.GASOIL_SANS_SOUFRE;
         if (s.contains("GASOIL") || s.contains("DIESEL"))
             return TypeCarburant.GASOIL_ORDINAIRE;
