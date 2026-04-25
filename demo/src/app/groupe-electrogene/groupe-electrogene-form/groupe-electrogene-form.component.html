@@ -1,14 +1,27 @@
+<!-- src/app/groupe-electrogene/groupe-electrogene-form/groupe-electrogene-form.component.html -->
 <div class="modal-overlay" (click)="cancel()">
   <div class="modal-content" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
     <div class="modal-header">
-      <h3>{{ mode === 'edit' ? 'Modifier le groupe' : 'Nouveau groupe électrogène' }}</h3>
+      <h3>{{ mode === 'edit' ? 'Modifier le groupe électrogène' : 'Nouveau groupe électrogène' }}</h3>
       <button class="btn-close" (click)="cancel()">✕</button>
     </div>
+
+    <!-- Body -->
     <div class="modal-body">
+
+      <!-- Site + Type carburant -->
       <div class="form-row">
         <div class="form-group">
           <label>Site <span class="req">*</span></label>
-          <input class="form-input" [(ngModel)]="form.site" placeholder="Ex: HACHED 1" [disabled]="mode === 'edit'"/>
+          <input
+            class="form-input"
+            type="text"
+            [(ngModel)]="form.site"
+            placeholder="Ex: HACHED 1"
+            [disabled]="mode === 'edit'"
+          />
         </div>
         <div class="form-group">
           <label>Type carburant</label>
@@ -17,35 +30,90 @@
           </select>
         </div>
       </div>
+
+      <!-- Puissance / Taux conso / Conso max -->
       <div class="form-row">
-        <div class="form-group"><label>Puissance (KVA)</label><input class="form-input" type="number" step="1" [(ngModel)]="form.puissanceKVA"/></div>
-        <div class="form-group"><label>Taux conso (L/h)</label><input class="form-input" type="number" step="0.1" [(ngModel)]="form.tauxConsommationParHeure"/></div>
-        <div class="form-group"><label>Conso max semestre (L)</label><input class="form-input" type="number" step="1" [(ngModel)]="form.consommationTotaleMaxParSemestre"/></div>
+        <div class="form-group">
+          <label>Puissance (KVA)</label>
+          <input class="form-input" type="number" step="1" min="0"
+                 [(ngModel)]="form.puissanceKVA" placeholder="Ex: 500"/>
+        </div>
+        <div class="form-group">
+          <label>Taux conso (L/h)</label>
+          <input class="form-input" type="number" step="0.1" min="0"
+                 [(ngModel)]="form.tauxConsommationParHeure" placeholder="Ex: 115"/>
+        </div>
+        <div class="form-group">
+          <label>Conso max semestre (L)</label>
+          <input class="form-input" type="number" step="1" min="0"
+                 [(ngModel)]="form.consommationTotaleMaxParSemestre" placeholder="Ex: 800"/>
+        </div>
       </div>
+
+      <!-- Prix carburant + Zone -->
       <div class="form-row">
-        <div class="form-group"><label>Prix carburant (DT/L)</label><input class="form-input" type="number" step="0.001" [(ngModel)]="form.prixCarburant"/></div>
-        <div class="form-group"><label>Zone</label>
+        <div class="form-group">
+          <label>Prix carburant (DT/L)</label>
+          <input class="form-input" type="number" step="0.001" min="0"
+                 [(ngModel)]="form.prixCarburant" placeholder="Ex: 1.895"/>
+        </div>
+        <div class="form-group">
+          <label>Zone</label>
           <select class="form-input" [(ngModel)]="form.zoneId">
-            <option [value]="null">— Aucune —</option>
-            <option *ngFor="let z of zones" [value]="z.id">{{ z.nom }}</option>
+            <option [ngValue]="undefined">— Aucune —</option>
+            <option *ngFor="let z of zones" [ngValue]="z.id">{{ z.nom }}</option>
           </select>
         </div>
       </div>
+
+      <!-- Carte Agilis -->
       <div class="form-section">
-        <h4 class="section-title">Carte Agilis</h4>
+        <h4 class="section-title">⚡ Carte Agilis</h4>
         <div class="form-row">
-          <div class="form-group"><label>Type carte</label><input class="form-input" [(ngModel)]="form.typeCarte"/></div>
-          <div class="form-group"><label>Numéro carte</label><input class="form-input" [(ngModel)]="form.numeroCarte"/></div>
-          <div class="form-group"><label>Date expiration</label><input class="form-input" type="month" [(ngModel)]="form.dateExpiration"/></div>
-          <div class="form-group"><label>Code PIN</label><input class="form-input" [(ngModel)]="form.codePIN"/></div>
-          <div class="form-group"><label>Code PUK</label><input class="form-input" [(ngModel)]="form.codePUK"/></div>
-          <div class="form-group"><label>Utilisateur ROC</label><input class="form-input" [(ngModel)]="form.utilisateurRoc"/></div>
+          <div class="form-group">
+            <label>Type carte</label>
+            <input class="form-input" type="text"
+                   [(ngModel)]="form.typeCarte" placeholder="Ex: Pré payée valeur"/>
+          </div>
+          <div class="form-group">
+            <label>Numéro carte</label>
+            <input class="form-input" type="text"
+                   [(ngModel)]="form.numeroCarte" placeholder="Ex: 7420545770107101"/>
+          </div>
+          <div class="form-group">
+            <label>Date expiration</label>
+            <input class="form-input" type="month"
+                   [(ngModel)]="form.dateExpiration"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Code PIN</label>
+            <input class="form-input" type="text"
+                   [(ngModel)]="form.codePIN" placeholder="Ex: 0177"/>
+          </div>
+          <div class="form-group">
+            <label>Code PUK</label>
+            <input class="form-input" type="text"
+                   [(ngModel)]="form.codePUK" placeholder="Ex: 13783790"/>
+          </div>
+          <div class="form-group">
+            <label>Utilisateur ROC</label>
+            <input class="form-input" type="text"
+                   [(ngModel)]="form.utilisateurRoc" placeholder="Ex: MOEZ KHLIF"/>
+          </div>
         </div>
       </div>
+
     </div>
+
+    <!-- Footer -->
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="cancel()">Annuler</button>
-      <button class="btn btn-primary" (click)="submit()" [disabled]="submitting">{{ submitting ? 'Envoi...' : 'Enregistrer' }}</button>
+      <button class="btn btn-primary" (click)="submit()" [disabled]="submitting">
+        {{ submitting ? 'Envoi...' : 'Enregistrer' }}
+      </button>
     </div>
+
   </div>
 </div>

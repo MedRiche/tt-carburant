@@ -7,6 +7,13 @@ export enum TypeCarburantGE {
   ESSENCE            = 'ESSENCE'
 }
 
+export const TYPE_CARBURANT_LABELS: Record<TypeCarburantGE, string> = {
+  [TypeCarburantGE.GASOIL_ORDINAIRE]:   'Gasoil Ordinaire',
+  [TypeCarburantGE.GASOIL_SANS_SOUFRE]: 'Gasoil Sans Soufre',
+  [TypeCarburantGE.SUPER_SANS_PLOMB]:   'Super Sans Plomb',
+  [TypeCarburantGE.ESSENCE]:            'Essence'
+};
+
 export interface GroupeElectrogene {
   site: string;
   typeCarburant: TypeCarburantGE;
@@ -16,7 +23,7 @@ export interface GroupeElectrogene {
   prixCarburant?: number;
   typeCarte?: string;
   numeroCarte?: string;
-  dateExpiration?: string;
+  dateExpiration?: string;   // format "yyyy-MM" retourné par le backend
   codePIN?: string;
   codePUK?: string;
   utilisateurRoc?: string;
@@ -33,7 +40,7 @@ export interface GroupeElectrogeneRequest {
   prixCarburant?: number;
   typeCarte?: string;
   numeroCarte?: string;
-  dateExpiration?: string;
+  dateExpiration?: string;   // format "yyyy-MM" envoyé depuis input[type=month]
   codePIN?: string;
   codePUK?: string;
   utilisateurRoc?: string;

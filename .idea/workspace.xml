@@ -4,16 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="777fc5d2-3bb5-4db8-8545-4efa7fe5d991" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/controller/GroupeElectrogeneController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/GroupeElectrogeneService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/controller/GestionCarburantGEController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/controller/GestionCarburantGEController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/dto/GroupeElectrogene/GroupeElectrogeneDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/dto/GroupeElectrogene/GroupeElectrogeneDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/GestionCarburantGEService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/GestionCarburantGEService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/GroupeElectrogeneImportService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/GroupeElectrogeneImportService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/app/services/groupe-electrogene.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/services/groupe-electrogene.service.ts" afterDir="false" />
-    </list>
+    <list default="true" id="777fc5d2-3bb5-4db8-8545-4efa7fe5d991" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -152,7 +143,7 @@
       <workItem from="1776633397550" duration="1261000" />
       <workItem from="1776676789559" duration="784000" />
       <workItem from="1777037121471" duration="6708000" />
-      <workItem from="1777121560729" duration="1447000" />
+      <workItem from="1777121560729" duration="1850000" />
     </task>
     <servers />
   </component>

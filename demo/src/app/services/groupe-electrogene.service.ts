@@ -9,84 +9,50 @@ import { GestionCarburantGE, GestionCarburantGERequest, Semestre } from '../mode
 export class GroupeElectrogeneService {
 
   private baseUrl = 'http://localhost:8081/api/admin';
-  private geUrl = `${this.baseUrl}/groupes-electrogenes`;
+  private geUrl   = `${this.baseUrl}/groupes-electrogenes`;
   private carbUrl = `${this.baseUrl}/carburant-ge`;
 
   constructor(private http: HttpClient) {}
 
-  private headers(): HttpHeaders {
+  private authHeaders(): HttpHeaders {
     return new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${localStorage.getItem('token')}`
     });
   }
 
-  // ── Groupe électrogène ─────────────────────────────────────────
-  getAllGroupes(): Observable<GroupeElectrogene[]> {
-    return this.http.get<GroupeElectrogene[]>(this.geUrl, { headers: this.headers() });
-  }
+  // ── Groupe électrogène CRUD ────────────────────────────────────
 
-  getByZone(zoneId: number): Observable<GroupeElectrogene[]> {
-    return this.http.get<GroupeElectrogene[]>(`${this.geUrl}/zone/${zoneId}`, { headers: this.headers() });
+  getAllGroupes(): Observable<GroupeElectrogene[]> {
+    return this.http.get<GroupeElectrogene[]>(this.geUrl, { headers: this.authHeaders() });
   }
 
   getBySite(site: string): Observable<GroupeElectrogene> {
-    return this.http.get<GroupeElectrogene>(`${this.geUrl}/${site}`, { headers: this.headers() });
+    return this.http.get<GroupeElectrogene>(`${this.geUrl}/${encodeURIComponent(site)}`,
+      { headers: this.authHeaders() });
   }
 
-  creer(req: GroupeElectrogeneRequest): Observable<any> {
-    return this.http.post(this.geUrl, req, { headers: this.headers() });
+  getByZone(zoneId: number): Observable<GroupeElectrogene[]> {
+    return this.http.get<GroupeElectrogene[]>(`${this.geUrl}/zone/${zoneId}`,
+      { headers: this.authHeaders() });
   }
 
-  modifier(site: string, req: GroupeElectrogeneRequest): Observable<any> {
-    return this.http.put(`${this.geUrl}/${site}`, req, { headers: this.headers() });
+  creer(req: GroupeElectrogeneRequest): Observable<GroupeElectrogene> {
+    return this.http.post<GroupeElectrogene>(this.geUrl, req, { headers: this.authHeaders() });
+  }
+
+  modifier(site: string, req: GroupeElectrogeneRequest): Observable<GroupeElectrogene> {
+    return this.http.put<GroupeElectrogene>(
+      `${this.geUrl}/${encodeURIComponent(site)}`, req, { headers: this.authHeaders() });
   }
 
   supprimer(site: string): Observable<any> {
-    return this.http.delete(`${this.geUrl}/${site}`, { headers: this.headers() });
+    return this.http.delete(`${this.geUrl}/${encodeURIComponent(site)}`,
+      { headers: this.authHeaders() });
   }
 
-  // ── Gestion carburant GE ───────────────────────────────────────
+  // ── Import Excel ───────────────────────────────────────────────
 
-  /**
-   * CORRECTION : GET /carburant-ge — endpoint désormais présent côté backend.
-   * Appelé par la liste pour afficher toutes les saisies de tous les sites.
-   */
-  getAllSaisies(): Observable<GestionCarburantGE[]> {
-    return this.http.get<GestionCarburantGE[]>(this.carbUrl, { headers: this.headers() });
-  }
-
-  getBySiteHistorique(site: string): Observable<GestionCarburantGE[]> {
-    return this.http.get<GestionCarburantGE[]>(`${this.carbUrl}/site/${site}`, { headers: this.headers() });
-  }
-
-  getByPeriode(annee: number, semestre: Semestre): Observable<GestionCarburantGE[]> {
-    const params = new HttpParams().set('annee', annee).set('semestre', semestre);
-    return this.http.get<GestionCarburantGE[]>(`${this.carbUrl}/periode`, { headers: this.headers(), params });
-  }
-
-  getByZonePeriode(zoneId: number, annee: number, semestre: Semestre): Observable<GestionCarburantGE[]> {
-    const params = new HttpParams().set('annee', annee).set('semestre', semestre);
-    return this.http.get<GestionCarburantGE[]>(`${this.carbUrl}/zone/${zoneId}/periode`, { headers: this.headers(), params });
-  }
-
-  saisir(req: GestionCarburantGERequest): Observable<any> {
-    return this.http.post(this.carbUrl, req, { headers: this.headers() });
-  }
-
-  modifierSaisie(id: number, req: GestionCarburantGERequest): Observable<any> {
-    return this.http.put(`${this.carbUrl}/${id}`, req, { headers: this.headers() });
-  }
-
-  supprimerSaisie(id: number): Observable<any> {
-    return this.http.delete(`${this.carbUrl}/${id}`, { headers: this.headers() });
-  }
-
-  /**
-   * CORRECTION : URL corrigée.
-   * Avant : pointait vers ${this.geUrl}/import = /groupes-electrogenes/import (404)
-   * Après : pointe vers ${this.carbUrl}/import  = /carburant-ge/import (endpoint existant)
-   */
   importerExcel(file: File, zoneNom?: string): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
@@ -94,6 +60,41 @@ export class GroupeElectrogeneService {
     return this.http.post(`${this.carbUrl}/import`, formData, {
       headers: new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem('token')}` })
     });
+  }
+
+  // ── Saisies carburant GE ───────────────────────────────────────
+
+  getAllSaisies(): Observable<GestionCarburantGE[]> {
+    return this.http.get<GestionCarburantGE[]>(this.carbUrl, { headers: this.authHeaders() });
+  }
+
+  getBySiteHistorique(site: string): Observable<GestionCarburantGE[]> {
+    return this.http.get<GestionCarburantGE[]>(
+      `${this.carbUrl}/site/${encodeURIComponent(site)}`, { headers: this.authHeaders() });
+  }
+
+  getByPeriode(annee: number, semestre: Semestre): Observable<GestionCarburantGE[]> {
+    const params = new HttpParams().set('annee', annee).set('semestre', semestre);
+    return this.http.get<GestionCarburantGE[]>(`${this.carbUrl}/periode`,
+      { headers: this.authHeaders(), params });
+  }
+
+  getByZonePeriode(zoneId: number, annee: number, semestre: Semestre): Observable<GestionCarburantGE[]> {
+    const params = new HttpParams().set('annee', annee).set('semestre', semestre);
+    return this.http.get<GestionCarburantGE[]>(
+      `${this.carbUrl}/zone/${zoneId}/periode`, { headers: this.authHeaders(), params });
+  }
+
+  saisir(req: GestionCarburantGERequest): Observable<any> {
+    return this.http.post(this.carbUrl, req, { headers: this.authHeaders() });
+  }
+
+  modifierSaisie(id: number, req: GestionCarburantGERequest): Observable<any> {
+    return this.http.put(`${this.carbUrl}/${id}`, req, { headers: this.authHeaders() });
+  }
+
+  supprimerSaisie(id: number): Observable<any> {
+    return this.http.delete(`${this.carbUrl}/${id}`, { headers: this.authHeaders() });
   }
 
   downloadBlob(blob: Blob, filename: string): void {

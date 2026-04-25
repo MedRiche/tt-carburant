@@ -1,5 +1,11 @@
+// src/app/groupe-electrogene/groupe-electrogene-form/groupe-electrogene-form.component.ts
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { GroupeElectrogene, GroupeElectrogeneRequest, TypeCarburantGE } from '../../models/groupe-electrogene';
+import {
+  GroupeElectrogene,
+  GroupeElectrogeneRequest,
+  TypeCarburantGE,
+  TYPE_CARBURANT_LABELS
+} from '../../models/groupe-electrogene';
 import { Zone } from '../../models/zone';
 import { GroupeElectrogeneService } from '../../services/groupe-electrogene.service';
 
@@ -11,10 +17,10 @@ import { GroupeElectrogeneService } from '../../services/groupe-electrogene.serv
 })
 export class GroupeElectrogeneFormComponent implements OnInit {
 
-  @Input() mode: 'create' | 'edit' | 'fuel' = 'create';
+  @Input() mode: 'create' | 'edit' = 'create';
   @Input() groupe: GroupeElectrogene | null = null;
   @Input() zones: Zone[] = [];
-  @Output() onSave = new EventEmitter<void>();
+  @Output() onSave   = new EventEmitter<void>();
   @Output() onCancel = new EventEmitter<void>();
 
   form: GroupeElectrogeneRequest = {
@@ -34,54 +40,70 @@ export class GroupeElectrogeneFormComponent implements OnInit {
   };
 
   typeOptions = Object.values(TypeCarburantGE);
-  submitting = false;
+  typeLabels  = TYPE_CARBURANT_LABELS;
+  submitting  = false;
 
   constructor(private geService: GroupeElectrogeneService) {}
 
   ngOnInit(): void {
-    if (this.groupe) {
+    if (this.groupe && this.mode === 'edit') {
       this.form = {
-        site: this.groupe.site,
-        typeCarburant: this.groupe.typeCarburant,
-        puissanceKVA: this.groupe.puissanceKVA,
-        tauxConsommationParHeure: this.groupe.tauxConsommationParHeure,
+        site:                          this.groupe.site,
+        typeCarburant:                 this.groupe.typeCarburant,
+        puissanceKVA:                  this.groupe.puissanceKVA,
+        tauxConsommationParHeure:      this.groupe.tauxConsommationParHeure,
         consommationTotaleMaxParSemestre: this.groupe.consommationTotaleMaxParSemestre,
-        prixCarburant: this.groupe.prixCarburant,
-        typeCarte: this.groupe.typeCarte,
-        numeroCarte: this.groupe.numeroCarte,
-        dateExpiration: this.groupe.dateExpiration,
-        codePIN: this.groupe.codePIN,
-        codePUK: this.groupe.codePUK,
-        utilisateurRoc: this.groupe.utilisateurRoc,
-        zoneId: this.groupe.zoneId
+        prixCarburant:                 this.groupe.prixCarburant,
+        typeCarte:                     this.groupe.typeCarte   || '',
+        numeroCarte:                   this.groupe.numeroCarte || '',
+        dateExpiration:                this.groupe.dateExpiration || '',
+        codePIN:                       this.groupe.codePIN  || '',
+        codePUK:                       this.groupe.codePUK  || '',
+        utilisateurRoc:                this.groupe.utilisateurRoc || '',
+        zoneId:                        this.groupe.zoneId
       };
     }
   }
 
+  getTypeLabel(type: TypeCarburantGE): string {
+    return TYPE_CARBURANT_LABELS[type] || type;
+  }
+
   submit(): void {
-    if (!this.form.site || !this.form.typeCarburant) {
-      alert('Site et type carburant obligatoires');
+    if (!this.form.site || !this.form.site.trim()) {
+      alert('Le site est obligatoire');
       return;
     }
+    if (!this.form.typeCarburant) {
+      alert('Le type de carburant est obligatoire');
+      return;
+    }
+
     this.submitting = true;
+
+    const payload: GroupeElectrogeneRequest = {
+      ...this.form,
+      site: this.form.site.trim().toUpperCase()
+    };
+
     const obs = this.mode === 'edit' && this.groupe
-      ? this.geService.modifier(this.groupe.site, this.form)
-      : this.geService.creer(this.form);
+      ? this.geService.modifier(this.groupe.site, payload)
+      : this.geService.creer(payload);
+
     obs.subscribe({
-      next: () => { this.submitting = false; this.onSave.emit(); },
-      error: (err) => { alert(err.error?.message || 'Erreur'); this.submitting = false; }
+      next: () => {
+        this.submitting = false;
+        this.onSave.emit();
+      },
+      error: (err) => {
+        this.submitting = false;
+        const msg = err?.error?.message || err?.message || 'Erreur lors de l\'enregistrement';
+        alert(msg);
+      }
     });
   }
 
-  cancel(): void { this.onCancel.emit(); }
-
-  getTypeLabel(type: string): string {
-    const map: Record<string, string> = {
-      GASOIL_ORDINAIRE: 'Gasoil Ordinaire',
-      GASOIL_SANS_SOUFRE: 'Gasoil Sans Soufre',
-      SUPER_SANS_PLOMB: 'Super Sans Plomb',
-      ESSENCE: 'Essence'
-    };
-    return map[type] || type;
+  cancel(): void {
+    this.onCancel.emit();
   }
 }
