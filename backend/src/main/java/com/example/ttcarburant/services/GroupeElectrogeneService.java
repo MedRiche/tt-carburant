@@ -6,6 +6,8 @@ import com.example.ttcarburant.model.entity.Zone;
 import com.example.ttcarburant.model.enums.TypeCarburant;
 import com.example.ttcarburant.repository.GroupeElectrogeneRepository;
 import com.example.ttcarburant.repository.ZoneRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,20 +19,29 @@ import java.util.stream.Collectors;
 @Service
 public class GroupeElectrogeneService {
 
+    private static final Logger log = LoggerFactory.getLogger(GroupeElectrogeneService.class);
+
     private final GroupeElectrogeneRepository geRepo;
     private final ZoneRepository zoneRepo;
 
     public GroupeElectrogeneService(GroupeElectrogeneRepository geRepo,
                                     ZoneRepository zoneRepo) {
-        this.geRepo = geRepo;
-        this.zoneRepo = zoneRepo;
+        this.geRepo    = geRepo;
+        this.zoneRepo  = zoneRepo;
     }
+
+    // ── READ ──────────────────────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public List<GroupeElectrogeneDto> getAll() {
-        return geRepo.findAll().stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
+        try {
+            return geRepo.findAll().stream()
+                    .map(this::toDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Erreur getAll groupes électrogènes", e);
+            throw new RuntimeException("Impossible de récupérer les groupes électrogènes : " + e.getMessage(), e);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -47,6 +58,8 @@ public class GroupeElectrogeneService {
                 .collect(Collectors.toList());
     }
 
+    // ── WRITE ─────────────────────────────────────────────────────────────
+
     @Transactional
     public GroupeElectrogeneDto creer(GroupeElectrogeneDto req) {
         if (req.getSite() == null || req.getSite().isBlank()) {
@@ -57,7 +70,9 @@ public class GroupeElectrogeneService {
         }
         GroupeElectrogene ge = new GroupeElectrogene();
         mapDto(req, ge);
-        return toDto(geRepo.save(ge));
+        GroupeElectrogene saved = geRepo.save(ge);
+        log.info("Groupe électrogène créé : {}", saved.getSite());
+        return toDto(saved);
     }
 
     @Transactional
@@ -75,11 +90,12 @@ public class GroupeElectrogeneService {
         geRepo.delete(ge);
     }
 
-    // ── Helpers ─────────────────────────────────────────────────────────────
+    // ── Mapping helpers ───────────────────────────────────────────────────
 
     private void mapDto(GroupeElectrogeneDto dto, GroupeElectrogene ge) {
         ge.setSite(dto.getSite());
 
+        // Type carburant (défaut GASOIL si null)
         if (dto.getTypeCarburant() != null) {
             ge.setTypeCarburant(dto.getTypeCarburant());
         } else {
@@ -90,34 +106,16 @@ public class GroupeElectrogeneService {
         ge.setTauxConsommationParHeure(dto.getTauxConsommationParHeure());
         ge.setConsommationTotaleMaxParSemestre(dto.getConsommationTotaleMaxParSemestre());
         ge.setPrixCarburant(dto.getPrixCarburant());
+
+        // Carte Agilis
         ge.setTypeCarte(dto.getTypeCarte());
         ge.setNumeroCarte(dto.getNumeroCarte());
         ge.setCodePIN(dto.getCodePIN());
         ge.setCodePUK(dto.getCodePUK());
         ge.setUtilisateurRoc(dto.getUtilisateurRoc());
 
-        // Conversion dateExpiration String -> LocalDate
-        if (dto.getDateExpiration() != null && !dto.getDateExpiration().isBlank()) {
-            try {
-                // Accepte "yyyy-MM" (format HTML input[type=month]) et "MM/yyyy"
-                String dateStr = dto.getDateExpiration().trim();
-                LocalDate date;
-                if (dateStr.contains("-")) {
-                    // Format HTML : "2028-08"
-                    date = java.time.YearMonth.parse(dateStr,
-                            DateTimeFormatter.ofPattern("yyyy-MM")).atDay(1);
-                } else {
-                    // Format Excel : "08/2028"
-                    date = java.time.YearMonth.parse(dateStr,
-                            DateTimeFormatter.ofPattern("MM/yyyy")).atDay(1);
-                }
-                ge.setDateExpiration(date);
-            } catch (Exception e) {
-                ge.setDateExpiration(null);
-            }
-        } else {
-            ge.setDateExpiration(null);
-        }
+        // Date expiration : accepte "yyyy-MM" (input[type=month]) et "MM/yyyy"
+        ge.setDateExpiration(parseDate(dto.getDateExpiration()));
 
         // Zone
         if (dto.getZoneId() != null) {
@@ -128,7 +126,34 @@ public class GroupeElectrogeneService {
         }
     }
 
-    private GroupeElectrogeneDto toDto(GroupeElectrogene ge) {
+    /**
+     * Convertit la date expiration String vers LocalDate.
+     * Formats supportés :
+     *  - "yyyy-MM"   → venant de input[type=month] HTML
+     *  - "MM/yyyy"   → venant du fichier Excel
+     */
+    private LocalDate parseDate(String raw) {
+        if (raw == null || raw.isBlank()) return null;
+        raw = raw.trim();
+        try {
+            if (raw.contains("-")) {
+                // "2028-08"
+                return java.time.YearMonth
+                        .parse(raw, DateTimeFormatter.ofPattern("yyyy-MM"))
+                        .atDay(1);
+            } else {
+                // "08/2028"
+                return java.time.YearMonth
+                        .parse(raw, DateTimeFormatter.ofPattern("MM/yyyy"))
+                        .atDay(1);
+            }
+        } catch (Exception e) {
+            log.warn("Date expiration invalide ignorée : '{}'", raw);
+            return null;
+        }
+    }
+
+    GroupeElectrogeneDto toDto(GroupeElectrogene ge) {
         GroupeElectrogeneDto dto = new GroupeElectrogeneDto();
         dto.setSite(ge.getSite());
         dto.setTypeCarburant(ge.getTypeCarburant());
@@ -143,9 +168,10 @@ public class GroupeElectrogeneService {
         dto.setUtilisateurRoc(ge.getUtilisateurRoc());
 
         if (ge.getDateExpiration() != null) {
-            // Renvoyer au format "yyyy-MM" pour être compatible avec input[type=month]
-            dto.setDateExpiration(ge.getDateExpiration()
-                    .format(DateTimeFormatter.ofPattern("yyyy-MM")));
+            // Format "yyyy-MM" pour input[type=month]
+            dto.setDateExpiration(
+                    ge.getDateExpiration().format(DateTimeFormatter.ofPattern("yyyy-MM"))
+            );
         }
 
         if (ge.getZone() != null) {

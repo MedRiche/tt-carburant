@@ -24,6 +24,7 @@ import { CarburantVehiculeService } from './services/carburant-vehicule.service'
 import { CarburantAnalyticsService } from './services/carburant-analytics.service';
 import { MaintenanceService } from './services/maintenance.service';
 import { GroupeElectrogeneService } from './services/groupe-electrogene.service';
+import { CarburantGeService } from './services/carburant-ge.service';
 
 
 // Guards
@@ -92,7 +93,7 @@ import { GroupeElectrogeneFormComponent } from './groupe-electrogene/groupe-elec
     CarburantAnalyticsService,
     MaintenanceService,
     GroupeElectrogeneService,
-
+    CarburantGeService,
     
     // Guards
     AuthGuard,

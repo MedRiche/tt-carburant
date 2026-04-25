@@ -3,6 +3,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { GroupeElectrogene } from '../../models/groupe-electrogene';
 import { GestionCarburantGE, GestionCarburantGERequest, Semestre, SEMESTRE_LABELS } from '../../models/gestion-carburant-ge';
 import { GroupeElectrogeneService } from '../../services/groupe-electrogene.service';
+import { CarburantGeService } from '../../services/carburant-ge.service';
 
 @Component({
   selector: 'app-gestion-carburant-ge-form',
@@ -34,7 +35,7 @@ export class GestionCarburantGEFormComponent implements OnInit {
 
   submitting = false;
 
-  constructor(private geService: GroupeElectrogeneService) {}
+  constructor(private geService: GroupeElectrogeneService, private carbService: CarburantGeService  ) {}
 
   ngOnInit(): void {
     if (this.groupe) {
@@ -62,8 +63,8 @@ export class GestionCarburantGEFormComponent implements OnInit {
     }
     this.submitting = true;
     const obs = this.saisie?.id
-      ? this.geService.modifierSaisie(this.saisie.id, this.form)
-      : this.geService.saisir(this.form);
+      ? this.carbService.modifierSaisie(this.saisie.id, this.form)
+      : this.carbService.saisir(this.form);
     obs.subscribe({
       next: () => { this.submitting = false; this.onSave.emit(); },
       error: (err) => { alert(err.error?.message || 'Erreur'); this.submitting = false; }

@@ -1,7 +1,7 @@
 <!-- src/app/groupe-electrogene/groupe-electrogene-list/groupe-electrogene-list.component.html -->
 <div class="app-shell">
 
-  <!-- Sidebar -->
+  <!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="brand-icon">⚡</div>
@@ -10,6 +10,7 @@
         <span class="brand-sub">Groupes électrogènes</span>
       </div>
     </div>
+
     <nav class="sidebar-nav">
       <a class="nav-item" (click)="navigateTo('/admin/dashboardAdmin')">
         <span class="nav-icon">📊</span> Dashboard
@@ -33,6 +34,7 @@
         <span class="nav-icon">⚡</span> Groupes électrogènes
       </a>
     </nav>
+
     <div class="sidebar-footer">
       <div class="user-avatar">AD</div>
       <div class="user-meta">
@@ -42,17 +44,19 @@
     </div>
   </aside>
 
-  <!-- Main -->
+  <!-- ═══════════════════════ MAIN ═══════════════════════════ -->
   <main class="main-content">
 
-    <!-- Topbar -->
+    <!-- Top bar -->
     <header class="topbar">
       <div>
         <h1 class="page-title">Groupes électrogènes</h1>
         <p class="page-subtitle">Gestion des groupes et suivi carburant semestriel</p>
       </div>
       <div class="topbar-right">
-        <div class="pill pill-cyan">{{ filteredGroupes.length }} groupe{{ filteredGroupes.length > 1 ? 's' : '' }}</div>
+        <div class="pill pill-cyan">
+          {{ filteredGroupes.length }} groupe{{ filteredGroupes.length > 1 ? 's' : '' }}
+        </div>
         <button class="btn-import" (click)="ouvrirImport()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -69,7 +73,7 @@
       </div>
     </header>
 
-    <!-- Content -->
+    <!-- Content area -->
     <div class="content-area">
 
       <!-- Filtres -->
@@ -89,27 +93,27 @@
         </select>
       </div>
 
-      <!-- Chargement -->
+      <!-- ── État : chargement ── -->
       <div *ngIf="loading" class="state-empty">
         <div class="loader-ring"></div>
         <p>Chargement des groupes…</p>
       </div>
 
-      <!-- Erreur -->
+      <!-- ── État : erreur ── -->
       <div *ngIf="!loading && loadError" class="state-empty">
         <div class="state-icon">⚠️</div>
         <p class="state-title">{{ loadError }}</p>
         <button class="btn-new" (click)="chargerGroupes()">Réessayer</button>
       </div>
 
-      <!-- Vide -->
+      <!-- ── État : liste vide (mais pas d'erreur) ── -->
       <div *ngIf="!loading && !loadError && filteredGroupes.length === 0" class="state-empty">
         <div class="state-icon">⚡</div>
         <p class="state-title">Aucun groupe électrogène</p>
         <button class="btn-new" (click)="openCreateGE()">+ Ajouter un groupe</button>
       </div>
 
-      <!-- Tableau -->
+      <!-- ── Tableau ── -->
       <div *ngIf="!loading && !loadError && filteredGroupes.length > 0" class="data-table-wrap">
         <table class="data-table">
           <thead>
@@ -135,33 +139,29 @@
               <td class="mono-val">{{ ge.consommationTotaleMaxParSemestre ?? '—' }}</td>
               <td class="mono-val">{{ ge.prixCarburant ?? '—' }}</td>
               <td>
-                <span *ngIf="ge.zoneNom" class="chip chip-zone">{{ ge.zoneNom }}</span>
+                <span *ngIf="ge.zoneNom"  class="chip chip-zone">{{ ge.zoneNom }}</span>
                 <span *ngIf="!ge.zoneNom" class="u-none">—</span>
               </td>
               <td>{{ ge.utilisateurRoc || '—' }}</td>
               <td>
                 <div class="row-actions">
-                  <button class="btn-act btn-edit" title="Modifier" (click)="openEditGE(ge)">✏️</button>
-                  <button class="btn-act btn-delete" title="Supprimer" (click)="deleteGE(ge.site)">🗑</button>
-                  <button class="btn-act btn-fuel" title="Saisir carburant" (click)="openFuelForm(ge)">
-                    ⛽ Saisir
-                  </button>
+                  <button class="btn-act btn-edit"   title="Modifier"          (click)="openEditGE(ge)">✏️</button>
+                  <button class="btn-act btn-delete"  title="Supprimer"         (click)="deleteGE(ge.site)">🗑</button>
+                  <button class="btn-act btn-fuel"    title="Saisir carburant"  (click)="openFuelForm(ge)">⛽ Saisir</button>
                 </div>
               </td>
               <td>
                 <div class="fuel-saisies">
                   <div *ngFor="let s of getSaisiesForSite(ge.site)" class="fuel-item">
-                    <span class="chip chip-sm">
-                      {{ s.annee }} — {{ semestreLabels[s.semestre] }}
-                    </span>
+                    <span class="chip chip-sm">{{ s.annee }} — {{ semestreLabels[s.semestre] }}</span>
                     <span class="mono-val">
                       {{ s.totalRavitaillementLitres != null ? (s.totalRavitaillementLitres | number:'1.0-0') + ' L' : '—' }}
                     </span>
                     <span class="mono-val amber">
                       {{ s.carburantDemandeDinarsCours != null ? (s.carburantDemandeDinarsCours | number:'1.0-0') + ' DT' : '—' }}
                     </span>
-                    <button class="btn-icon" title="Modifier saisie" (click)="openFuelForm(ge, s)">✏️</button>
-                    <button class="btn-icon red" title="Supprimer saisie" (click)="deleteSaisie(s.id!, ge.site)">🗑</button>
+                    <button class="btn-icon"     title="Modifier saisie"    (click)="openFuelForm(ge, s)">✏️</button>
+                    <button class="btn-icon red"  title="Supprimer saisie"   (click)="deleteSaisie(s.id!, ge.site)">🗑</button>
                   </div>
                   <div *ngIf="getSaisiesForSite(ge.site).length === 0" class="u-none">Aucune saisie</div>
                 </div>
@@ -175,7 +175,7 @@
   </main>
 </div>
 
-<!-- ── Formulaire Groupe (création / modification) ── -->
+<!-- ══════════════════ FORMULAIRE GROUPE (création / modification) ══════════════════ -->
 <app-groupe-electrogene-form
   *ngIf="showForm && (formMode === 'create' || formMode === 'edit')"
   [mode]="formMode === 'edit' ? 'edit' : 'create'"
@@ -185,7 +185,7 @@
   (onCancel)="showForm = false">
 </app-groupe-electrogene-form>
 
-<!-- ── Formulaire Saisie Carburant ── -->
+<!-- ══════════════════ FORMULAIRE SAISIE CARBURANT ══════════════════ -->
 <app-gestion-carburant-ge-form
   *ngIf="showForm && formMode === 'fuel'"
   [groupe]="selectedGE"
@@ -194,7 +194,7 @@
   (onCancel)="showForm = false">
 </app-gestion-carburant-ge-form>
 
-<!-- ── Modal Import Excel ── -->
+<!-- ══════════════════ MODAL IMPORT EXCEL ══════════════════ -->
 <div *ngIf="showImportModal" class="import-modal-overlay" (click)="fermerImport()">
   <div class="import-modal" (click)="$event.stopPropagation()">
 
@@ -204,7 +204,7 @@
         <div>
           <h3>Importer groupes électrogènes</h3>
           <p style="font-size:12px;color:#64748b;margin-top:2px;">
-            Fichier Excel "Gestion de Carburant Groupe Electrogéne.xlsx"
+            Fichier Excel « Gestion de Carburant Groupe Electrogène.xlsx »
           </p>
         </div>
       </div>
@@ -212,6 +212,7 @@
     </div>
 
     <div class="import-modal-body">
+
       <div class="import-info-banner">
         ⚡ Sélectionnez le fichier Excel. Les sites existants seront mis à jour,
         les nouveaux seront créés.
@@ -240,25 +241,25 @@
         </div>
       </div>
 
-      <!-- Chargement -->
+      <!-- Spinner -->
       <div *ngIf="importLoading" class="import-loading">
         <div class="import-spinner"></div>
         <span>Import en cours…</span>
       </div>
 
-      <!-- Sélecteur de fichier -->
+      <!-- Sélecteur fichier -->
       <div *ngIf="!importLoading" class="import-file-section">
-        <label class="btn-import" style="display:inline-flex; cursor:pointer; padding:10px 20px;">
+        <label class="btn-import" style="display:inline-flex;cursor:pointer;padding:10px 20px;">
           📂 Choisir le fichier Excel
           <input type="file" accept=".xlsx" (change)="onFichierSelectionne($event)" style="display:none">
         </label>
         <p class="import-note">Seuls les fichiers .xlsx sont acceptés.</p>
       </div>
+
     </div>
 
     <div class="import-modal-footer">
       <button class="import-close-btn" (click)="fermerImport()">Fermer</button>
     </div>
-
   </div>
 </div>

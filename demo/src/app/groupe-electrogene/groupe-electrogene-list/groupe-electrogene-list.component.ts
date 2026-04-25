@@ -2,8 +2,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { GroupeElectrogeneService } from '../../services/groupe-electrogene.service';
+import { CarburantGeService } from '../../services/carburant-ge.service';
 import { ZoneService } from '../../services/zone.service';
-import { GroupeElectrogene, TypeCarburantGE } from '../../models/groupe-electrogene';
+import { GroupeElectrogene, TypeCarburantGE, TYPE_CARBURANT_LABELS } from '../../models/groupe-electrogene';
 import { GestionCarburantGE, Semestre, SEMESTRE_LABELS } from '../../models/gestion-carburant-ge';
 import { Zone } from '../../models/zone';
 
@@ -15,20 +16,20 @@ import { Zone } from '../../models/zone';
 })
 export class GroupeElectrogeneListComponent implements OnInit {
 
-  groupes: GroupeElectrogene[] = [];
-  zones: Zone[]                = [];
-  saisies: GestionCarburantGE[]= [];
-  loading    = false;
-  loadError  = '';
+  groupes: GroupeElectrogene[]  = [];
+  zones:   Zone[]               = [];
+  saisies: GestionCarburantGE[] = [];
+  loading   = false;
+  loadError = '';
 
   // Filtres
-  searchText  = '';
-  filtreZone  = '';
+  searchText = '';
+  filtreZone = '';
 
   // Modal / form
-  showForm           = false;
-  selectedGE: GroupeElectrogene | null = null;
-  formMode: 'create' | 'edit' | 'fuel' = 'create';
+  showForm            = false;
+  selectedGE: GroupeElectrogene | null       = null;
+  formMode: 'create' | 'edit' | 'fuel'       = 'create';
   selectedFuelSaisie: GestionCarburantGE | null = null;
 
   // Import
@@ -36,7 +37,7 @@ export class GroupeElectrogeneListComponent implements OnInit {
   importLoading   = false;
   importResult: any = null;
 
-  readonly Semestre      = Semestre;
+  readonly Semestre       = Semestre;
   readonly semestreLabels = SEMESTRE_LABELS;
 
   private readonly TYPE_LABELS: Record<string, string> = {
@@ -48,6 +49,7 @@ export class GroupeElectrogeneListComponent implements OnInit {
 
   constructor(
     private geService:   GroupeElectrogeneService,
+    private carbService: CarburantGeService,
     private zoneService: ZoneService,
     private router:      Router
   ) {}
@@ -58,12 +60,12 @@ export class GroupeElectrogeneListComponent implements OnInit {
     this.chargerSaisies();
   }
 
-  // ── Chargement ──────────────────────────────────────────────────
+  // ── Chargement ──────────────────────────────────────────────────────────
 
   chargerZones(): void {
     this.zoneService.getAllZones().subscribe({
-      next: (z) => this.zones = z,
-      error: () => {}
+      next:  (z) => (this.zones = z),
+      error: ()  => {}
     });
   }
 
@@ -84,9 +86,9 @@ export class GroupeElectrogeneListComponent implements OnInit {
   }
 
   chargerSaisies(): void {
-    this.geService.getAllSaisies().subscribe({
-      next: (s) => this.saisies = s,
-      error: () => {}
+    this.carbService.getAllSaisies().subscribe({
+      next:  (s) => (this.saisies = s),
+      error: ()  => {}        // saisies are secondary – don't block the page
     });
   }
 
@@ -95,31 +97,35 @@ export class GroupeElectrogeneListComponent implements OnInit {
     this.chargerSaisies();
   }
 
-  // ── Filtrage ─────────────────────────────────────────────────────
+  // ── Filtrage ────────────────────────────────────────────────────────────
 
   get filteredGroupes(): GroupeElectrogene[] {
     let list = [...this.groupes];
+
     if (this.searchText) {
       const q = this.searchText.toLowerCase();
-      list = list.filter(g =>
-        g.site.toLowerCase().includes(q) ||
-        (g.utilisateurRoc || '').toLowerCase().includes(q) ||
-        (g.zoneNom || '').toLowerCase().includes(q)
+      list = list.filter(
+        (g) =>
+          g.site.toLowerCase().includes(q) ||
+          (g.utilisateurRoc ?? '').toLowerCase().includes(q) ||
+          (g.zoneNom ?? '').toLowerCase().includes(q)
       );
     }
+
     if (this.filtreZone) {
-      list = list.filter(g => String(g.zoneId) === this.filtreZone);
+      list = list.filter((g) => String(g.zoneId) === this.filtreZone);
     }
+
     return list;
   }
 
-  // ── Saisies carburant ────────────────────────────────────────────
+  // ── Saisies carburant ────────────────────────────────────────────────────
 
   getSaisiesForSite(site: string): GestionCarburantGE[] {
-    return this.saisies.filter(s => s.site === site);
+    return this.saisies.filter((s) => s.site === site);
   }
 
-  // ── Actions CRUD ────────────────────────────────────────────────
+  // ── Actions CRUD ─────────────────────────────────────────────────────────
 
   openCreateGE(): void {
     this.selectedGE = null;
@@ -134,24 +140,24 @@ export class GroupeElectrogeneListComponent implements OnInit {
   }
 
   openFuelForm(ge: GroupeElectrogene, saisie?: GestionCarburantGE): void {
-    this.selectedGE        = ge;
-    this.selectedFuelSaisie = saisie || null;
-    this.formMode          = 'fuel';
-    this.showForm          = true;
+    this.selectedGE         = ge;
+    this.selectedFuelSaisie = saisie ?? null;
+    this.formMode           = 'fuel';
+    this.showForm           = true;
   }
 
   deleteGE(site: string): void {
     if (!confirm(`Supprimer le groupe électrogène "${site}" ?`)) return;
     this.geService.supprimer(site).subscribe({
-      next: () => this.loadAll(),
+      next:  () => this.loadAll(),
       error: (err) => alert(err?.error?.message || 'Erreur lors de la suppression')
     });
   }
 
   deleteSaisie(id: number, site: string): void {
     if (!confirm(`Supprimer la saisie pour "${site}" ?`)) return;
-    this.geService.supprimerSaisie(id).subscribe({
-      next: () => this.chargerSaisies(),
+    this.carbService.supprimerSaisie(id).subscribe({
+      next:  () => this.chargerSaisies(),
       error: (err) => alert(err?.error?.message || 'Erreur lors de la suppression')
     });
   }
@@ -161,7 +167,7 @@ export class GroupeElectrogeneListComponent implements OnInit {
     this.loadAll();
   }
 
-  // ── Import Excel ────────────────────────────────────────────────
+  // ── Import Excel ──────────────────────────────────────────────────────────
 
   ouvrirImport(): void {
     this.showImportModal = true;
@@ -183,6 +189,7 @@ export class GroupeElectrogeneListComponent implements OnInit {
 
   lancerImport(file: File): void {
     this.importLoading = true;
+    this.importResult  = null;
     this.geService.importerExcel(file).subscribe({
       next: (res) => {
         this.importResult  = res;
@@ -196,10 +203,10 @@ export class GroupeElectrogeneListComponent implements OnInit {
     });
   }
 
-  // ── Utilitaires ─────────────────────────────────────────────────
+  // ── Utilitaires ───────────────────────────────────────────────────────────
 
   getTypeLabel(type: string): string {
-    return this.TYPE_LABELS[type] || type;
+    return this.TYPE_LABELS[type] ?? type;
   }
 
   navigateTo(route: string): void {

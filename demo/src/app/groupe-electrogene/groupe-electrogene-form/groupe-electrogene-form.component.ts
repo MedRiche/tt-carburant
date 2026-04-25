@@ -24,58 +24,61 @@ export class GroupeElectrogeneFormComponent implements OnInit {
   @Output() onCancel = new EventEmitter<void>();
 
   form: GroupeElectrogeneRequest = {
-    site: '',
-    typeCarburant: TypeCarburantGE.GASOIL_ORDINAIRE,
-    puissanceKVA: undefined,
-    tauxConsommationParHeure: undefined,
+    site:                            '',
+    typeCarburant:                   TypeCarburantGE.GASOIL_ORDINAIRE,
+    puissanceKVA:                    undefined,
+    tauxConsommationParHeure:        undefined,
     consommationTotaleMaxParSemestre: undefined,
-    prixCarburant: undefined,
-    typeCarte: '',
-    numeroCarte: '',
-    dateExpiration: '',
-    codePIN: '',
-    codePUK: '',
-    utilisateurRoc: '',
-    zoneId: undefined
+    prixCarburant:                   undefined,
+    typeCarte:                       '',
+    numeroCarte:                     '',
+    dateExpiration:                  '',
+    codePIN:                         '',
+    codePUK:                         '',
+    utilisateurRoc:                  '',
+    zoneId:                          undefined
   };
 
-  typeOptions = Object.values(TypeCarburantGE);
-  typeLabels  = TYPE_CARBURANT_LABELS;
-  submitting  = false;
+  typeOptions  = Object.values(TypeCarburantGE);
+  typeLabels   = TYPE_CARBURANT_LABELS;
+  submitting   = false;
+  errorMessage = '';
 
   constructor(private geService: GroupeElectrogeneService) {}
 
   ngOnInit(): void {
     if (this.groupe && this.mode === 'edit') {
       this.form = {
-        site:                          this.groupe.site,
-        typeCarburant:                 this.groupe.typeCarburant,
-        puissanceKVA:                  this.groupe.puissanceKVA,
-        tauxConsommationParHeure:      this.groupe.tauxConsommationParHeure,
+        site:                            this.groupe.site,
+        typeCarburant:                   this.groupe.typeCarburant,
+        puissanceKVA:                    this.groupe.puissanceKVA,
+        tauxConsommationParHeure:        this.groupe.tauxConsommationParHeure,
         consommationTotaleMaxParSemestre: this.groupe.consommationTotaleMaxParSemestre,
-        prixCarburant:                 this.groupe.prixCarburant,
-        typeCarte:                     this.groupe.typeCarte   || '',
-        numeroCarte:                   this.groupe.numeroCarte || '',
-        dateExpiration:                this.groupe.dateExpiration || '',
-        codePIN:                       this.groupe.codePIN  || '',
-        codePUK:                       this.groupe.codePUK  || '',
-        utilisateurRoc:                this.groupe.utilisateurRoc || '',
-        zoneId:                        this.groupe.zoneId
+        prixCarburant:                   this.groupe.prixCarburant,
+        typeCarte:                       this.groupe.typeCarte    ?? '',
+        numeroCarte:                     this.groupe.numeroCarte  ?? '',
+        dateExpiration:                  this.groupe.dateExpiration ?? '',
+        codePIN:                         this.groupe.codePIN      ?? '',
+        codePUK:                         this.groupe.codePUK      ?? '',
+        utilisateurRoc:                  this.groupe.utilisateurRoc ?? '',
+        zoneId:                          this.groupe.zoneId
       };
     }
   }
 
   getTypeLabel(type: TypeCarburantGE): string {
-    return TYPE_CARBURANT_LABELS[type] || type;
+    return TYPE_CARBURANT_LABELS[type] ?? type;
   }
 
   submit(): void {
-    if (!this.form.site || !this.form.site.trim()) {
-      alert('Le site est obligatoire');
+    this.errorMessage = '';
+
+    if (!this.form.site?.trim()) {
+      this.errorMessage = 'Le site est obligatoire';
       return;
     }
     if (!this.form.typeCarburant) {
-      alert('Le type de carburant est obligatoire');
+      this.errorMessage = 'Le type de carburant est obligatoire';
       return;
     }
 
@@ -86,7 +89,7 @@ export class GroupeElectrogeneFormComponent implements OnInit {
       site: this.form.site.trim().toUpperCase()
     };
 
-    const obs = this.mode === 'edit' && this.groupe
+    const obs = (this.mode === 'edit' && this.groupe)
       ? this.geService.modifier(this.groupe.site, payload)
       : this.geService.creer(payload);
 
@@ -96,9 +99,8 @@ export class GroupeElectrogeneFormComponent implements OnInit {
         this.onSave.emit();
       },
       error: (err) => {
-        this.submitting = false;
-        const msg = err?.error?.message || err?.message || 'Erreur lors de l\'enregistrement';
-        alert(msg);
+        this.submitting   = false;
+        this.errorMessage = err?.error?.message ?? err?.message ?? 'Erreur lors de l\'enregistrement';
       }
     });
   }
