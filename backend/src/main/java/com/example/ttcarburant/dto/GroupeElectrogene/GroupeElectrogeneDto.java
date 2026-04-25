@@ -1,8 +1,6 @@
 package com.example.ttcarburant.dto.GroupeElectrogene;
 
-
 import com.example.ttcarburant.model.enums.TypeCarburant;
-import java.time.LocalDate;
 
 public class GroupeElectrogeneDto {
 
@@ -12,124 +10,60 @@ public class GroupeElectrogeneDto {
     private Double tauxConsommationParHeure;
     private Double consommationTotaleMaxParSemestre;
     private Double prixCarburant;
+
+    // Carte Agilis
     private String typeCarte;
     private String numeroCarte;
-    private LocalDate dateExpiration;
+    private String dateExpiration;   // format "yyyy-MM" (input[type=month]) ou "MM/yyyy"
     private String codePIN;
     private String codePUK;
     private String utilisateurRoc;
+
+    // Zone
     private Long zoneId;
     private String zoneNom;
 
-    public String getSite() {
-        return site;
-    }
+    // ── Getters & Setters ─────────────────────────────────────────
 
-    public void setSite(String site) {
-        this.site = site;
-    }
+    public String getSite() { return site; }
+    public void setSite(String site) { this.site = site; }
 
-    public TypeCarburant getTypeCarburant() {
-        return typeCarburant;
-    }
+    public TypeCarburant getTypeCarburant() { return typeCarburant; }
+    public void setTypeCarburant(TypeCarburant typeCarburant) { this.typeCarburant = typeCarburant; }
 
-    public void setTypeCarburant(TypeCarburant typeCarburant) {
-        this.typeCarburant = typeCarburant;
-    }
+    public Double getPuissanceKVA() { return puissanceKVA; }
+    public void setPuissanceKVA(Double puissanceKVA) { this.puissanceKVA = puissanceKVA; }
 
-    public Double getPuissanceKVA() {
-        return puissanceKVA;
-    }
+    public Double getTauxConsommationParHeure() { return tauxConsommationParHeure; }
+    public void setTauxConsommationParHeure(Double tauxConsommationParHeure) { this.tauxConsommationParHeure = tauxConsommationParHeure; }
 
-    public void setPuissanceKVA(Double puissanceKVA) {
-        this.puissanceKVA = puissanceKVA;
-    }
+    public Double getConsommationTotaleMaxParSemestre() { return consommationTotaleMaxParSemestre; }
+    public void setConsommationTotaleMaxParSemestre(Double consommationTotaleMaxParSemestre) { this.consommationTotaleMaxParSemestre = consommationTotaleMaxParSemestre; }
 
-    public Double getTauxConsommationParHeure() {
-        return tauxConsommationParHeure;
-    }
+    public Double getPrixCarburant() { return prixCarburant; }
+    public void setPrixCarburant(Double prixCarburant) { this.prixCarburant = prixCarburant; }
 
-    public void setTauxConsommationParHeure(Double tauxConsommationParHeure) {
-        this.tauxConsommationParHeure = tauxConsommationParHeure;
-    }
+    public String getTypeCarte() { return typeCarte; }
+    public void setTypeCarte(String typeCarte) { this.typeCarte = typeCarte; }
 
-    public Double getConsommationTotaleMaxParSemestre() {
-        return consommationTotaleMaxParSemestre;
-    }
+    public String getNumeroCarte() { return numeroCarte; }
+    public void setNumeroCarte(String numeroCarte) { this.numeroCarte = numeroCarte; }
 
-    public void setConsommationTotaleMaxParSemestre(Double consommationTotaleMaxParSemestre) {
-        this.consommationTotaleMaxParSemestre = consommationTotaleMaxParSemestre;
-    }
+    public String getDateExpiration() { return dateExpiration; }
+    public void setDateExpiration(String dateExpiration) { this.dateExpiration = dateExpiration; }
 
-    public Double getPrixCarburant() {
-        return prixCarburant;
-    }
+    public String getCodePIN() { return codePIN; }
+    public void setCodePIN(String codePIN) { this.codePIN = codePIN; }
 
-    public void setPrixCarburant(Double prixCarburant) {
-        this.prixCarburant = prixCarburant;
-    }
+    public String getCodePUK() { return codePUK; }
+    public void setCodePUK(String codePUK) { this.codePUK = codePUK; }
 
-    public String getTypeCarte() {
-        return typeCarte;
-    }
+    public String getUtilisateurRoc() { return utilisateurRoc; }
+    public void setUtilisateurRoc(String utilisateurRoc) { this.utilisateurRoc = utilisateurRoc; }
 
-    public void setTypeCarte(String typeCarte) {
-        this.typeCarte = typeCarte;
-    }
+    public Long getZoneId() { return zoneId; }
+    public void setZoneId(Long zoneId) { this.zoneId = zoneId; }
 
-    public String getNumeroCarte() {
-        return numeroCarte;
-    }
-
-    public void setNumeroCarte(String numeroCarte) {
-        this.numeroCarte = numeroCarte;
-    }
-
-    public LocalDate getDateExpiration() {
-        return dateExpiration;
-    }
-
-    public void setDateExpiration(LocalDate dateExpiration) {
-        this.dateExpiration = dateExpiration;
-    }
-
-    public String getCodePIN() {
-        return codePIN;
-    }
-
-    public void setCodePIN(String codePIN) {
-        this.codePIN = codePIN;
-    }
-
-    public String getCodePUK() {
-        return codePUK;
-    }
-
-    public void setCodePUK(String codePUK) {
-        this.codePUK = codePUK;
-    }
-
-    public String getUtilisateurRoc() {
-        return utilisateurRoc;
-    }
-
-    public void setUtilisateurRoc(String utilisateurRoc) {
-        this.utilisateurRoc = utilisateurRoc;
-    }
-
-    public Long getZoneId() {
-        return zoneId;
-    }
-
-    public void setZoneId(Long zoneId) {
-        this.zoneId = zoneId;
-    }
-
-    public String getZoneNom() {
-        return zoneNom;
-    }
-
-    public void setZoneNom(String zoneNom) {
-        this.zoneNom = zoneNom;
-    }
+    public String getZoneNom() { return zoneNom; }
+    public void setZoneNom(String zoneNom) { this.zoneNom = zoneNom; }
 }

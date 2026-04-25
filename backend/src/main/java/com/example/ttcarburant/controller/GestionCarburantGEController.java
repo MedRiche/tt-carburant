@@ -30,6 +30,16 @@ public class GestionCarburantGEController {
         this.importService = importService;
     }
 
+    /**
+     * CORRECTION : endpoint GET / manquant.
+     * Le frontend Angular appelle GET /api/admin/carburant-ge via getAllSaisies()
+     * pour afficher l'historique dans la liste des groupes électrogènes.
+     */
+    @GetMapping
+    public ResponseEntity<List<GestionCarburantGEDto>> getAll() {
+        return ResponseEntity.ok(service.getAll());
+    }
+
     @PostMapping
     public ResponseEntity<?> saisir(@Valid @RequestBody GestionCarburantGERequest req) {
         try {
@@ -77,6 +87,12 @@ public class GestionCarburantGEController {
         return ResponseEntity.ok(service.getByZoneAndPeriode(zoneId, annee, semestre));
     }
 
+    /**
+     * CORRECTION : cet endpoint restait sous /carburant-ge/import
+     * et est maintenant cohérent avec le service Angular (GroupeElectrogeneImportService).
+     * Le service Angular a été corrigé pour pointer vers /groupes-electrogenes/import
+     * qui est géré par GroupeElectrogeneController.
+     */
     @PostMapping("/import")
     public ResponseEntity<?> importerExcel(@RequestParam("file") MultipartFile file,
                                            @RequestParam(value = "zoneNom", required = false) String zoneNom) {
@@ -88,7 +104,6 @@ public class GestionCarburantGEController {
         }
     }
 
-    // Internal records
     private record ErrorResponse(String message) {}
     private record MessageResponse(String message) {}
     private record SuccessResponse(String message, GestionCarburantGEDto data) {}

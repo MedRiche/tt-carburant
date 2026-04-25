@@ -47,6 +47,11 @@ export class GroupeElectrogeneService {
   }
 
   // ── Gestion carburant GE ───────────────────────────────────────
+
+  /**
+   * CORRECTION : GET /carburant-ge — endpoint désormais présent côté backend.
+   * Appelé par la liste pour afficher toutes les saisies de tous les sites.
+   */
   getAllSaisies(): Observable<GestionCarburantGE[]> {
     return this.http.get<GestionCarburantGE[]>(this.carbUrl, { headers: this.headers() });
   }
@@ -77,13 +82,19 @@ export class GroupeElectrogeneService {
     return this.http.delete(`${this.carbUrl}/${id}`, { headers: this.headers() });
   }
 
-importerExcel(file: File): Observable<any> {
-  const formData = new FormData();
-  formData.append('file', file);
-  return this.http.post(`${this.geUrl}/import`, formData, {
-    headers: new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem('token')}` })
-  });
-}
+  /**
+   * CORRECTION : URL corrigée.
+   * Avant : pointait vers ${this.geUrl}/import = /groupes-electrogenes/import (404)
+   * Après : pointe vers ${this.carbUrl}/import  = /carburant-ge/import (endpoint existant)
+   */
+  importerExcel(file: File, zoneNom?: string): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (zoneNom) formData.append('zoneNom', zoneNom);
+    return this.http.post(`${this.carbUrl}/import`, formData, {
+      headers: new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem('token')}` })
+    });
+  }
 
   downloadBlob(blob: Blob, filename: string): void {
     const url = window.URL.createObjectURL(blob);
