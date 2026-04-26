@@ -32,6 +32,8 @@ public class UtilisateurService {
         this.affectationRepository = affectationRepository;
     }
 
+    // ── Listes ───────────────────────────────────────────────────────────────
+
     @Transactional(readOnly = true)
     public List<UtilisateurDto> getUtilisateursEnAttente() {
         return utilisateurRepository
@@ -56,6 +58,8 @@ public class UtilisateurService {
         return convertToDto(utilisateur);
     }
 
+    // ── Validation avec zones ─────────────────────────────────────────────────
+
     @Transactional
     public UtilisateurDto validerCompteAvecZones(ValiderCompteRequest request) {
         Utilisateur utilisateur = utilisateurRepository.findById(request.getUtilisateurId())
@@ -65,13 +69,16 @@ public class UtilisateurService {
             throw new RuntimeException("Ce compte n'est pas en attente de validation");
         }
 
+        // Récupérer l'admin courant
         String emailAdmin = SecurityContextHolder.getContext().getAuthentication().getName();
         Utilisateur admin = utilisateurRepository.findByEmail(emailAdmin)
                 .orElseThrow(() -> new RuntimeException("Admin non trouvé"));
 
+        // Activer le compte
         utilisateur.setStatutCompte(StatutCompte.ACTIF);
         utilisateurRepository.save(utilisateur);
 
+        // Affecter les zones sélectionnées
         for (Long zoneId : request.getZoneIds()) {
             Zone zone = zoneRepository.findById(zoneId)
                     .orElseThrow(() -> new RuntimeException("Zone non trouvée: " + zoneId));
@@ -82,6 +89,8 @@ public class UtilisateurService {
 
         return convertToDto(utilisateur);
     }
+
+    // ── Refus ─────────────────────────────────────────────────────────────────
 
     @Transactional
     public UtilisateurDto refuserCompte(Long id) {
@@ -97,11 +106,13 @@ public class UtilisateurService {
         return convertToDto(utilisateur);
     }
 
+    // ── Toggle activation ─────────────────────────────────────────────────────
+
     /**
      * TOGGLE:
      *   ACTIF     → DESACTIVE
      *   DESACTIVE → ACTIF
-     *   REFUSE    → ACTIF   (réactivation depuis un refus)
+     *   REFUSE    → ACTIF
      */
     @Transactional
     public UtilisateurDto toggleActivation(Long id) {
@@ -124,6 +135,8 @@ public class UtilisateurService {
         return convertToDto(utilisateur);
     }
 
+    // ── Suppression ───────────────────────────────────────────────────────────
+
     @Transactional
     public void supprimerUtilisateur(Long id) {
         Utilisateur utilisateur = utilisateurRepository.findById(id)
@@ -131,6 +144,8 @@ public class UtilisateurService {
         affectationRepository.deleteByUtilisateur(utilisateur);
         utilisateurRepository.deleteById(id);
     }
+
+    // ── Gestion des zones ─────────────────────────────────────────────────────
 
     @Transactional
     public UtilisateurDto ajouterZone(Long utilisateurId, Long zoneId) {
@@ -160,6 +175,8 @@ public class UtilisateurService {
         affectationRepository.deleteByUtilisateurAndZone(utilisateur, zone);
         return convertToDto(utilisateur);
     }
+
+    // ── Conversion DTO ────────────────────────────────────────────────────────
 
     private UtilisateurDto convertToDto(Utilisateur utilisateur) {
         List<AffectationUtilisateurZone> affectations =

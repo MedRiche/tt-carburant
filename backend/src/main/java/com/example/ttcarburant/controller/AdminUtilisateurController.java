@@ -22,17 +22,19 @@ public class AdminUtilisateurController {
         this.utilisateurService = utilisateurService;
     }
 
+    // ── GET ALL ──────────────────────────────────────────────────────────────
+
     @GetMapping
     public ResponseEntity<List<UtilisateurDto>> getAllUtilisateurs() {
         return ResponseEntity.ok(utilisateurService.getAllUtilisateurs());
     }
 
+    /** Tous les comptes EN_ATTENTE (techniciens normaux + conducteurs importés) */
     @GetMapping("/en-attente")
     public ResponseEntity<List<UtilisateurDto>> getUtilisateursEnAttente() {
         return ResponseEntity.ok(utilisateurService.getUtilisateursEnAttente());
     }
 
-    // ✅ FIX: explicit name in @PathVariable
     @GetMapping("/{id}")
     public ResponseEntity<?> getUtilisateurById(@PathVariable("id") Long id) {
         try {
@@ -42,17 +44,25 @@ public class AdminUtilisateurController {
         }
     }
 
+    // ── VALIDATION avec affectation de zones ──────────────────────────────────
+
+    /**
+     * Valide un compte EN_ATTENTE et lui affecte des zones.
+     * Fonctionne pour tout TECHNICIEN (conducteur ou non).
+     */
     @PostMapping("/valider")
     public ResponseEntity<?> validerCompteAvecZones(@Valid @RequestBody ValiderCompteRequest request) {
         try {
             UtilisateurDto utilisateur = utilisateurService.validerCompteAvecZones(request);
-            return ResponseEntity.ok(new SuccessResponse("Compte validé et zones affectées avec succès", utilisateur));
+            return ResponseEntity.ok(new SuccessResponse(
+                    "Compte validé et zones affectées avec succès", utilisateur));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
     }
 
-    // ✅ FIX: explicit name in @PathVariable
+    // ── REFUS ─────────────────────────────────────────────────────────────────
+
     @PatchMapping("/{id}/refuser")
     public ResponseEntity<?> refuserCompte(@PathVariable("id") Long id) {
         try {
@@ -63,7 +73,8 @@ public class AdminUtilisateurController {
         }
     }
 
-    // ✅ FIX: explicit name in @PathVariable
+    // ── TOGGLE ACTIVATION ─────────────────────────────────────────────────────
+
     @PatchMapping("/{id}/toggle-activation")
     public ResponseEntity<?> toggleActivation(@PathVariable("id") Long id) {
         try {
@@ -77,7 +88,8 @@ public class AdminUtilisateurController {
         }
     }
 
-    // ✅ FIX: explicit name in @PathVariable
+    // ── SUPPRESSION ───────────────────────────────────────────────────────────
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> supprimerUtilisateur(@PathVariable("id") Long id) {
         try {
@@ -88,7 +100,8 @@ public class AdminUtilisateurController {
         }
     }
 
-    // ✅ FIX: explicit names in @PathVariable
+    // ── GESTION DES ZONES ─────────────────────────────────────────────────────
+
     @PostMapping("/{utilisateurId}/zones/{zoneId}")
     public ResponseEntity<?> ajouterZone(
             @PathVariable("utilisateurId") Long utilisateurId,
@@ -101,7 +114,6 @@ public class AdminUtilisateurController {
         }
     }
 
-    // ✅ FIX: explicit names in @PathVariable
     @DeleteMapping("/{utilisateurId}/zones/{zoneId}")
     public ResponseEntity<?> retirerZone(
             @PathVariable("utilisateurId") Long utilisateurId,
@@ -113,6 +125,8 @@ public class AdminUtilisateurController {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
     }
+
+    // ── Records internes ──────────────────────────────────────────────────────
 
     private record ErrorResponse(String message) {}
     private record MessageResponse(String message) {}
