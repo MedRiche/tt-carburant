@@ -12,87 +12,80 @@ import java.text.Normalizer;
 import java.util.*;
 
 /**
- * Service de création automatique des comptes utilisateurs
- * à partir des noms/prénoms des conducteurs importés depuis Excel.
+ * Crée automatiquement un compte TECHNICIEN (EN_ATTENTE)
+ * pour chaque conducteur extrait d'un fichier Excel importé.
  *
- * Algorithme :
- *   1. Normaliser prénom + nom → supprimer accents, espaces → minuscules
- *   2. Générer email : prenom.nom@tunisietelecom.tn
- *   3. Si email déjà pris → ajouter un suffixe numérique
- *   4. Créer compte avec StatutCompte = EN_ATTENTE
- *   5. Mot de passe par défaut = "TT@2026!" (hashé)
- *   6. Retourner la liste des comptes créés / existants
+ * Email généré  : prenom.nom@tunisietelecom.tn
+ * Mot de passe  : 123456 (encodé BCrypt)
+ * Statut        : EN_ATTENTE  → l'admin valide dans Gestion Utilisateurs
  */
 @Service
 public class ConducteurUserCreationService {
 
     private final UtilisateurRepository utilisateurRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder       passwordEncoder;
 
     public ConducteurUserCreationService(UtilisateurRepository utilisateurRepository,
                                          PasswordEncoder passwordEncoder) {
         this.utilisateurRepository = utilisateurRepository;
-        this.passwordEncoder = passwordEncoder;
+        this.passwordEncoder       = passwordEncoder;
     }
 
-    /**
-     * Résultat de la création d'un utilisateur conducteur.
-     */
+    // ── Résultat par conducteur ──────────────────────────────────────────────
     public static class ConducteurCreationResult {
         public final String nomComplet;
         public final String email;
-        public final String statut; // "CREATED" | "ALREADY_EXISTS" | "SKIPPED"
-        public final Long userId;
+        public final String statut;   // "CREATED" | "ALREADY_EXISTS" | "SKIPPED"
+        public final Long   userId;
 
-        public ConducteurCreationResult(String nomComplet, String email, String statut, Long userId) {
+        public ConducteurCreationResult(String nomComplet, String email,
+                                        String statut,     Long userId) {
             this.nomComplet = nomComplet;
-            this.email = email;
-            this.statut = statut;
-            this.userId = userId;
+            this.email      = email;
+            this.statut     = statut;
+            this.userId     = userId;
         }
     }
 
     /**
-     * Traite une liste de conducteurs (prenom + nom) et crée les comptes manquants.
+     * Traite une liste de conducteurs et crée les comptes manquants.
      *
-     * @param conducteurs  liste de Map avec clés "prenom" et "nom" (peuvent être null)
-     * @return liste de résultats par conducteur
+     * @param conducteurs  liste de Map avec clés "prenom" et "nom"
+     * @return résultats par conducteur
      */
     @Transactional
     public List<ConducteurCreationResult> creerComptesConducteurs(
             List<Map<String, String>> conducteurs) {
 
-        List<ConducteurCreationResult> results = new ArrayList<>();
-        // Évite les doublons dans le même batch
-        Set<String> processedEmails = new HashSet<>();
+        List<ConducteurCreationResult> results       = new ArrayList<>();
+        Set<String>                    batchEmails   = new HashSet<>(); // doublons dans le même batch
 
-        for (Map<String, String> conducteur : conducteurs) {
-            String prenom = trim(conducteur.get("prenom"));
-            String nom    = trim(conducteur.get("nom"));
+        for (Map<String, String> c : conducteurs) {
+            String prenom    = trim(c.get("prenom"));
+            String nom       = trim(c.get("nom"));
 
             // Ignorer les lignes sans conducteur
             if (prenom.isEmpty() && nom.isEmpty()) continue;
 
             String nomComplet = (prenom + " " + nom).trim();
-            String email      = genererEmail(prenom, nom, processedEmails);
+            String email      = genererEmail(prenom, nom, batchEmails);
 
-            // Déjà traité dans ce batch
-            if (processedEmails.contains(email) && results.stream()
-                    .anyMatch(r -> r.email.equals(email))) {
+            // Doublon dans ce même batch (conducteur listé deux fois)
+            if (batchEmails.contains(email)) {
                 results.add(new ConducteurCreationResult(nomComplet, email, "SKIPPED", null));
                 continue;
             }
 
-            // Vérifier en base
+            // Déjà en base
             Optional<Utilisateur> existant = utilisateurRepository.findByEmail(email);
             if (existant.isPresent()) {
                 results.add(new ConducteurCreationResult(
                         nomComplet, email, "ALREADY_EXISTS", existant.get().getId()));
-                processedEmails.add(email);
+                batchEmails.add(email);
                 continue;
             }
 
-            // Créer l'utilisateur
+            // Créer le compte
             Utilisateur u = new Utilisateur();
             u.setNom(nomComplet);
             u.setEmail(email);
@@ -102,7 +95,7 @@ public class ConducteurUserCreationService {
             u.setSpecialite("Conducteur");
             utilisateurRepository.save(u);
 
-            processedEmails.add(email);
+            batchEmails.add(email);
             results.add(new ConducteurCreationResult(nomComplet, email, "CREATED", u.getId()));
         }
 
@@ -112,31 +105,31 @@ public class ConducteurUserCreationService {
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     private String genererEmail(String prenom, String nom, Set<String> taken) {
-        String base = normaliser(prenom) + "." + normaliser(nom);
+        String base  = normaliser(prenom) + "." + normaliser(nom);
         if (base.equals(".")) base = "conducteur";
+
         String email = base + "@tunisietelecom.tn";
         if (!taken.contains(email) && !utilisateurRepository.existsByEmail(email))
             return email;
 
-        int suffix = 1;
-        while (true) {
-            String candidate = base + suffix + "@tunisietelecom.tn";
+        // Trouver un suffixe libre
+        for (int i = 1; i < 100; i++) {
+            String candidate = base + i + "@tunisietelecom.tn";
             if (!taken.contains(candidate) && !utilisateurRepository.existsByEmail(candidate))
                 return candidate;
-            suffix++;
         }
+        // Fallback avec UUID court
+        return base + "_" + UUID.randomUUID().toString().substring(0, 4) + "@tunisietelecom.tn";
     }
 
+    /** Supprime les accents, met en minuscules, garde seulement a-z0-9. */
     private String normaliser(String s) {
         if (s == null || s.isEmpty()) return "";
-        String n = Normalizer.normalize(s, Normalizer.Form.NFD)
-                .replaceAll("\\p{M}", "")   // supprimer diacritiques
+        return Normalizer.normalize(s, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
                 .toLowerCase()
-                .replaceAll("[^a-z0-9]", ""); // garder lettres/chiffres
-        return n;
+                .replaceAll("[^a-z0-9]", "");
     }
 
-    private String trim(String s) {
-        return s == null ? "" : s.trim();
-    }
+    private String trim(String s) { return s == null ? "" : s.trim(); }
 }

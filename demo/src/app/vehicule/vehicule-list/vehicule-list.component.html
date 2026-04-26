@@ -1,4 +1,6 @@
 <!-- src/app/vehicule/vehicule-list/vehicule-list.component.html -->
+<!-- VERSION COMPLÈTE avec panneau de création automatique des comptes conducteurs -->
+
 <div class="app-shell">
 
   <!-- ═══ SIDEBAR ═══ -->
@@ -57,7 +59,6 @@
         </span>
         Carburant
       </a>
-
       <a class="nav-item" (click)="navigateTo('/admin/maintenance')">
         <span class="nav-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -78,29 +79,23 @@
 
   <!-- ═══ MAIN ═══ -->
   <main class="main-content">
-
-    <!-- Topbar -->
     <header class="topbar">
       <div>
         <h1 class="page-title">Gestion des Véhicules</h1>
-        <p class="page-subtitle">{{ vehicules.length }} véhicules — 9 zones</p>
+        <p class="page-subtitle">{{ vehicules.length }} véhicules — {{ zones.length }} zones</p>
       </div>
       <div class="topbar-right">
         <div class="pill pill-cyan">
           <span class="pill-dot"></span>
           {{ vehiculesFiltres.length }} affiché(s)
         </div>
-
-        <!-- ✅ BOUTON IMPORT EXCEL -->
         <button class="btn-import" (click)="ouvrirImport()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="17 8 12 3 7 8"/>
-            <line x1="12" y1="3" x2="12" y2="15"/>
+            <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
           </svg>
           Importer Excel
         </button>
-
         <button class="btn-new" (click)="openCreate()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
@@ -111,20 +106,13 @@
     </header>
 
     <div class="content-area">
-
-      <!-- Filtres -->
       <div class="filter-bar">
         <div class="search-wrap">
           <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
-          <input
-            class="search-input"
-            type="text"
-            placeholder="Rechercher matricule, marque, conducteur…"
-            [(ngModel)]="searchText"
-            (ngModelChange)="appliquerFiltres()"
-          />
+          <input class="search-input" type="text" placeholder="Rechercher matricule, marque, conducteur…"
+            [(ngModel)]="searchText" (ngModelChange)="appliquerFiltres()"/>
         </div>
         <select class="filter-select" [(ngModel)]="filtreZoneId" (ngModelChange)="appliquerFiltres()">
           <option value="">Toutes les zones</option>
@@ -136,46 +124,28 @@
         </select>
       </div>
 
-      <!-- Loading -->
       <div *ngIf="loading" class="state-empty">
-        <div class="loader-ring"></div>
-        <p>Chargement…</p>
+        <div class="loader-ring"></div><p>Chargement…</p>
       </div>
 
-      <!-- Empty -->
       <div *ngIf="!loading && vehiculesFiltres.length === 0" class="state-empty">
         <div class="state-icon">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <rect x="1" y="3" width="15" height="13" rx="2"/>
             <path d="M16 8h4l3 5v3h-7V8z"/>
-            <circle cx="5.5" cy="18.5" r="2.5"/>
-            <circle cx="18.5" cy="18.5" r="2.5"/>
+            <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
           </svg>
         </div>
         <p class="state-title">Aucun véhicule trouvé</p>
-        <p class="state-sub">Modifiez vos filtres, créez un véhicule ou importez depuis Excel.</p>
-        <button class="btn-import" (click)="ouvrirImport()" style="margin-top:8px">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-          </svg>
-          Importer depuis Excel
-        </button>
       </div>
 
-      <!-- Table -->
       <div *ngIf="!loading && vehiculesFiltres.length > 0" class="data-table-wrap">
         <table class="data-table">
           <thead>
             <tr>
-              <th>Matricule</th>
-              <th>Marque / Modèle</th>
-              <th>Type</th>
-              <th>Carburant</th>
-              <th>Prix (DT)</th>
-              <th>Conducteur</th>
-              <th>Zone</th>
-              <th>Visite Tech.</th>
-              <th>Actions</th>
+              <th>Matricule</th><th>Marque / Modèle</th><th>Type</th>
+              <th>Carburant</th><th>Prix (DT)</th><th>Conducteur</th>
+              <th>Zone</th><th>Visite Tech.</th><th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -226,7 +196,6 @@
           </tbody>
         </table>
       </div>
-
     </div>
   </main>
 </div>
@@ -240,9 +209,9 @@
   (onCancel)="closeForm()">
 </app-vehicule-form>
 
-<!-- ═══════════════════════════════════════════════════════
-     MODAL IMPORT EXCEL
-═══════════════════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════════════════════════════
+     MODAL IMPORT EXCEL — VERSION COMPLÈTE AVEC COMPTES CONDUCTEURS
+═══════════════════════════════════════════════════════════════════ -->
 <div *ngIf="showImportModal" class="import-modal-overlay" (click)="fermerImport()">
   <div class="import-modal" (click)="$event.stopPropagation()">
 
@@ -252,7 +221,7 @@
         <div class="import-icon">📥</div>
         <div>
           <h3 class="import-title">Importer des véhicules depuis Excel</h3>
-          <p class="import-sub">Format DAF 2026 — 9 zones disponibles</p>
+          <p class="import-sub">Format DAF 2026 — Création automatique des comptes conducteurs</p>
         </div>
       </div>
       <button class="import-close" (click)="fermerImport()">✕</button>
@@ -266,61 +235,140 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
         </svg>
-        <span>Sélectionnez la zone, puis cliquez sur « Choisir un fichier » pour importer le fichier Excel correspondant (ex: <strong>DAF_2026.xlsx</strong>). Les véhicules existants seront mis à jour, les nouveaux créés.</span>
-      </div>
-
-      <!-- Résultat d'un import précédent -->
-      <div *ngIf="importResult" class="import-result"
-           [class.import-result-success]="importResult.skipped === 0"
-           [class.import-result-warning]="importResult.skipped > 0">
-        <div class="import-result-header">
-          <span class="import-result-icon">{{ importResult.skipped === 0 ? '✅' : '⚠️' }}</span>
-          <strong>Import terminé — Zone : {{ importResult.zone }}</strong>
-        </div>
-        <div class="import-result-stats">
-          <div class="import-stat import-stat-new">
-            <span class="import-stat-num">{{ importResult.imported }}</span>
-            <span class="import-stat-label">Créés</span>
-          </div>
-          <div class="import-stat import-stat-update">
-            <span class="import-stat-num">{{ importResult.updated }}</span>
-            <span class="import-stat-label">Mis à jour</span>
-          </div>
-          <div class="import-stat import-stat-skip">
-            <span class="import-stat-num">{{ importResult.skipped }}</span>
-            <span class="import-stat-label">Ignorés</span>
-          </div>
-          <div class="import-stat import-stat-total">
-            <span class="import-stat-num">{{ importResult.total }}</span>
-            <span class="import-stat-label">Total</span>
-          </div>
-        </div>
-        <div *ngIf="importResult.errors.length > 0" class="import-errors">
-          <p class="import-errors-title">⚠️ {{ importResult.errors.length }} avertissement(s) :</p>
-          <ul>
-            <li *ngFor="let e of importResult.errors">{{ e }}</li>
-          </ul>
-        </div>
+        <span>
+          Lors de l'import, les <strong>noms de conducteurs</strong> sont automatiquement convertis en comptes utilisateurs
+          (<em>statut : En attente</em>). L'administrateur peut ensuite les valider dans
+          <strong>Gestion des Utilisateurs</strong>.
+          Mot de passe par défaut : <code style="background:rgba(0,212,170,0.1);padding:2px 6px;border-radius:4px;color:#00d4aa">123456</code>
+        </span>
       </div>
 
       <!-- Chargement -->
       <div *ngIf="importLoading" class="import-loading">
         <div class="import-spinner"></div>
-        <span>Import en cours, veuillez patienter…</span>
+        <span>Import en cours, création des comptes conducteurs…</span>
       </div>
 
-      <!-- Grille des 9 zones -->
-      <div class="zones-import-grid" *ngIf="!importLoading">
+      <!-- ════════ RÉSULTAT D'IMPORT ════════ -->
+      <ng-container *ngIf="importResult && !importLoading">
 
-        <!-- Sélection manuelle de zone (pour fichiers renommés) -->
+        <!-- Stats véhicules -->
+        <div class="import-result"
+             [class.import-result-success]="importResult.skipped === 0"
+             [class.import-result-warning]="importResult.skipped > 0">
+          <div class="import-result-header">
+            <span class="import-result-icon">{{ importResult.skipped === 0 ? '✅' : '⚠️' }}</span>
+            <strong>Véhicules importés — Zone : {{ importResult.zone }}</strong>
+          </div>
+          <div class="import-result-stats">
+            <div class="import-stat import-stat-new">
+              <span class="import-stat-num">{{ importResult.imported }}</span>
+              <span class="import-stat-label">Créés</span>
+            </div>
+            <div class="import-stat import-stat-update">
+              <span class="import-stat-num">{{ importResult.updated }}</span>
+              <span class="import-stat-label">Mis à jour</span>
+            </div>
+            <div class="import-stat import-stat-skip">
+              <span class="import-stat-num">{{ importResult.skipped }}</span>
+              <span class="import-stat-label">Ignorés</span>
+            </div>
+            <div class="import-stat import-stat-total">
+              <span class="import-stat-num">{{ importResult.total }}</span>
+              <span class="import-stat-label">Total</span>
+            </div>
+          </div>
+          <div *ngIf="importResult.errors.length > 0" class="import-errors">
+            <p class="import-errors-title">⚠️ {{ importResult.errors.length }} avertissement(s) :</p>
+            <ul><li *ngFor="let e of importResult.errors">{{ e }}</li></ul>
+          </div>
+        </div>
+
+        <!-- ════ PANEL COMPTES CONDUCTEURS ════ -->
+        <div class="conducteur-panel" *ngIf="importResult.conducteursCreated > 0 || importResult.conducteursExistants > 0">
+
+          <!-- En-tête panel -->
+          <div class="conducteur-panel-header">
+            <div class="conducteur-panel-icon">👤</div>
+            <div class="conducteur-panel-title-wrap">
+              <h4 class="conducteur-panel-title">Comptes conducteurs</h4>
+              <p class="conducteur-panel-sub">Création automatique depuis les noms du fichier Excel</p>
+            </div>
+            <button class="conducteur-toggle-btn" (click)="showConducteurPanel = !showConducteurPanel">
+              {{ showConducteurPanel ? '▲ Masquer' : '▼ Afficher' }}
+            </button>
+          </div>
+
+          <!-- Badges résumé -->
+          <div class="conducteur-summary-badges">
+            <div class="c-badge c-badge-green" *ngIf="importResult.conducteursCreated > 0">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+              </svg>
+              <strong>{{ importResult.conducteursCreated }}</strong> nouveau(x) compte(s) créé(s) — En attente de validation
+            </div>
+            <div class="c-badge c-badge-blue" *ngIf="importResult.conducteursExistants > 0">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+              </svg>
+              <strong>{{ importResult.conducteursExistants }}</strong> conducteur(s) déjà enregistré(s)
+            </div>
+          </div>
+
+          <!-- Liste détaillée (toggle) -->
+          <div *ngIf="showConducteurPanel && importResult.conducteursDetails.length > 0" class="conducteur-list">
+            <div class="conducteur-list-header">
+              <span>Conducteur</span>
+              <span>Email généré</span>
+              <span>Statut</span>
+            </div>
+            <div *ngFor="let c of importResult.conducteursDetails" class="conducteur-list-row">
+              <div class="c-avatar-name">
+                <div class="c-avatar">{{ getInitials(c.nomComplet) }}</div>
+                <span class="c-name">{{ c.nomComplet }}</span>
+              </div>
+              <span class="c-email">{{ c.email }}</span>
+              <span class="c-status-chip c-status-pending">
+                <span class="c-status-dot"></span>
+                En attente
+              </span>
+            </div>
+          </div>
+
+          <!-- Bouton aller vers gestion utilisateurs -->
+          <div class="conducteur-action-row">
+            <div class="conducteur-action-hint">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+              Les comptes sont en attente — validez-les dans Gestion des Utilisateurs
+            </div>
+            <button class="btn-goto-users" (click)="allerGestionUtilisateurs()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              Gérer les utilisateurs
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+      </ng-container>
+
+      <!-- ════ Grille import zones (si pas encore importé) ════ -->
+      <div *ngIf="!importLoading && !importResult">
         <div class="import-manual-section">
           <p class="import-section-title">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
             </svg>
-            Choisir la zone et importer le fichier correspondant
+            Choisir la zone et importer le fichier
           </p>
-
           <div class="zone-import-cards">
             <div *ngFor="let z of zones" class="zone-import-card">
               <div class="zone-import-card-name">
@@ -330,61 +378,38 @@
               <label class="zone-import-btn">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="17 8 12 3 7 8"/>
-                  <line x1="12" y1="3" x2="12" y2="15"/>
+                  <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
                 </svg>
-                Choisir fichier
-                <input
-                  type="file"
-                  accept=".xlsx"
-                  style="display:none"
-                  (change)="onFichierSelectionne($event, z.nom)"
-                />
+                Choisir
+                <input type="file" accept=".xlsx" style="display:none" (change)="onFichierSelectionne($event, z.nom)"/>
               </label>
             </div>
           </div>
         </div>
 
-        <!-- Section import libre (zone manuelle) -->
-        <div class="import-manual-section" style="margin-top: 16px;">
-          <p class="import-section-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            Import libre (saisir le nom de zone manuellement)
-          </p>
+        <div class="import-manual-section" style="margin-top:16px">
+          <p class="import-section-title">Import libre</p>
           <div class="import-free-row">
-            <input
-              type="text"
-              class="import-zone-input"
-              placeholder="Nom de zone (ex: DAF, CSC BARDO…)"
-              [(ngModel)]="importZoneNom"
-            />
-            <label class="btn-import" style="cursor:pointer; display:inline-flex; align-items:center; gap:7px; margin:0;">
+            <input type="text" class="import-zone-input" placeholder="Nom de zone (ex: DAF, CSC BARDO…)"
+              [(ngModel)]="importZoneNom"/>
+            <label class="btn-import" style="cursor:pointer;display:inline-flex;align-items:center;gap:7px;margin:0">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/>
-                <line x1="12" y1="3" x2="12" y2="15"/>
+                <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
               </svg>
               Choisir fichier
-              <input
-                type="file"
-                accept=".xlsx"
-                style="display:none"
-                (change)="onImportFichier($event)"
-              />
+              <input type="file" accept=".xlsx" style="display:none" (change)="onImportFichier($event)"/>
             </label>
           </div>
         </div>
-
-      </div><!-- /zones-import-grid -->
+      </div>
 
     </div><!-- /import-modal-body -->
 
     <!-- Footer -->
     <div class="import-modal-footer">
-      <span style="font-size:12px; color:var(--text-muted)">
-        Les véhicules existants seront mis à jour. Les nouveaux seront créés.
+      <span style="font-size:12px;color:var(--text-muted)">
+        Les conducteurs détectés recevront un compte avec email automatique {{ '@tunisietelecom.tn' }}
       </span>
       <button class="import-close-btn" (click)="fermerImport()">Fermer</button>
     </div>

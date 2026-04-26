@@ -17,24 +17,25 @@ import java.time.ZoneId;
 import java.util.*;
 
 /**
- * Service d'import Excel des véhicules.
+ * Importe les véhicules depuis un fichier Excel (format DAF 2026).
  *
- * AJOUT : après l'import, les conducteurs dont le compte n'existe pas encore
- * sont créés automatiquement avec StatutCompte = EN_ATTENTE.
- * L'admin les retrouvera dans "Gestion des Utilisateurs → En attente".
+ * NOUVEAU : après l'import des véhicules, les noms de conducteurs sont
+ * transmis à ConducteurUserCreationService qui crée automatiquement
+ * un compte TECHNICIEN (EN_ATTENTE) pour chacun.
+ * L'admin les retrouvera dans "Gestion Utilisateurs → En attente".
  */
 @Service
 public class VehiculeImportService {
 
-    private final VehiculeRepository vehiculeRepo;
-    private final ZoneRepository zoneRepo;
-    private final ConducteurUserCreationService conducteurService;
+    private final VehiculeRepository             vehiculeRepo;
+    private final ZoneRepository                 zoneRepo;
+    private final ConducteurUserCreationService  conducteurService;
 
     public VehiculeImportService(VehiculeRepository vehiculeRepo,
                                  ZoneRepository zoneRepo,
                                  ConducteurUserCreationService conducteurService) {
-        this.vehiculeRepo      = vehiculeRepo;
-        this.zoneRepo          = zoneRepo;
+        this.vehiculeRepo     = vehiculeRepo;
+        this.zoneRepo         = zoneRepo;
         this.conducteurService = conducteurService;
     }
 
@@ -44,10 +45,10 @@ public class VehiculeImportService {
         int imported = 0, updated = 0, skipped = 0;
         List<String> errors = new ArrayList<>();
 
-        // Collecter les conducteurs pour création automatique de compte
+        // Collecte des conducteurs pour création automatique de comptes
         List<Map<String, String>> conducteurs = new ArrayList<>();
 
-        // Résoudre la zone
+        // ── Résoudre la zone ─────────────────────────────────────────────────
         Zone zone = null;
         if (zoneNom != null && !zoneNom.isBlank()) {
             zone = zoneRepo.findByNom(zoneNom.trim()).orElse(null);
@@ -56,15 +57,18 @@ public class VehiculeImportService {
                     if (z.getNom().equalsIgnoreCase(zoneNom.trim())) { zone = z; break; }
                 }
             }
-            if (zone == null) errors.add("Zone introuvable : " + zoneNom + ". Véhicules importés sans zone.");
+            if (zone == null)
+                errors.add("Zone introuvable : " + zoneNom + ". Les véhicules seront importés sans zone.");
         }
 
+        // ── Lecture Excel ─────────────────────────────────────────────────────
         try (InputStream is = file.getInputStream(); Workbook wb = new XSSFWorkbook(is)) {
+
             Sheet sheet = wb.getSheetAt(0);
 
             for (Row row : sheet) {
                 int rowNum = row.getRowNum();
-                if (rowNum < 2) continue;
+                if (rowNum < 2) continue;   // Ligne 0 = vide, ligne 1 = en-têtes
 
                 Cell c1 = row.getCell(1);
                 if (c1 == null) continue;
@@ -72,7 +76,8 @@ public class VehiculeImportService {
                 if (matricule == null || matricule.isBlank()) continue;
 
                 matricule = matricule.trim().replace(" ", "");
-                if (matricule.endsWith(".0")) matricule = matricule.substring(0, matricule.length() - 2);
+                if (matricule.endsWith(".0"))
+                    matricule = matricule.substring(0, matricule.length() - 2);
 
                 try {
                     boolean exists = vehiculeRepo.existsByMatricule(matricule);
@@ -80,19 +85,24 @@ public class VehiculeImportService {
 
                     v.setMatricule(matricule);
 
+                    // Col 2 : date mise en service
                     LocalDate dateMise = getCellDate(row.getCell(2));
                     if (dateMise != null) v.setDateMiseService(dateMise);
-                    else if (!exists) v.setDateMiseService(LocalDate.now());
+                    else if (!exists)     v.setDateMiseService(LocalDate.now());
 
+                    // Col 3 : marque/modèle
                     String marque = getCellString(row.getCell(3));
                     v.setMarqueModele(marque != null ? marque.trim() : "Inconnu");
 
+                    // Col 4 : type véhicule
                     String typeV = getCellString(row.getCell(4));
                     v.setTypeVehicule(typeV != null ? typeV.trim() : "Véhicule");
 
+                    // Col 5 : subdivision
                     String subdiv = getCellString(row.getCell(5));
                     if (subdiv != null) v.setSubdivision(subdiv.trim());
 
+                    // Col 6 : centre/CSC/ROC
                     String centre = getCellString(row.getCell(6));
                     if (centre != null) v.setCentre(centre.trim());
 
@@ -104,28 +114,35 @@ public class VehiculeImportService {
                     String nom = getCellString(row.getCell(8));
                     if (nom != null) v.setNomConducteur(nom.trim());
 
-                    // ── Collecter conducteur pour création de compte ──────────
-                    if ((prenom != null && !prenom.isBlank()) || (nom != null && !nom.isBlank())) {
-                        Map<String, String> c = new HashMap<>();
-                        c.put("prenom", prenom != null ? prenom.trim() : "");
-                        c.put("nom",    nom    != null ? nom.trim()    : "");
-                        conducteurs.add(c);
+                    // ── Collecter le conducteur ───────────────────────────────
+                    String prenomTrimmed = (prenom != null ? prenom.trim() : "");
+                    String nomTrimmed    = (nom    != null ? nom.trim()    : "");
+                    if (!prenomTrimmed.isEmpty() || !nomTrimmed.isEmpty()) {
+                        Map<String, String> cond = new HashMap<>();
+                        cond.put("prenom", prenomTrimmed);
+                        cond.put("nom",    nomTrimmed);
+                        conducteurs.add(cond);
                     }
 
+                    // Col 9 : résidence service
                     String residence = getCellString(row.getCell(9));
                     if (residence != null) v.setResidenceService(residence.trim());
 
+                    // Col 10 : type carburant
                     String typeCarb = getCellString(row.getCell(10));
                     v.setTypeCarburant(parseTypeCarburant(typeCarb));
 
+                    // Col 11 : prix carburant
                     double prix = getCellDouble(row.getCell(11), 2.0);
                     v.setPrixCarburant(prix);
 
+                    // Col 12 : coût du mois
                     double cout = getCellDouble(row.getCell(12), 200.0);
                     v.setCoutDuMois(cout);
 
                     if (zone != null) v.setZone(zone);
 
+                    // Col 23 : visite technique (si présente)
                     if (row.getLastCellNum() > 23) {
                         LocalDate visite = getCellDate(row.getCell(23));
                         if (visite != null) v.setVisiteTechnique(visite);
@@ -145,35 +162,36 @@ public class VehiculeImportService {
         List<ConducteurUserCreationService.ConducteurCreationResult> conducteurResults =
                 conducteurService.creerComptesConducteurs(conducteurs);
 
-        long nbCreated       = conducteurResults.stream().filter(r -> "CREATED".equals(r.statut)).count();
-        long nbAlreadyExists = conducteurResults.stream().filter(r -> "ALREADY_EXISTS".equals(r.statut)).count();
+        long nbCreated      = conducteurResults.stream().filter(r -> "CREATED".equals(r.statut)).count();
+        long nbExistants    = conducteurResults.stream().filter(r -> "ALREADY_EXISTS".equals(r.statut)).count();
 
-        // Construire le détail des comptes créés pour retour à l'UI
-        List<Map<String, String>> conducteurDetails = new ArrayList<>();
+        // Détail des comptes nouvellement créés (pour affichage dans la modale)
+        List<Map<String, String>> conducteursDetails = new ArrayList<>();
         for (var r : conducteurResults) {
             if ("CREATED".equals(r.statut)) {
-                Map<String, String> d = new HashMap<>();
+                Map<String, String> d = new LinkedHashMap<>();
                 d.put("nomComplet", r.nomComplet);
                 d.put("email",      r.email);
                 d.put("statut",     r.statut);
-                conducteurDetails.add(d);
+                conducteursDetails.add(d);
             }
         }
 
+        // ── Résultat final ────────────────────────────────────────────────────
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("imported",              imported);
-        result.put("updated",               updated);
-        result.put("skipped",               skipped);
-        result.put("total",                 imported + updated + skipped);
-        result.put("zone",                  zone != null ? zone.getNom() : "Aucune");
-        result.put("errors",                errors);
-        result.put("conducteursCreated",    nbCreated);
-        result.put("conducteursExistants",  nbAlreadyExists);
-        result.put("conducteursDetails",    conducteurDetails);
+        result.put("imported",             imported);
+        result.put("updated",              updated);
+        result.put("skipped",              skipped);
+        result.put("total",                imported + updated + skipped);
+        result.put("zone",                 zone != null ? zone.getNom() : "Aucune");
+        result.put("errors",               errors);
+        result.put("conducteursCreated",   nbCreated);
+        result.put("conducteursExistants", nbExistants);
+        result.put("conducteursDetails",   conducteursDetails);
         return result;
     }
 
-    // ── Helpers (identiques à la version originale) ───────────────────────────
+    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private String getCellString(Cell c) {
         if (c == null) return null;
@@ -235,10 +253,14 @@ public class VehiculeImportService {
         if (raw == null) return TypeCarburant.GASOIL_ORDINAIRE;
         String s = raw.trim().toUpperCase()
                 .replace("É", "E").replace("È", "E").replace("À", "A");
-        if (s.contains("ESSENCE") || s.contains("SUPER SAN") || s.contains("SP")) return TypeCarburant.ESSENCE;
-        if (s.contains("50"))       return TypeCarburant.GASOIL_50;
-        if (s.contains("SOUFRE") || s.contains("SS"))   return TypeCarburant.GASOIL_SANS_SOUFRE;
-        if (s.contains("GASOIL") || s.contains("DIESEL")) return TypeCarburant.GASOIL_ORDINAIRE;
+        if (s.contains("ESSENCE") || s.contains("SUPER SAN") || s.contains("SP"))
+            return TypeCarburant.ESSENCE;
+        if (s.contains("50"))
+            return TypeCarburant.GASOIL_50;
+        if (s.contains("SOUFRE") || s.contains("SS"))
+            return TypeCarburant.GASOIL_SANS_SOUFRE;
+        if (s.contains("GASOIL") || s.contains("DIESEL"))
+            return TypeCarburant.GASOIL_ORDINAIRE;
         return TypeCarburant.GASOIL_ORDINAIRE;
     }
 }

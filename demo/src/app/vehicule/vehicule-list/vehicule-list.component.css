@@ -509,3 +509,276 @@
   .import-result-stats { flex-wrap: wrap; }
   .import-stat { min-width: 50%; }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   AJOUT AU FICHIER vehicule-list.component.css
+   — Section Comptes Conducteurs après import Excel
+   Copier-coller à la fin du fichier CSS existant
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Panel conducteurs ──────────────────────────────────────── */
+.conducteur-panel {
+  background: rgba(0, 212, 170, 0.04);
+  border: 1px solid rgba(0, 212, 170, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  animation: fadeUp 0.35s ease both;
+  margin-top: 4px;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.conducteur-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(0, 212, 170, 0.12);
+  background: rgba(0, 212, 170, 0.06);
+}
+
+.conducteur-panel-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.conducteur-panel-title-wrap {
+  flex: 1;
+}
+
+.conducteur-panel-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0 0 2px 0;
+}
+
+.conducteur-panel-sub {
+  font-size: 11px;
+  color: #475569;
+  margin: 0;
+}
+
+.conducteur-toggle-btn {
+  background: rgba(0, 212, 170, 0.1);
+  border: 1px solid rgba(0, 212, 170, 0.25);
+  color: #00d4aa;
+  font-family: var(--font, 'DM Sans', sans-serif);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.conducteur-toggle-btn:hover {
+  background: rgba(0, 212, 170, 0.18);
+}
+
+/* ── Badges résumé ──────────────────────────────────────────── */
+.conducteur-summary-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(0, 212, 170, 0.1);
+}
+
+.c-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.c-badge strong {
+  font-weight: 700;
+}
+
+.c-badge-green {
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+.c-badge-blue {
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+
+.c-badge svg { flex-shrink: 0; }
+
+/* ── Liste des conducteurs créés ────────────────────────────── */
+.conducteur-list {
+  border-top: 1px solid rgba(0, 212, 170, 0.1);
+  animation: fadeUp 0.25s ease both;
+}
+
+.conducteur-list-header {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 0.6fr;
+  gap: 12px;
+  padding: 8px 18px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.conducteur-list-row {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 0.6fr;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 18px;
+  border-bottom: 1px solid rgba(30, 45, 71, 0.5);
+  transition: background 0.15s;
+}
+
+.conducteur-list-row:last-child {
+  border-bottom: none;
+}
+
+.conducteur-list-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.c-avatar-name {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.c-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+.c-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.c-email {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.c-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.c-status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: blink 1.5s ease infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+.c-status-pending {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+/* ── Bouton action ──────────────────────────────────────────── */
+.conducteur-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.conducteur-action-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #475569;
+}
+
+.conducteur-action-hint svg { color: #f59e0b; flex-shrink: 0; }
+
+.btn-goto-users {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: 9px;
+  border: 1px solid rgba(0, 212, 170, 0.35);
+  background: rgba(0, 212, 170, 0.1);
+  color: #00d4aa;
+  font-family: var(--font, 'DM Sans', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.btn-goto-users:hover {
+  background: rgba(0, 212, 170, 0.18);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 212, 170, 0.2);
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .conducteur-list-header,
+  .conducteur-list-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .conducteur-list-header span:nth-child(2),
+  .conducteur-list-row .c-email { display: none; }
+
+  .conducteur-action-row { flex-direction: column; align-items: stretch; }
+  .btn-goto-users { justify-content: center; }
+}
