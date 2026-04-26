@@ -782,3 +782,71 @@
   .modal-content { width: 95%; }
   .modal-header, .modal-body, .modal-footer { padding: 15px; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   AJOUT À gestionutilisateur.component.css
+   — Styles pour les conducteurs importés
+   Copier-coller à la FIN du fichier CSS existant
+═══════════════════════════════════════════════════════════ */
+
+/* Badge conducteur inline */
+.badge-conducteur {
+  display: inline-block;
+  font-size: 10px;
+  color: #f59e0b;
+  margin-left: 6px;
+  font-weight: 500;
+}
+
+/* Avatar conducteur (orange) */
+.u-avatar.av-conducteur {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+/* Chip conducteur */
+.chip-conducteur {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+/* Section label (séparateur entre conducteurs et techniciens) */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  margin-bottom: 10px;
+}
+
+.section-label svg { color: #00d4aa; }
+
+/* Info box conducteur dans la modal */
+.conducteur-info-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  background: rgba(245, 158, 11, 0.06);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-left: 3px solid #f59e0b;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+.conducteur-info-box svg { color: #f59e0b; flex-shrink: 0; margin-top: 2px; }
+
+.conducteur-info-box code {
+  background: rgba(0, 212, 170, 0.1);
+  color: #00d4aa;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+}

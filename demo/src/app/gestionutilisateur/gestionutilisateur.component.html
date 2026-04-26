@@ -29,13 +29,12 @@
           </svg>
         </span>
         <span>Utilisateurs</span>
-        <span *ngIf="utilisateursEnAttente.length > 0" class="nav-badge">{{ utilisateursEnAttente.length }}</span>
+        <span *ngIf="nbEnAttente > 0" class="nav-badge">{{ nbEnAttente }}</span>
       </a>
       <a class="nav-item" routerLink="/admin/zones">
         <span class="nav-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
-            <line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>
           </svg>
         </span>
         <span>Zones</span>
@@ -51,24 +50,22 @@
         </span>
         <span>Véhicules</span>
       </a>
-             <a class="nav-item" routerLink="/admin/carburant">
+      <a class="nav-item" routerLink="/admin/carburant">
         <span class="nav-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/></svg>
-       
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/>
+          </svg>
         </span>
         <span>Carburant</span>
       </a>
-
-
-
-<a class="nav-item" routerLink="/admin/maintenance">
-  <span class="nav-icon">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-    </svg>
-  </span>
-  Maintenance
-</a>
+      <a class="nav-item" routerLink="/admin/maintenance">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+        </span>
+        Maintenance
+      </a>
     </nav>
 
     <div class="sidebar-footer">
@@ -95,9 +92,9 @@
             <span class="pill-dot"></span>
             <span>{{ tousUtilisateurs.length }} total</span>
           </div>
-          <div class="pill pill-amber" *ngIf="utilisateursEnAttente.length > 0">
+          <div class="pill pill-amber" *ngIf="nbEnAttente > 0">
             <span class="pill-dot"></span>
-            <span>{{ utilisateursEnAttente.length }} en attente</span>
+            <span>{{ nbEnAttente }} en attente</span>
           </div>
         </div>
       </div>
@@ -112,7 +109,7 @@
             <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
           </svg>
           En attente
-          <span class="tab-count">{{ utilisateursEnAttente.length }}</span>
+          <span class="tab-count">{{ nbEnAttente }}</span>
         </button>
         <button class="tab-btn" [class.active]="activeTab === 'tous'" (click)="activeTab = 'tous'">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -144,50 +141,118 @@
           <p class="state-sub">Tous les comptes ont été traités.</p>
         </div>
 
-        <div *ngIf="!loading && utilisateursEnAttente.length > 0" class="data-table-wrap">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Utilisateur</th>
-                <th>Email</th>
-                <th>Rôle</th>
-                <th>Spécialité</th>
-                <th>Date d'inscription</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let user of utilisateursEnAttente" class="table-row">
-                <td>
-                  <div class="user-cell">
-                    <div class="u-avatar">{{ getInitials(user.nom) }}</div>
-                    <span class="u-name">{{ user.nom }}</span>
-                  </div>
-                </td>
-                <td><span class="u-email">{{ user.email }}</span></td>
-                <td><span class="chip chip-role">{{ user.role }}</span></td>
-                <td><span class="u-spec">{{ user.specialite || '—' }}</span></td>
-                <td><span class="u-date">{{ user.dateCreation | date:'dd MMM yyyy' }}</span></td>
-                <td>
-                  <div class="row-actions">
-                    <button class="btn-act btn-validate" (click)="openValidationModal(user)">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <polyline points="20 6 9 17 4 12"/>
-                      </svg>
-                      Valider
-                    </button>
-                    <button class="btn-act btn-refuse" (click)="refuserCompte(user)">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                      </svg>
-                      Refuser
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <!-- Conducteurs importés (Excel) -->
+        <ng-container *ngIf="!loading && conducteursEnAttente.length > 0">
+          <div class="section-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="1" y="3" width="15" height="13" rx="2"/>
+              <path d="M16 8h4l3 5v3h-7V8z"/>
+              <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+            </svg>
+            Conducteurs importés depuis Excel ({{ conducteursEnAttente.length }})
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Conducteur</th>
+                  <th>Email généré</th>
+                  <th>Spécialité</th>
+                  <th>Date import</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let user of conducteursEnAttente" class="table-row">
+                  <td>
+                    <div class="user-cell">
+                      <div class="u-avatar av-conducteur">{{ getInitials(user.nom) }}</div>
+                      <div>
+                        <span class="u-name">{{ user.nom }}</span>
+                        <span class="badge-conducteur">🚗 Conducteur</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="u-email">{{ user.email }}</span></td>
+                  <td><span class="chip chip-conducteur">{{ user.specialite }}</span></td>
+                  <td><span class="u-date">{{ user.dateCreation | date:'dd MMM yyyy HH:mm' }}</span></td>
+                  <td>
+                    <div class="row-actions">
+                      <button class="btn-act btn-validate" (click)="openValidationModal(user)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Valider + Zones
+                      </button>
+                      <button class="btn-act btn-refuse" (click)="refuserCompte(user)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                        Refuser
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+
+        <!-- Techniciens normaux en attente -->
+        <ng-container *ngIf="!loading && techniciensEnAttente.length > 0">
+          <div class="section-label" [style.margin-top]="conducteursEnAttente.length > 0 ? '24px' : '0'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+            </svg>
+            Techniciens inscrits ({{ techniciensEnAttente.length }})
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Utilisateur</th>
+                  <th>Email</th>
+                  <th>Rôle</th>
+                  <th>Spécialité</th>
+                  <th>Date d'inscription</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let user of techniciensEnAttente" class="table-row">
+                  <td>
+                    <div class="user-cell">
+                      <div class="u-avatar">{{ getInitials(user.nom) }}</div>
+                      <span class="u-name">{{ user.nom }}</span>
+                    </div>
+                  </td>
+                  <td><span class="u-email">{{ user.email }}</span></td>
+                  <td><span class="chip chip-role">{{ user.role }}</span></td>
+                  <td><span class="u-spec">{{ user.specialite || '—' }}</span></td>
+                  <td><span class="u-date">{{ user.dateCreation | date:'dd MMM yyyy' }}</span></td>
+                  <td>
+                    <div class="row-actions">
+                      <button class="btn-act btn-validate" (click)="openValidationModal(user)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Valider
+                      </button>
+                      <button class="btn-act btn-refuse" (click)="refuserCompte(user)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                        Refuser
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+
       </div>
 
       <!-- ══════════ TAB: TOUS ══════════ -->
@@ -209,7 +274,7 @@
               <tr>
                 <th>Utilisateur</th>
                 <th>Email</th>
-                <th>Rôle</th>
+                <th>Rôle / Type</th>
                 <th>Statut</th>
                 <th>Zones affectées</th>
                 <th>Actions</th>
@@ -219,12 +284,21 @@
               <tr *ngFor="let user of tousUtilisateurs" class="table-row">
                 <td>
                   <div class="user-cell">
-                    <div class="u-avatar" [ngClass]="'av-' + user.role.toLowerCase()">{{ getInitials(user.nom) }}</div>
-                    <span class="u-name">{{ user.nom }}</span>
+                    <div class="u-avatar"
+                         [ngClass]="isConducteur(user) ? 'av-conducteur' : 'av-' + user.role.toLowerCase()">
+                      {{ getInitials(user.nom) }}
+                    </div>
+                    <div>
+                      <span class="u-name">{{ user.nom }}</span>
+                      <span *ngIf="isConducteur(user)" class="badge-conducteur">🚗 Conducteur</span>
+                    </div>
                   </div>
                 </td>
                 <td><span class="u-email">{{ user.email }}</span></td>
-                <td><span class="chip chip-role">{{ user.role }}</span></td>
+                <td>
+                  <span *ngIf="isConducteur(user)" class="chip chip-conducteur">Conducteur</span>
+                  <span *ngIf="!isConducteur(user)" class="chip chip-role">{{ user.role }}</span>
+                </td>
                 <td>
                   <span class="chip" [ngClass]="getStatutClass(user.statutCompte)">
                     <span class="chip-dot"></span>
@@ -239,7 +313,7 @@
                 </td>
                 <td>
                   <div class="row-actions">
-                    <button class="btn-act btn-edit" (click)="openEditModal(user)" title="Modifier">
+                    <button class="btn-act btn-edit" (click)="openEditModal(user)" title="Modifier les zones">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -249,8 +323,7 @@
                     <button class="btn-act"
                             *ngIf="showToggleButton(user.statutCompte)"
                             [ngClass]="canBeActivated(user.statutCompte) ? 'btn-activate' : 'btn-deactivate'"
-                            (click)="toggleActivation(user)"
-                            [title]="canBeActivated(user.statutCompte) ? 'Activer' : 'Désactiver'">
+                            (click)="toggleActivation(user)">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/>
                       </svg>
@@ -275,7 +348,8 @@
 </div>
 
 <!-- ════════════════════════════════════════
-     MODAL — VALIDATION
+     MODAL — VALIDATION + AFFECTATION ZONES
+     Fonctionne pour conducteurs ET techniciens
 ════════════════════════════════════════ -->
 <div *ngIf="showValidationModal" class="modal-backdrop" (click)="closeValidationModal()">
   <div class="modal" (click)="$event.stopPropagation()">
@@ -287,7 +361,11 @@
       </div>
       <div>
         <h3 class="modal-title">Valider le compte</h3>
-        <p class="modal-sub">{{ selectedUser?.nom }} · {{ selectedUser?.email }}</p>
+        <p class="modal-sub">
+          {{ selectedUser?.nom }}
+          <span *ngIf="isConducteur(selectedUser!)" style="margin-left:6px">🚗 Conducteur</span>
+          · {{ selectedUser?.email }}
+        </p>
       </div>
       <button class="modal-close" (click)="closeValidationModal()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -297,6 +375,17 @@
     </div>
 
     <div class="modal-body">
+
+      <!-- Info conducteur -->
+      <div *ngIf="isConducteur(selectedUser!)" class="conducteur-info-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span>Ce conducteur a été importé automatiquement depuis un fichier Excel.
+          Son mot de passe par défaut est <code>123456</code>.
+          Affectez-lui une ou plusieurs zones pour activer son compte.</span>
+      </div>
+
       <div class="modal-info-row">
         <div class="info-tag">
           <span class="info-tag-label">Rôle</span>
@@ -308,6 +397,7 @@
         </div>
       </div>
 
+      <!-- Sélection des zones (obligatoire) -->
       <div class="zone-picker-header">
         <p class="zone-picker-label">Sélectionnez les zones à affecter *</p>
         <span class="zone-selected-count">{{ selectedZoneIds.length }} sélectionnée(s)</span>
@@ -340,7 +430,9 @@
 
     <div class="modal-foot">
       <button class="btn-modal btn-cancel" (click)="closeValidationModal()" [disabled]="submitting">Annuler</button>
-      <button class="btn-modal btn-confirm-green" (click)="validerCompte()" [disabled]="selectedZoneIds.length === 0 || submitting">
+      <button class="btn-modal btn-confirm-green"
+              (click)="validerCompte()"
+              [disabled]="selectedZoneIds.length === 0 || submitting">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <polyline points="20 6 9 17 4 12"/>
         </svg>
@@ -350,17 +442,22 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════ Modal Modification ════════════════════════ -->
+<!-- ═══════════════════════ Modal Modification des zones ════════════════════════ -->
 <div *ngIf="showEditModal" class="modal-overlay" (click)="closeEditModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3>✏️ Modifier {{ selectedUser?.nom }}</h3>
+      <h3>
+        ✏️ Modifier
+        <span *ngIf="isConducteur(selectedUser!)">🚗</span>
+        {{ selectedUser?.nom }}
+      </h3>
       <button class="btn-close" (click)="closeEditModal()">✕</button>
     </div>
     <div class="modal-body">
       <div class="user-info-box">
         <p><strong>Email :</strong> {{ selectedUser?.email }}</p>
         <p><strong>Rôle :</strong> {{ selectedUser?.role }}</p>
+        <p *ngIf="selectedUser?.specialite"><strong>Spécialité :</strong> {{ selectedUser?.specialite }}</p>
         <p>
           <strong>Statut :</strong>
           <span class="badge" [ngClass]="getStatutClass(selectedUser!.statutCompte)">
@@ -390,7 +487,7 @@
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="closeEditModal()" [disabled]="submitting">Annuler</button>
       <button class="btn btn-primary" (click)="modifierUtilisateur()" [disabled]="submitting">
-        {{ submitting ? 'Modification...' : 'Enregistrer' }}
+        {{ submitting ? 'Modification...' : 'Enregistrer les zones' }}
       </button>
     </div>
   </div>
