@@ -25,7 +25,7 @@ import { CarburantAnalyticsService } from './services/carburant-analytics.servic
 import { MaintenanceService } from './services/maintenance.service';
 import { GroupeElectrogeneService } from './services/groupe-electrogene.service';
 import { CarburantGeService } from './services/carburant-ge.service';
-
+import { ConducteurService } from './services/conducteur.service';
 
 // Guards
 import { AuthGuard, AdminGuard, TechnicienGuard } from './guards/auth.guard';
@@ -96,6 +96,7 @@ import { SaisieCarburantModalComponent } from './groupe-electrogene/saisie-modal
     MaintenanceService,
     GroupeElectrogeneService,
     CarburantGeService,
+    ConducteurService,
     
     // Guards
     AuthGuard,

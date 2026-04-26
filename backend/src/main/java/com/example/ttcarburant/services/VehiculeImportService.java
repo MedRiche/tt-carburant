@@ -16,64 +16,54 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 
+/**
+ * Service d'import Excel des véhicules.
+ *
+ * AJOUT : après l'import, les conducteurs dont le compte n'existe pas encore
+ * sont créés automatiquement avec StatutCompte = EN_ATTENTE.
+ * L'admin les retrouvera dans "Gestion des Utilisateurs → En attente".
+ */
 @Service
 public class VehiculeImportService {
 
     private final VehiculeRepository vehiculeRepo;
     private final ZoneRepository zoneRepo;
+    private final ConducteurUserCreationService conducteurService;
 
-    public VehiculeImportService(VehiculeRepository vehiculeRepo, ZoneRepository zoneRepo) {
-        this.vehiculeRepo = vehiculeRepo;
-        this.zoneRepo = zoneRepo;
+    public VehiculeImportService(VehiculeRepository vehiculeRepo,
+                                 ZoneRepository zoneRepo,
+                                 ConducteurUserCreationService conducteurService) {
+        this.vehiculeRepo      = vehiculeRepo;
+        this.zoneRepo          = zoneRepo;
+        this.conducteurService = conducteurService;
     }
 
-    /**
-     * Importe les véhicules depuis un fichier Excel (format DAF 2026).
-     * Structure : row 1 = en-têtes, row 2+ = données
-     * Colonnes clés : 1=Matricule, 2=date_mise_service, 3=marque_modele, 4=type_vehicule,
-     *                 5=Subdivision, 6=Central/CSC/ROC, 7=PRENOM, 8=NOM, 9=RSIDENCE,
-     *                 10=TYPE_CARBURANT, 11=Prix, 12=coût_mois
-     *
-     * @param file      le fichier XLSX uploadé
-     * @param zoneNom   le nom de la zone à affecter (doit exister en BDD)
-     */
     @Transactional
     public Map<String, Object> importerVehicules(MultipartFile file, String zoneNom) throws Exception {
 
-        int imported = 0;
-        int updated  = 0;
-        int skipped  = 0;
+        int imported = 0, updated = 0, skipped = 0;
         List<String> errors = new ArrayList<>();
+
+        // Collecter les conducteurs pour création automatique de compte
+        List<Map<String, String>> conducteurs = new ArrayList<>();
 
         // Résoudre la zone
         Zone zone = null;
         if (zoneNom != null && !zoneNom.isBlank()) {
-            zone = zoneRepo.findByNom(zoneNom.trim())
-                    .orElse(null);
+            zone = zoneRepo.findByNom(zoneNom.trim()).orElse(null);
             if (zone == null) {
-                // Cherche une correspondance partielle insensible à la casse
-                List<Zone> allZones = zoneRepo.findAll();
-                for (Zone z : allZones) {
-                    if (z.getNom().equalsIgnoreCase(zoneNom.trim())) {
-                        zone = z;
-                        break;
-                    }
+                for (Zone z : zoneRepo.findAll()) {
+                    if (z.getNom().equalsIgnoreCase(zoneNom.trim())) { zone = z; break; }
                 }
             }
-            if (zone == null) {
-                errors.add("Zone introuvable : " + zoneNom + ". Le véhicule sera importé sans zone.");
-            }
+            if (zone == null) errors.add("Zone introuvable : " + zoneNom + ". Véhicules importés sans zone.");
         }
 
-        try (InputStream is = file.getInputStream();
-             Workbook wb = new XSSFWorkbook(is)) {
-
-            // On ne lit que la première feuille (premier mois = référence des véhicules)
+        try (InputStream is = file.getInputStream(); Workbook wb = new XSSFWorkbook(is)) {
             Sheet sheet = wb.getSheetAt(0);
 
             for (Row row : sheet) {
                 int rowNum = row.getRowNum();
-                // row 0 = ligne titre vide, row 1 = en-têtes → on commence à row 2
                 if (rowNum < 2) continue;
 
                 Cell c1 = row.getCell(1);
@@ -81,39 +71,28 @@ public class VehiculeImportService {
                 String matricule = getCellString(c1);
                 if (matricule == null || matricule.isBlank()) continue;
 
-                // Nettoyer le matricule : supprimer espaces, convertir en entier si numérique
                 matricule = matricule.trim().replace(" ", "");
-                // Les matricules peuvent être stockés comme nombre (ex: 356814.0) → nettoyer
-                if (matricule.endsWith(".0")) {
-                    matricule = matricule.substring(0, matricule.length() - 2);
-                }
+                if (matricule.endsWith(".0")) matricule = matricule.substring(0, matricule.length() - 2);
 
                 try {
                     boolean exists = vehiculeRepo.existsByMatricule(matricule);
-                    Vehicule v = exists
-                            ? vehiculeRepo.findById(matricule).get()
-                            : new Vehicule();
+                    Vehicule v = exists ? vehiculeRepo.findById(matricule).get() : new Vehicule();
 
                     v.setMatricule(matricule);
 
-                    // Col 2 : date mise en service
                     LocalDate dateMise = getCellDate(row.getCell(2));
                     if (dateMise != null) v.setDateMiseService(dateMise);
                     else if (!exists) v.setDateMiseService(LocalDate.now());
 
-                    // Col 3 : marque/modèle
                     String marque = getCellString(row.getCell(3));
                     v.setMarqueModele(marque != null ? marque.trim() : "Inconnu");
 
-                    // Col 4 : type véhicule
                     String typeV = getCellString(row.getCell(4));
                     v.setTypeVehicule(typeV != null ? typeV.trim() : "Véhicule");
 
-                    // Col 5 : subdivision
                     String subdiv = getCellString(row.getCell(5));
                     if (subdiv != null) v.setSubdivision(subdiv.trim());
 
-                    // Col 6 : centre/CSC/ROC
                     String centre = getCellString(row.getCell(6));
                     if (centre != null) v.setCentre(centre.trim());
 
@@ -125,36 +104,35 @@ public class VehiculeImportService {
                     String nom = getCellString(row.getCell(8));
                     if (nom != null) v.setNomConducteur(nom.trim());
 
-                    // Col 9 : résidence service
+                    // ── Collecter conducteur pour création de compte ──────────
+                    if ((prenom != null && !prenom.isBlank()) || (nom != null && !nom.isBlank())) {
+                        Map<String, String> c = new HashMap<>();
+                        c.put("prenom", prenom != null ? prenom.trim() : "");
+                        c.put("nom",    nom    != null ? nom.trim()    : "");
+                        conducteurs.add(c);
+                    }
+
                     String residence = getCellString(row.getCell(9));
                     if (residence != null) v.setResidenceService(residence.trim());
 
-                    // Col 10 : type carburant
                     String typeCarb = getCellString(row.getCell(10));
                     v.setTypeCarburant(parseTypeCarburant(typeCarb));
 
-                    // Col 11 : prix carburant
                     double prix = getCellDouble(row.getCell(11), 2.0);
                     v.setPrixCarburant(prix);
 
-                    // Col 12 : coût du mois
                     double cout = getCellDouble(row.getCell(12), 200.0);
                     v.setCoutDuMois(cout);
 
-                    // Zone
                     if (zone != null) v.setZone(zone);
 
-                    // Valeurs techniques optionnelles si présentes (colonnes supplémentaires DAF)
-                    // Col 23 : visite technique (présente dans certains fichiers)
                     if (row.getLastCellNum() > 23) {
                         LocalDate visite = getCellDate(row.getCell(23));
                         if (visite != null) v.setVisiteTechnique(visite);
                     }
 
                     vehiculeRepo.save(v);
-
-                    if (exists) updated++;
-                    else imported++;
+                    if (exists) updated++; else imported++;
 
                 } catch (Exception e) {
                     errors.add("Ligne " + (rowNum + 1) + " (matricule=" + matricule + ") : " + e.getMessage());
@@ -163,17 +141,39 @@ public class VehiculeImportService {
             }
         }
 
+        // ── Créer les comptes conducteurs ─────────────────────────────────────
+        List<ConducteurUserCreationService.ConducteurCreationResult> conducteurResults =
+                conducteurService.creerComptesConducteurs(conducteurs);
+
+        long nbCreated       = conducteurResults.stream().filter(r -> "CREATED".equals(r.statut)).count();
+        long nbAlreadyExists = conducteurResults.stream().filter(r -> "ALREADY_EXISTS".equals(r.statut)).count();
+
+        // Construire le détail des comptes créés pour retour à l'UI
+        List<Map<String, String>> conducteurDetails = new ArrayList<>();
+        for (var r : conducteurResults) {
+            if ("CREATED".equals(r.statut)) {
+                Map<String, String> d = new HashMap<>();
+                d.put("nomComplet", r.nomComplet);
+                d.put("email",      r.email);
+                d.put("statut",     r.statut);
+                conducteurDetails.add(d);
+            }
+        }
+
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("imported", imported);
-        result.put("updated",  updated);
-        result.put("skipped",  skipped);
-        result.put("total",    imported + updated + skipped);
-        result.put("zone",     zone != null ? zone.getNom() : "Aucune");
-        result.put("errors",   errors);
+        result.put("imported",              imported);
+        result.put("updated",               updated);
+        result.put("skipped",               skipped);
+        result.put("total",                 imported + updated + skipped);
+        result.put("zone",                  zone != null ? zone.getNom() : "Aucune");
+        result.put("errors",                errors);
+        result.put("conducteursCreated",    nbCreated);
+        result.put("conducteursExistants",  nbAlreadyExists);
+        result.put("conducteursDetails",    conducteurDetails);
         return result;
     }
 
-    // ── Helpers ──────────────────────────────────────────────────────────────
+    // ── Helpers (identiques à la version originale) ───────────────────────────
 
     private String getCellString(Cell c) {
         if (c == null) return null;
@@ -181,7 +181,6 @@ public class VehiculeImportService {
             case STRING  -> c.getStringCellValue().trim();
             case NUMERIC -> {
                 double d = c.getNumericCellValue();
-                // Si c'est un entier, pas de décimale
                 if (d == Math.floor(d) && !Double.isInfinite(d)) yield String.valueOf((long) d);
                 yield String.valueOf(d);
             }
@@ -223,31 +222,23 @@ public class VehiculeImportService {
         if (c.getCellType() == CellType.STRING) {
             String s = c.getStringCellValue().trim();
             if (s.isBlank()) return null;
-            // Essayer plusieurs formats
             String[] formats = { "yyyy-MM-dd", "dd/MM/yyyy", "MM/dd/yyyy", "dd-MM-yyyy" };
             for (String fmt : formats) {
-                try {
-                    return LocalDate.parse(s, java.time.format.DateTimeFormatter.ofPattern(fmt));
-                } catch (Exception ignored) {}
+                try { return LocalDate.parse(s, java.time.format.DateTimeFormatter.ofPattern(fmt)); }
+                catch (Exception ignored) {}
             }
         }
         return null;
     }
 
-    /**
-     * Normalise la valeur texte du type de carburant vers l'enum TypeCarburant.
-     */
     private TypeCarburant parseTypeCarburant(String raw) {
         if (raw == null) return TypeCarburant.GASOIL_ORDINAIRE;
         String s = raw.trim().toUpperCase()
                 .replace("É", "E").replace("È", "E").replace("À", "A");
-        if (s.contains("ESSENCE") || s.contains("SUPER SAN") || s.contains("SP"))
-            return TypeCarburant.ESSENCE;
+        if (s.contains("ESSENCE") || s.contains("SUPER SAN") || s.contains("SP")) return TypeCarburant.ESSENCE;
         if (s.contains("50"))       return TypeCarburant.GASOIL_50;
-        if (s.contains("SOUFRE") || s.contains("SOUFRE") || s.contains("SS"))
-            return TypeCarburant.GASOIL_SANS_SOUFRE;
-        if (s.contains("GASOIL") || s.contains("DIESEL"))
-            return TypeCarburant.GASOIL_ORDINAIRE;
+        if (s.contains("SOUFRE") || s.contains("SS"))   return TypeCarburant.GASOIL_SANS_SOUFRE;
+        if (s.contains("GASOIL") || s.contains("DIESEL")) return TypeCarburant.GASOIL_ORDINAIRE;
         return TypeCarburant.GASOIL_ORDINAIRE;
     }
 }
