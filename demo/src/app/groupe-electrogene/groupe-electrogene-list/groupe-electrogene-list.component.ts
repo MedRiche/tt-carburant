@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { GroupeElectrogeneService } from '../../services/groupe-electrogene.service';
 import { CarburantGeService } from '../../services/carburant-ge.service';
 import { ZoneService } from '../../services/zone.service';
-import { GroupeElectrogene, TypeCarburantGE, TYPE_CARBURANT_LABELS } from '../../models/groupe-electrogene';
+import { GroupeElectrogene } from '../../models/groupe-electrogene';
 import { GestionCarburantGE, Semestre, SEMESTRE_LABELS } from '../../models/gestion-carburant-ge';
 import { Zone } from '../../models/zone';
 
@@ -25,19 +25,22 @@ export class GroupeElectrogeneListComponent implements OnInit {
   // Filtres
   searchText = '';
 
-  // Modal / form
-  showForm            = false;
-  selectedGE: GroupeElectrogene | null       = null;
-  formMode: 'create' | 'edit' | 'fuel'       = 'create';
+  // ── Formulaire CRUD groupe ─────────────────────────────────────────
+  showGroupeForm = false;
+  formMode: 'create' | 'edit' = 'create';
+  selectedGE: GroupeElectrogene | null = null;
+
+  // ── Modal SAISIE carburant ─────────────────────────────────────────
+  showSaisieModal = false;
   selectedFuelSaisie: GestionCarburantGE | null = null;
 
-  // ✅ NOUVEAU : Modal détail carte Agilis
+  // ── Modal DÉTAIL carte Agilis ──────────────────────────────────────
   showDetailModal = false;
   detailGE: GroupeElectrogene | null = null;
   showPin = false;
   showPuk = false;
 
-  // Import
+  // ── Import Excel ───────────────────────────────────────────────────
   showImportModal = false;
   importLoading   = false;
   importResult: any = null;
@@ -62,10 +65,9 @@ export class GroupeElectrogeneListComponent implements OnInit {
   ngOnInit(): void {
     this.chargerZones();
     this.chargerGroupes();
-    this.chargerSaisies();
   }
 
-  // ── Chargement ──────────────────────────────────────────────────────────
+  // ── Chargement ──────────────────────────────────────────────────────
 
   chargerZones(): void {
     this.zoneService.getAllZones().subscribe({
@@ -90,19 +92,11 @@ export class GroupeElectrogeneListComponent implements OnInit {
     });
   }
 
-  chargerSaisies(): void {
-    this.carbService.getAllSaisies().subscribe({
-      next:  (s) => (this.saisies = s),
-      error: ()  => {}
-    });
-  }
-
   loadAll(): void {
     this.chargerGroupes();
-    this.chargerSaisies();
   }
 
-  // ── Filtrage (sans zone) ─────────────────────────────────────────────────
+  // ── Filtrage ─────────────────────────────────────────────────────────
 
   get filteredGroupes(): GroupeElectrogene[] {
     if (!this.searchText) return [...this.groupes];
@@ -114,31 +108,23 @@ export class GroupeElectrogeneListComponent implements OnInit {
     );
   }
 
-  // ── Saisies carburant ────────────────────────────────────────────────────
-
-  getSaisiesForSite(site: string): GestionCarburantGE[] {
-    return this.saisies.filter((s) => s.site === site);
-  }
-
-  // ── Actions CRUD ─────────────────────────────────────────────────────────
+  // ── Actions CRUD Groupe ───────────────────────────────────────────────
 
   openCreateGE(): void {
-    this.selectedGE = null;
-    this.formMode   = 'create';
-    this.showForm   = true;
+    this.selectedGE   = null;
+    this.formMode     = 'create';
+    this.showGroupeForm = true;
   }
 
   openEditGE(ge: GroupeElectrogene): void {
-    this.selectedGE = { ...ge };
-    this.formMode   = 'edit';
-    this.showForm   = true;
+    this.selectedGE   = { ...ge };
+    this.formMode     = 'edit';
+    this.showGroupeForm = true;
   }
 
-  openFuelForm(ge: GroupeElectrogene, saisie?: GestionCarburantGE): void {
-    this.selectedGE         = ge;
-    this.selectedFuelSaisie = saisie ?? null;
-    this.formMode           = 'fuel';
-    this.showForm           = true;
+  onGroupeSaved(): void {
+    this.showGroupeForm = false;
+    this.loadAll();
   }
 
   deleteGE(site: string): void {
@@ -149,33 +135,32 @@ export class GroupeElectrogeneListComponent implements OnInit {
     });
   }
 
-  deleteSaisie(id: number, site: string): void {
-    if (!confirm(`Supprimer la saisie pour "${site}" ?`)) return;
-    this.carbService.supprimerSaisie(id).subscribe({
-      next:  () => this.chargerSaisies(),
-      error: (err) => alert(err?.error?.message || 'Erreur lors de la suppression')
-    });
+  // ── Modal Saisie Carburant ────────────────────────────────────────────
+
+  /** Ouvre le modal de saisie directement depuis la liste */
+  openSaisieModal(ge: GroupeElectrogene, saisie?: GestionCarburantGE): void {
+    this.selectedGE         = ge;
+    this.selectedFuelSaisie = saisie ?? null;
+    this.showSaisieModal    = true;
   }
 
-  onFormSaved(): void {
-    this.showForm = false;
-    this.loadAll();
+  onSaisieSaved(): void {
+    this.showSaisieModal = false;
+    // Pas besoin de recharger la liste ici, on est sur la page liste
   }
 
-  // ── Modal Détail Carte Agilis ─────────────────────────────────────────────
+  // ── Modal Détail Carte Agilis ─────────────────────────────────────────
 
   openDetail(ge: GroupeElectrogene): void {
-    this.detailGE       = ge;
+    this.detailGE        = ge;
     this.showDetailModal = true;
-    this.showPin        = false;
-    this.showPuk        = false;
+    this.showPin         = false;
+    this.showPuk         = false;
   }
 
   closeDetail(): void {
     this.showDetailModal = false;
     this.detailGE        = null;
-    this.showPin         = false;
-    this.showPuk         = false;
   }
 
   togglePin(event: Event): void {
@@ -188,21 +173,13 @@ export class GroupeElectrogeneListComponent implements OnInit {
     this.showPuk = !this.showPuk;
   }
 
-  /**
-   * Formate la date d'expiration "yyyy-MM" → "MM/yyyy"
-   * pour l'affichage dans le modal.
-   */
   formatDateExp(raw?: string): string {
     if (!raw) return '—';
-    // Format retourné par le backend : "2028-08"
     const parts = raw.split('-');
     if (parts.length === 2) return `${parts[1]}/${parts[0]}`;
     return raw;
   }
 
-  /**
-   * Retourne true si la carte expire dans moins de 6 mois.
-   */
   isExpiringSoon(raw?: string): boolean {
     if (!raw) return false;
     try {
@@ -214,7 +191,7 @@ export class GroupeElectrogeneListComponent implements OnInit {
     } catch { return false; }
   }
 
-  // ── Import Excel ──────────────────────────────────────────────────────────
+  // ── Import Excel ──────────────────────────────────────────────────────
 
   ouvrirImport(): void {
     this.showImportModal = true;
@@ -250,7 +227,7 @@ export class GroupeElectrogeneListComponent implements OnInit {
     });
   }
 
-  // ── Utilitaires ───────────────────────────────────────────────────────────
+  // ── Utilitaires ───────────────────────────────────────────────────────
 
   getTypeLabel(type: string): string {
     return this.TYPE_LABELS[type] ?? type;

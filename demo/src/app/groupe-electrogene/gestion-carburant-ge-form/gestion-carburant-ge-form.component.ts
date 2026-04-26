@@ -1,9 +1,10 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+// src/app/groupe-electrogene/gestion-carburant-ge-form/gestion-carburant-ge-form.component.ts
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { GroupeElectrogeneService } from '../../services/groupe-electrogene.service';
 import { CarburantGeService } from '../../services/carburant-ge.service';
 import { GroupeElectrogene } from '../../models/groupe-electrogene';
-import { GestionCarburantGE, Semestre } from '../../models/gestion-carburant-ge';
+import { GestionCarburantGE } from '../../models/gestion-carburant-ge';
 
 @Component({
   selector: 'app-gestion-carburant-ge-form',
@@ -13,25 +14,18 @@ import { GestionCarburantGE, Semestre } from '../../models/gestion-carburant-ge'
 })
 export class GestionCarburantGEFormComponent implements OnInit {
 
-  // ✅ AJOUT IMPORTANT
-  @Input() groupe: GroupeElectrogene | null = null;
-  @Input() saisie: GestionCarburantGE | null = null;
-
-  @Output() onSave = new EventEmitter<void>();
-  @Output() onCancel = new EventEmitter<void>();
-
   groupes:  GroupeElectrogene[]  = [];
   saisies:  GestionCarburantGE[] = [];
   loading = false;
 
-  // Filtres
-  filtreAnnee    = new Date().getFullYear();
+  // Filtres période
+  filtreAnnee: number = new Date().getFullYear();
   filtreSemestre: 'PREMIER' | 'DEUXIEME' = 'PREMIER';
-  anneeOptions   = [2024, 2025, 2026, 2027, 2028];
+  anneeOptions = [2024, 2025, 2026, 2027, 2028];
 
-  // Formulaire saisie
-  showSaisieForm = false;
-  selectedGE: GroupeElectrogene | null = null;
+  // Modal saisie
+  showSaisieModal   = false;
+  selectedGE: GroupeElectrogene | null      = null;
   selectedSaisie: GestionCarburantGE | null = null;
 
   private readonly TYPE_LABELS: Record<string, string> = {
@@ -49,10 +43,6 @@ export class GestionCarburantGEFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.chargerTout();
-
-    // ✅ Initialisation avec les inputs
-    this.selectedGE = this.groupe;
-    this.selectedSaisie = this.saisie;
   }
 
   chargerTout(): void {
@@ -76,7 +66,9 @@ export class GestionCarburantGEFormComponent implements OnInit {
     });
   }
 
-  onFiltreChange(): void {}
+  onFiltreChange(): void {
+    // Le filtrage est réactif via le getter saisiesFiltrees
+  }
 
   get saisiesFiltrees(): GestionCarburantGE[] {
     return this.saisies.filter(
@@ -89,35 +81,30 @@ export class GestionCarburantGEFormComponent implements OnInit {
   }
 
   get totalRavit(): number {
-    return this.saisiesFiltrees
-      .reduce((acc, s) => acc + (s.totalRavitaillementLitres ?? 0), 0);
+    return this.saisiesFiltrees.reduce((acc, s) => acc + (s.totalRavitaillementLitres ?? 0), 0);
   }
 
   get totalHeures(): number {
-    return this.saisiesFiltrees
-      .reduce((acc, s) => acc + (s.nbHeuresTravail ?? 0), 0);
+    return this.saisiesFiltrees.reduce((acc, s) => acc + (s.nbHeuresTravail ?? 0), 0);
   }
 
   get totalDemande(): number {
-    return this.saisiesFiltrees
-      .reduce((acc, s) => acc + (s.carburantDemandeDinarsCours ?? 0), 0);
+    return this.saisiesFiltrees.reduce((acc, s) => acc + (s.carburantDemandeDinarsCours ?? 0), 0);
   }
 
-  openSaisieForm(ge: GroupeElectrogene | null, saisie?: GestionCarburantGE): void {
-    this.selectedGE = ge;
-    this.selectedSaisie = saisie ?? null;
-    this.showSaisieForm = true;
+  /** Ouvre le modal de saisie.
+   * ge = null → saisie libre (sélection du site dans le modal)
+   * saisie = null → création, sinon édition
+   */
+  openSaisieModal(ge: GroupeElectrogene | null, saisie: GestionCarburantGE | null): void {
+    this.selectedGE     = ge;
+    this.selectedSaisie = saisie;
+    this.showSaisieModal = true;
   }
 
-  // ✅ IMPORTANT : EMIT EVENTS
   onSaisieSaved(): void {
-    this.showSaisieForm = false;
+    this.showSaisieModal = false;
     this.chargerSaisies();
-    this.onSave.emit(); // 🔥
-  }
-
-  cancel(): void {
-    this.onCancel.emit(); // 🔥
   }
 
   deleteSaisie(id: number, site: string): void {

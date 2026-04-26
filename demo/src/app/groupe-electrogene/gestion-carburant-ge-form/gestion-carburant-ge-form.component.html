@@ -1,4 +1,4 @@
-<!-- src/app/groupe-electrogene/gestion-carburant-ge-page/gestion-carburant-ge-page.component.html -->
+<!-- src/app/groupe-electrogene/gestion-carburant-ge-form/gestion-carburant-ge-form.component.html -->
 <div class="app-shell">
 
   <!-- ═══ SIDEBAR ═══ -->
@@ -44,7 +44,6 @@
         </div>
       </div>
       <div class="topbar-right">
-        <!-- Filtre Semestre -->
         <div class="filter-group">
           <label>Année</label>
           <select class="filter-select" [(ngModel)]="filtreAnnee" (change)="onFiltreChange()">
@@ -87,7 +86,7 @@
               <span class="section-sub">{{ groupes.length }} sites configurés</span>
             </div>
           </div>
-          <button class="btn-new-saisie" (click)="openSaisieForm(null)">
+          <button class="btn-new-saisie" (click)="openSaisieModal(null, null)">
             + Nouvelle saisie
           </button>
         </div>
@@ -107,15 +106,15 @@
               </tr>
               <tr class="head-row-2">
                 <!-- Saisies -->
-                <th class="th-sub">Index Début (h)</th>
-                <th class="th-sub">Montant Réserv. Préc. (DT)</th>
-                <th class="th-sub">Ravitaillement Préc. (DT)</th>
-                <th class="th-sub">Montant Fin Sem. (DT)</th>
-                <th class="th-sub">Index Fin (h)</th>
+                <th class="th-sub">Index Début (h) (1)</th>
+                <th class="th-sub">Montant Réserv. Préc. (DT) (2)</th>
+                <th class="th-sub">Ravitaillement Préc. (DT) (3)</th>
+                <th class="th-sub">Montant Fin Sem. (DT) (4)</th>
+                <th class="th-sub">Index Fin (h) (5)</th>
                 <!-- Calculés -->
                 <th class="th-sub th-calc-cell">Total Ravit. (L)</th>
                 <th class="th-sub th-calc-cell">Qté Restante (L)</th>
-                <th class="th-sub th-calc-cell">Nb Heures Travail</th>
+                <th class="th-sub th-calc-cell">Nb Heures (6)=(5)-(1)</th>
                 <th class="th-sub th-calc-cell">% Conso</th>
                 <th class="th-sub th-calc-cell">Carburant Demandé (DT)</th>
                 <th class="th-sub th-calc-cell">Évaluation</th>
@@ -142,7 +141,7 @@
                     <span *ngIf="!ge.prixCarburant" class="u-none">—</span>
                   </td>
 
-                  <!-- ── Saisies (remplies ou vides) ── -->
+                  <!-- ── Saisies ou vide ── -->
                   <ng-container *ngIf="getSaisie(ge.site) as s; else noSaisie">
                     <td class="td-num td-input">{{ s.indexHeureSemestrePrecedent ?? '—' }}</td>
                     <td class="td-num td-input">{{ s.montantCarburantRestantReservoirPrecedent ?? '—' }}</td>
@@ -181,18 +180,18 @@
                     <!-- Actions -->
                     <td>
                       <div class="row-actions">
-                        <button class="btn-act btn-edit" title="Modifier" (click)="openSaisieForm(ge, s)">✏️</button>
-                        <button class="btn-act btn-delete" title="Supprimer" (click)="deleteSaisie(s.id!, ge.site)">🗑</button>
+                        <button class="btn-act btn-edit" (click)="openSaisieModal(ge, s)">✏️</button>
+                        <button class="btn-act btn-delete" (click)="deleteSaisie(s.id!, ge.site)">🗑</button>
                       </div>
                     </td>
                   </ng-container>
 
                   <!-- Pas de saisie -->
                   <ng-template #noSaisie>
-                    <td class="td-num td-empty" colspan="5">—</td>
-                    <td class="td-num td-calc" colspan="6">—</td>
+                    <td class="td-empty" colspan="5">—</td>
+                    <td class="td-calc" colspan="6">—</td>
                     <td>
-                      <button class="btn-act btn-saisir" (click)="openSaisieForm(ge)">
+                      <button class="btn-act btn-saisir" (click)="openSaisieModal(ge, null)">
                         ⛽ Saisir
                       </button>
                     </td>
@@ -215,7 +214,6 @@
             </tbody>
           </table>
         </div>
-
       </div>
 
       <!-- Aucune donnée -->
@@ -231,11 +229,14 @@
   </main>
 </div>
 
-<!-- ══ FORMULAIRE SAISIE ══ -->
-<app-gestion-carburant-ge-form
-  *ngIf="showSaisieForm"
+<!-- ══ MODAL SAISIE CARBURANT ══ -->
+<app-saisie-carburant-modal
+  *ngIf="showSaisieModal"
   [groupe]="selectedGE"
   [saisie]="selectedSaisie"
+  [groupes]="groupes"
+  [defaultAnnee]="filtreAnnee"
+  [defaultSemestre]="filtreSemestre"
   (onSave)="onSaisieSaved()"
-  (onCancel)="showSaisieForm = false">
-</app-gestion-carburant-ge-form>
+  (onCancel)="showSaisieModal = false">
+</app-saisie-carburant-modal>

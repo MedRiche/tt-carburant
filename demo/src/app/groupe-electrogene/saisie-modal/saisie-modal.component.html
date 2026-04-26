@@ -1,0 +1,135 @@
+<!-- src/app/groupe-electrogene/saisie-carburant-modal/saisie-carburant-modal.component.html -->
+<div class="modal-overlay" (click)="cancel()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+
+    <!-- ── Header ── -->
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <div class="modal-icon">⛽</div>
+        <div>
+          <h3>{{ saisie ? 'Modifier la saisie' : 'Nouvelle saisie carburant' }}</h3>
+          <span class="site-badge" *ngIf="groupe">{{ groupe.site }}</span>
+        </div>
+      </div>
+      <button class="btn-close" (click)="cancel()">✕</button>
+    </div>
+
+    <!-- ── Body ── -->
+    <div class="modal-body">
+
+      <!-- Erreur -->
+      <div *ngIf="errorMessage" class="error-banner">⚠️ {{ errorMessage }}</div>
+
+      <!-- Sélection site (si pas de groupe pré-sélectionné) -->
+      <div class="form-row" *ngIf="!groupe">
+        <div class="form-group full">
+          <label>Site <span class="req">*</span></label>
+          <select class="form-input" [(ngModel)]="form.site">
+            <option value="">— Sélectionner un site —</option>
+            <option *ngFor="let g of groupes" [value]="g.site">{{ g.site }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Période -->
+      <div class="form-section">
+        <div class="section-title">📅 Période</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Année <span class="req">*</span></label>
+            <select class="form-input" [(ngModel)]="form.annee">
+              <option *ngFor="let a of anneeOptions" [value]="a">{{ a }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Semestre <span class="req">*</span></label>
+            <select class="form-input" [(ngModel)]="form.semestre">
+              <option value="PREMIER">1er Semestre</option>
+              <option value="DEUXIEME">2ème Semestre</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Données à saisir -->
+      <div class="form-section">
+        <div class="section-title">📝 Données à saisir</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Index heure début semestre (1)</label>
+            <input class="form-input" type="number" step="0.01" min="0"
+                   [(ngModel)]="form.indexHeureSemestrePrecedent"
+                   placeholder="Ex : 12450"/>
+          </div>
+          <div class="form-group">
+            <label>Montant restant réservoir préc. (DT) (2)</label>
+            <input class="form-input" type="number" step="0.001" min="0"
+                   [(ngModel)]="form.montantCarburantRestantReservoirPrecedent"
+                   placeholder="Ex : 150.000"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Ravitaillement semestre préc. (DT) (3)</label>
+            <input class="form-input" type="number" step="0.001" min="0"
+                   [(ngModel)]="form.ravitaillementSemestrePrecedentDinars"
+                   placeholder="Ex : 2500.000"/>
+          </div>
+          <div class="form-group">
+            <label>Montant restant réservoir + Agilis fin sem. (DT) (4)</label>
+            <input class="form-input" type="number" step="0.001" min="0"
+                   [(ngModel)]="form.montantRestantAgilisFinSemestre"
+                   placeholder="Ex : 300.000"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Index fin du semestre (5)</label>
+            <input class="form-input" type="number" step="0.01" min="0"
+                   [(ngModel)]="form.indexFinSemestre"
+                   placeholder="Ex : 12550"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formules (affichage si prix disponible) -->
+      <div class="form-section calc-section" *ngIf="groupe?.prixCarburant">
+        <div class="section-title">🧮 Calculés automatiquement (aperçu)</div>
+        <div class="calc-grid">
+          <div class="calc-item">
+            <span class="calc-label">Nb Heures Travail (6) = (5)-(1)</span>
+            <span class="calc-value">{{ calcHeures() | number:'1.0-2' }} h</span>
+          </div>
+          <div class="calc-item">
+            <span class="calc-label">Total Ravit. (L) = ((2)+(3)) / prix</span>
+            <span class="calc-value">{{ calcTotalLitres() | number:'1.0-2' }} L</span>
+          </div>
+          <div class="calc-item">
+            <span class="calc-label">Qté Restante (L) = (4) / prix</span>
+            <span class="calc-value">{{ calcQteRestante() | number:'1.0-2' }} L</span>
+          </div>
+          <div class="calc-item">
+            <span class="calc-label">% Conso = ((2)+(3)-(4))×100 / (6)</span>
+            <span class="calc-value" [class.val-ok]="calcPct() <= 100" [class.val-over]="calcPct() > 100">
+              {{ calcPct() | number:'1.0-2' }} %
+            </span>
+          </div>
+        </div>
+        <div class="prix-info">Prix carburant utilisé : <strong>{{ groupe?.prixCarburant }} DT/L</strong></div>
+      </div>
+      <div class="warn-banner" *ngIf="groupe && !groupe.prixCarburant">
+        ⚠️ Le prix du carburant n'est pas encore défini pour ce site. Les valeurs calculées ne seront pas disponibles.
+      </div>
+
+    </div>
+
+    <!-- ── Footer ── -->
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="cancel()">Annuler</button>
+      <button class="btn btn-primary" (click)="submit()" [disabled]="submitting">
+        {{ submitting ? 'Envoi…' : (saisie ? 'Enregistrer les modifications' : 'Enregistrer la saisie') }}
+      </button>
+    </div>
+
+  </div>
+</div>

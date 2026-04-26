@@ -56,7 +56,6 @@
           {{ filteredGroupes.length }} groupe{{ filteredGroupes.length > 1 ? 's' : '' }}
         </div>
 
-        <!-- ✅ NOUVEAU : Bouton Gestion Carburant → page dédiée -->
         <button class="btn-gestion" (click)="navigateTo('/admin/gestion-carburant-ge')">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
@@ -96,27 +95,27 @@
         </div>
       </div>
 
-      <!-- ── État : chargement ── -->
+      <!-- État : chargement -->
       <div *ngIf="loading" class="state-empty">
         <div class="loader-ring"></div>
         <p>Chargement des groupes…</p>
       </div>
 
-      <!-- ── État : erreur ── -->
+      <!-- État : erreur -->
       <div *ngIf="!loading && loadError" class="state-empty">
         <div class="state-icon">⚠️</div>
         <p class="state-title">{{ loadError }}</p>
         <button class="btn-new" (click)="chargerGroupes()">Réessayer</button>
       </div>
 
-      <!-- ── État : liste vide ── -->
+      <!-- État : liste vide -->
       <div *ngIf="!loading && !loadError && filteredGroupes.length === 0" class="state-empty">
         <div class="state-icon">⚡</div>
         <p class="state-title">Aucun groupe électrogène</p>
         <button class="btn-new" (click)="openCreateGE()">+ Ajouter un groupe</button>
       </div>
 
-      <!-- ── Tableau ── -->
+      <!-- Tableau -->
       <div *ngIf="!loading && !loadError && filteredGroupes.length > 0" class="data-table-wrap">
         <table class="data-table">
           <thead>
@@ -143,18 +142,11 @@
               </td>
               <td>
                 <div class="row-actions">
-                  <!-- Détail carte Agilis -->
-                  <button class="btn-act btn-detail" title="Détail carte Agilis" (click)="openDetail(ge)">
-                    🪪 Détail
-                  </button>
-                  <!-- Saisir carburant -->
-                  <button class="btn-act btn-fuel" title="Saisir carburant" (click)="openFuelForm(ge)">
-                    ⛽ Saisir
-                  </button>
-                  <!-- Modifier -->
-                  <button class="btn-act btn-edit" title="Modifier" (click)="openEditGE(ge)">✏️</button>
-                  <!-- Supprimer -->
-                  <button class="btn-act btn-delete" title="Supprimer" (click)="deleteGE(ge.site)">🗑</button>
+                  <button class="btn-act btn-detail" (click)="openDetail(ge)">🪪 Détail</button>
+                  <!-- ✅ CORRIGÉ : ouvre le modal de saisie directement -->
+                  <button class="btn-act btn-fuel" (click)="openSaisieModal(ge)">⛽ Saisir</button>
+                  <button class="btn-act btn-edit" (click)="openEditGE(ge)">✏️</button>
+                  <button class="btn-act btn-delete" (click)="deleteGE(ge.site)">🗑</button>
                 </div>
               </td>
             </tr>
@@ -166,30 +158,30 @@
   </main>
 </div>
 
-<!-- ══════════════════ FORMULAIRE GROUPE ══════════════════ -->
+<!-- ══════════════════ FORMULAIRE GROUPE (création / édition) ══════════════════ -->
 <app-groupe-electrogene-form
-  *ngIf="showForm && (formMode === 'create' || formMode === 'edit')"
-  [mode]="formMode === 'edit' ? 'edit' : 'create'"
+  *ngIf="showGroupeForm"
+  [mode]="formMode"
   [groupe]="selectedGE"
   [zones]="zones"
-  (onSave)="onFormSaved()"
-  (onCancel)="showForm = false">
+  (onSave)="onGroupeSaved()"
+  (onCancel)="showGroupeForm = false">
 </app-groupe-electrogene-form>
 
-<!-- ══════════════════ FORMULAIRE SAISIE CARBURANT ══════════════════ -->
-<app-gestion-carburant-ge-form
-  *ngIf="showForm && formMode === 'fuel'"
+<!-- ══════════════════ MODAL SAISIE CARBURANT ══════════════════ -->
+<app-saisie-carburant-modal
+  *ngIf="showSaisieModal"
   [groupe]="selectedGE"
   [saisie]="selectedFuelSaisie"
-  (onSave)="onFormSaved()"
-  (onCancel)="showForm = false">
-</app-gestion-carburant-ge-form>
+  [groupes]="groupes"
+  (onSave)="onSaisieSaved()"
+  (onCancel)="showSaisieModal = false">
+</app-saisie-carburant-modal>
 
 <!-- ══════════════════ MODAL DÉTAIL CARTE AGILIS ══════════════════ -->
 <div *ngIf="showDetailModal && detailGE" class="detail-modal-overlay" (click)="closeDetail()">
   <div class="detail-modal" (click)="$event.stopPropagation()">
 
-    <!-- Header -->
     <div class="detail-header">
       <div class="detail-header-left">
         <div class="detail-icon">🪪</div>
@@ -201,34 +193,21 @@
       <button class="detail-close" (click)="closeDetail()">✕</button>
     </div>
 
-    <!-- Body : grille de cartes style maintenance -->
     <div class="detail-body">
-
-      <!-- Ligne 1 : Type carte + Numéro carte -->
       <div class="detail-grid">
         <div class="detail-card">
-          <div class="detail-card-label">
-            <span class="detail-card-icon">💳</span>
-            Type Carte
-          </div>
+          <div class="detail-card-label"><span class="detail-card-icon">💳</span> Type Carte</div>
           <div class="detail-card-value">{{ detailGE.typeCarte || '—' }}</div>
         </div>
-        <div class="detail-card detail-card-wide">
-          <div class="detail-card-label">
-            <span class="detail-card-icon">🔢</span>
-            Numéro Carte
-          </div>
+        <div class="detail-card">
+          <div class="detail-card-label"><span class="detail-card-icon">🔢</span> Numéro Carte</div>
           <div class="detail-card-value mono">{{ detailGE.numeroCarte || '—' }}</div>
         </div>
       </div>
 
-      <!-- Ligne 2 : Date exp + PIN + PUK -->
       <div class="detail-grid detail-grid-3">
         <div class="detail-card">
-          <div class="detail-card-label">
-            <span class="detail-card-icon">📅</span>
-            Date Expiration
-          </div>
+          <div class="detail-card-label"><span class="detail-card-icon">📅</span> Date Expiration</div>
           <div class="detail-card-value">
             <span class="exp-badge" [class.exp-warning]="isExpiringSoon(detailGE.dateExpiration)">
               {{ formatDateExp(detailGE.dateExpiration) }}
@@ -236,20 +215,14 @@
           </div>
         </div>
         <div class="detail-card">
-          <div class="detail-card-label">
-            <span class="detail-card-icon">🔐</span>
-            Code PIN
-          </div>
+          <div class="detail-card-label"><span class="detail-card-icon">🔐</span> Code PIN</div>
           <div class="detail-card-value mono pin-blur" (click)="togglePin($event)">
             {{ showPin ? (detailGE.codePIN || '—') : '••••' }}
           </div>
           <div class="detail-card-hint">Cliquez pour afficher</div>
         </div>
         <div class="detail-card">
-          <div class="detail-card-label">
-            <span class="detail-card-icon">🔑</span>
-            Code PUK
-          </div>
+          <div class="detail-card-label"><span class="detail-card-icon">🔑</span> Code PUK</div>
           <div class="detail-card-value mono puk-blur" (click)="togglePuk($event)">
             {{ showPuk ? (detailGE.codePUK || '—') : '••••••••' }}
           </div>
@@ -257,25 +230,16 @@
         </div>
       </div>
 
-      <!-- Ligne 3 : Utilisateur ROC (pleine largeur) -->
       <div class="detail-card detail-card-full">
-        <div class="detail-card-label">
-          <span class="detail-card-icon">👤</span>
-          Utilisateur ROC
-        </div>
+        <div class="detail-card-label"><span class="detail-card-icon">👤</span> Utilisateur ROC</div>
         <div class="detail-card-value">{{ detailGE.utilisateurRoc || '—' }}</div>
       </div>
-
     </div>
 
-    <!-- Footer -->
     <div class="detail-footer">
-      <button class="btn-act btn-edit" (click)="openEditGE(detailGE); closeDetail()">
-        ✏️ Modifier
-      </button>
+      <button class="btn-act btn-edit" (click)="openEditGE(detailGE); closeDetail()">✏️ Modifier</button>
       <button class="detail-close-btn" (click)="closeDetail()">Fermer</button>
     </div>
-
   </div>
 </div>
 
