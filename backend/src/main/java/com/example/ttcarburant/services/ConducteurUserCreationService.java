@@ -60,25 +60,22 @@ public class ConducteurUserCreationService {
             List<Map<String, String>> conducteurs) {
 
         List<ConducteurCreationResult> results     = new ArrayList<>();
-        Set<String>                    batchEmails = new HashSet<>(); // doublons dans le même batch
+        Set<String>                    batchEmails = new HashSet<>();
 
         for (Map<String, String> c : conducteurs) {
             String prenom    = trim(c.get("prenom"));
             String nom       = trim(c.get("nom"));
 
-            // Ignorer les lignes sans conducteur
             if (prenom.isEmpty() && nom.isEmpty()) continue;
 
             String nomComplet = (prenom + " " + nom).trim();
             String email      = genererEmail(prenom, nom, batchEmails);
 
-            // Doublon dans ce même batch
             if (batchEmails.contains(email)) {
                 results.add(new ConducteurCreationResult(nomComplet, email, "SKIPPED", null));
                 continue;
             }
 
-            // Déjà en base → ne pas recréer
             Optional<Utilisateur> existant = utilisateurRepository.findByEmail(email);
             if (existant.isPresent()) {
                 results.add(new ConducteurCreationResult(
@@ -87,14 +84,13 @@ public class ConducteurUserCreationService {
                 continue;
             }
 
-            // ── Créer le compte conducteur ─────────────────────────────────
             Utilisateur u = new Utilisateur();
             u.setNom(nomComplet);
             u.setEmail(email);
             u.setMotDePasse(passwordEncoder.encode("123456"));
-            u.setRole(Role.TECHNICIEN);          // ← rôle TECHNICIEN
+            u.setRole(Role.TECHNICIEN);
             u.setStatutCompte(StatutCompte.EN_ATTENTE);
-            u.setSpecialite("Conducteur");       // ← spécialité pour identifier les conducteurs
+            u.setSpecialite("Conducteur");
 
             utilisateurRepository.save(u);
 
@@ -103,6 +99,44 @@ public class ConducteurUserCreationService {
         }
 
         return results;
+    }
+
+    /**
+     * Crée un seul compte conducteur à partir du prénom et du nom.
+     * Utilisé lors de la création manuelle d'un véhicule.
+     *
+     * @param prenom prénom du conducteur
+     * @param nom    nom du conducteur
+     * @return résultat de la création
+     */
+    @Transactional
+    public ConducteurCreationResult creerCompteConducteurUnique(String prenom, String nom) {
+        String prenomTrimmed = trim(prenom);
+        String nomTrimmed    = trim(nom);
+
+        if (prenomTrimmed.isEmpty() && nomTrimmed.isEmpty()) {
+            return null;
+        }
+
+        String nomComplet = (prenomTrimmed + " " + nomTrimmed).trim();
+        String email      = genererEmail(prenomTrimmed, nomTrimmed, new HashSet<>());
+
+        Optional<Utilisateur> existant = utilisateurRepository.findByEmail(email);
+        if (existant.isPresent()) {
+            return new ConducteurCreationResult(nomComplet, email, "ALREADY_EXISTS", existant.get().getId());
+        }
+
+        Utilisateur u = new Utilisateur();
+        u.setNom(nomComplet);
+        u.setEmail(email);
+        u.setMotDePasse(passwordEncoder.encode("123456"));
+        u.setRole(Role.TECHNICIEN);
+        u.setStatutCompte(StatutCompte.EN_ATTENTE);
+        u.setSpecialite("Conducteur");
+
+        utilisateurRepository.save(u);
+
+        return new ConducteurCreationResult(nomComplet, email, "CREATED", u.getId());
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
@@ -115,13 +149,11 @@ public class ConducteurUserCreationService {
         if (!taken.contains(email) && !utilisateurRepository.existsByEmail(email))
             return email;
 
-        // Trouver un suffixe libre
         for (int i = 1; i < 100; i++) {
             String candidate = base + i + "@tunisietelecom.tn";
             if (!taken.contains(candidate) && !utilisateurRepository.existsByEmail(candidate))
                 return candidate;
         }
-        // Fallback avec UUID court
         return base + "_" + UUID.randomUUID().toString().substring(0, 4) + "@tunisietelecom.tn";
     }
 

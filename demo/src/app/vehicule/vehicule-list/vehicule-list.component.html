@@ -1,6 +1,4 @@
 <!-- src/app/vehicule/vehicule-list/vehicule-list.component.html -->
-<!-- VERSION COMPLÈTE avec panneau de création automatique des comptes conducteurs -->
-
 <div class="app-shell">
 
   <!-- ═══ SIDEBAR ═══ -->
@@ -210,7 +208,7 @@
 </app-vehicule-form>
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     MODAL IMPORT EXCEL — VERSION COMPLÈTE AVEC COMPTES CONDUCTEURS
+     MODAL IMPORT EXCEL — AVEC VALIDATION EN MASSE DES CONDUCTEURS
 ═══════════════════════════════════════════════════════════════════ -->
 <div *ngIf="showImportModal" class="import-modal-overlay" (click)="fermerImport()">
   <div class="import-modal" (click)="$event.stopPropagation()">
@@ -221,7 +219,7 @@
         <div class="import-icon">📥</div>
         <div>
           <h3 class="import-title">Importer des véhicules depuis Excel</h3>
-          <p class="import-sub">Format DAF 2026 — Création automatique des comptes conducteurs</p>
+          <p class="import-sub">Format DAF 2026 — Validation directe des comptes conducteurs</p>
         </div>
       </div>
       <button class="import-close" (click)="fermerImport()">✕</button>
@@ -230,15 +228,14 @@
     <!-- Body -->
     <div class="import-modal-body">
 
-      <!-- Info banner -->
-      <div class="import-info-banner">
+      <!-- Info banner (avant import) -->
+      <div *ngIf="!importResult && !importLoading" class="import-info-banner">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
         </svg>
         <span>
-          Lors de l'import, les <strong>noms de conducteurs</strong> sont automatiquement convertis en comptes utilisateurs
-          (<em>statut : En attente</em>). L'administrateur peut ensuite les valider dans
-          <strong>Gestion des Utilisateurs</strong>.
+          Lors de l'import, les <strong>noms de conducteurs</strong> seront convertis en comptes utilisateurs.
+          Vous pourrez les <strong>valider et affecter à des zones directement ici</strong>, sans aller dans Gestion des Utilisateurs.
           Mot de passe par défaut : <code style="background:rgba(0,212,170,0.1);padding:2px 6px;border-radius:4px;color:#00d4aa">123456</code>
         </span>
       </div>
@@ -249,7 +246,9 @@
         <span>Import en cours, création des comptes conducteurs…</span>
       </div>
 
-      <!-- ════════ RÉSULTAT D'IMPORT ════════ -->
+      <!-- ════════════════════════════════════════════════════
+           RÉSULTAT D'IMPORT
+      ════════════════════════════════════════════════════ -->
       <ng-container *ngIf="importResult && !importLoading">
 
         <!-- Stats véhicules -->
@@ -284,83 +283,165 @@
           </div>
         </div>
 
-        <!-- ════ PANEL COMPTES CONDUCTEURS ════ -->
-        <div class="conducteur-panel" *ngIf="importResult.conducteursCreated > 0 || importResult.conducteursExistants > 0">
+        <!-- ══════════════════════════════════════════════════════════
+             SECTION VALIDATION EN MASSE DES CONDUCTEURS
+        ══════════════════════════════════════════════════════════ -->
+        <div class="conducteur-validation-section"
+             *ngIf="conducteursAValider.length > 0">
 
-          <!-- En-tête panel -->
-          <div class="conducteur-panel-header">
-            <div class="conducteur-panel-icon">👤</div>
-            <div class="conducteur-panel-title-wrap">
-              <h4 class="conducteur-panel-title">Comptes conducteurs</h4>
-              <p class="conducteur-panel-sub">Création automatique depuis les noms du fichier Excel</p>
-            </div>
-            <button class="conducteur-toggle-btn" (click)="showConducteurPanel = !showConducteurPanel">
-              {{ showConducteurPanel ? '▲ Masquer' : '▼ Afficher' }}
-            </button>
-          </div>
-
-          <!-- Badges résumé -->
-          <div class="conducteur-summary-badges">
-            <div class="c-badge c-badge-green" *ngIf="importResult.conducteursCreated > 0">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <!-- En-tête section -->
+          <div class="cval-header">
+            <div class="cval-header-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+                <circle cx="8.5" cy="7" r="4"/>
+                <line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
               </svg>
-              <strong>{{ importResult.conducteursCreated }}</strong> nouveau(x) compte(s) créé(s) — En attente de validation
             </div>
-            <div class="c-badge c-badge-blue" *ngIf="importResult.conducteursExistants > 0">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <div class="cval-header-text">
+              <h4 class="cval-title">
+                {{ conducteursAValider.length }} compte(s) conducteur à valider
+              </h4>
+              <p class="cval-sub">
+                Sélectionnez les zones et validez directement depuis cette fenêtre
+              </p>
+            </div>
+            <div *ngIf="validationTerminee" class="cval-done-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"/>
               </svg>
-              <strong>{{ importResult.conducteursExistants }}</strong> conducteur(s) déjà enregistré(s)
+              {{ nbConducteursValidated }}/{{ conducteursAValider.length }} validés
             </div>
           </div>
 
-          <!-- Liste détaillée (toggle) -->
-          <div *ngIf="showConducteurPanel && importResult.conducteursDetails.length > 0" class="conducteur-list">
-            <div class="conducteur-list-header">
+          <!-- Sélection de zone(s) en masse -->
+          <div class="cval-zone-block" *ngIf="!validationTerminee">
+            <p class="cval-zone-label">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+              </svg>
+              Zones à affecter à tous les conducteurs
+              <span class="cval-zone-count">({{ zonesMasseIds.length }} sélectionnée(s))</span>
+            </p>
+            <div class="cval-zone-grid">
+              <div *ngFor="let z of zones"
+                   class="cval-zone-chip"
+                   [class.selected]="isZoneMasseSelected(z.id)"
+                   (click)="toggleZoneMasse(z.id)">
+                <div class="cval-zone-check">
+                  <svg *ngIf="isZoneMasseSelected(z.id)" width="11" height="11"
+                       viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </div>
+                <span class="cval-zone-name">{{ z.nom }}</span>
+              </div>
+            </div>
+            <p *ngIf="zonesMasseIds.length === 0" class="cval-zone-error">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              Veuillez sélectionner au moins une zone
+            </p>
+          </div>
+
+          <!-- Liste des conducteurs avec statut -->
+          <div class="cval-list">
+            <div class="cval-list-header">
               <span>Conducteur</span>
               <span>Email généré</span>
               <span>Statut</span>
             </div>
-            <div *ngFor="let c of importResult.conducteursDetails" class="conducteur-list-row">
+            <div *ngFor="let c of conducteursAValider" class="cval-list-row">
               <div class="c-avatar-name">
-                <div class="c-avatar">{{ getInitials(c.nomComplet) }}</div>
+                <div class="c-avatar" [style.background]="c.statut === 'validated' ? 'linear-gradient(135deg,#22c55e,#16a34a)' : 'linear-gradient(135deg,#3b82f6,#8b5cf6)'">
+                  {{ getInitials(c.nomComplet) }}
+                </div>
                 <span class="c-name">{{ c.nomComplet }}</span>
               </div>
               <span class="c-email">{{ c.email }}</span>
-              <span class="c-status-chip c-status-pending">
-                <span class="c-status-dot"></span>
-                En attente
-              </span>
+              <div>
+                <!-- En attente -->
+                <span *ngIf="c.statut === 'pending'" class="cval-status cval-status-pending">
+                  <span class="cval-status-dot"></span>
+                  En attente
+                </span>
+                <!-- En cours -->
+                <span *ngIf="c.statut === 'validating'" class="cval-status cval-status-validating">
+                  <span class="mini-spinner"></span>
+                  Validation…
+                </span>
+                <!-- Validé -->
+                <span *ngIf="c.statut === 'validated'" class="cval-status cval-status-validated">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Activé
+                </span>
+                <!-- Erreur -->
+                <span *ngIf="c.statut === 'error'" class="cval-status cval-status-error"
+                      [title]="c.errorMsg">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                  Erreur
+                </span>
+              </div>
             </div>
           </div>
 
-          <!-- Bouton aller vers gestion utilisateurs -->
-          <div class="conducteur-action-row">
-            <div class="conducteur-action-hint">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          <!-- Bouton de validation en masse -->
+          <div class="cval-actions" *ngIf="!validationTerminee">
+            <div class="cval-actions-hint">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
               </svg>
-              Les comptes sont en attente — validez-les dans Gestion des Utilisateurs
+              Cliquez pour activer tous les comptes et affecter les zones sélectionnées
             </div>
-            <button class="btn-goto-users" (click)="allerGestionUtilisateurs()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-              </svg>
-              Gérer les utilisateurs
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-              </svg>
+            <button class="btn-valider-masse"
+                    [disabled]="zonesMasseIds.length === 0 || validationEnCours || nbConducteursPending === 0"
+                    (click)="validerTousLesConducteurs()">
+              <span *ngIf="!validationEnCours">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Valider {{ nbConducteursPending }} conducteur(s) + affecter zones
+              </span>
+              <span *ngIf="validationEnCours" style="display:flex;align-items:center;gap:8px">
+                <span class="mini-spinner" style="border-color:rgba(255,255,255,0.3);border-top-color:#fff"></span>
+                Validation en cours…
+              </span>
             </button>
           </div>
+
+          <!-- Message succès validation -->
+          <div class="cval-success-banner" *ngIf="validationTerminee">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <div>
+              <strong>{{ nbConducteursValidated }} compte(s) activé(s) avec succès !</strong>
+              <p>Les conducteurs peuvent maintenant se connecter avec leur email et le mot de passe <code>123456</code>.</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Pas de nouveaux conducteurs créés -->
+        <div *ngIf="importResult.conducteursCreated === 0 && importResult.conducteursExistants > 0"
+             class="cval-info-existing">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          </svg>
+          <span>{{ importResult.conducteursExistants }} conducteur(s) déjà enregistré(s) — aucun nouveau compte créé.</span>
         </div>
 
       </ng-container>
 
-      <!-- ════ Grille import zones (si pas encore importé) ════ -->
+      <!-- ════ Grille import zones (avant import) ════ -->
       <div *ngIf="!importLoading && !importResult">
         <div class="import-manual-section">
           <p class="import-section-title">
@@ -388,10 +469,11 @@
         </div>
 
         <div class="import-manual-section" style="margin-top:16px">
-          <p class="import-section-title">Import libre</p>
+          <p class="import-section-title">Import libre (sans zone prédéfinie)</p>
           <div class="import-free-row">
-            <input type="text" class="import-zone-input" placeholder="Nom de zone (ex: DAF, CSC BARDO…)"
-              [(ngModel)]="importZoneNom"/>
+            <input type="text" class="import-zone-input"
+                   placeholder="Nom de zone (ex: DAF, CSC BARDO…)"
+                   [(ngModel)]="importZoneNom"/>
             <label class="btn-import" style="cursor:pointer;display:inline-flex;align-items:center;gap:7px;margin:0">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -409,9 +491,18 @@
     <!-- Footer -->
     <div class="import-modal-footer">
       <span style="font-size:12px;color:var(--text-muted)">
-        Les conducteurs détectés recevront un compte avec email automatique {{ '@tunisietelecom.tn' }}
+        Les conducteurs reçoivent un email automatique {{ '@tunisietelecom.tn' }} · Mot de passe : 123456
       </span>
-      <button class="import-close-btn" (click)="fermerImport()">Fermer</button>
+      <div style="display:flex;gap:8px">
+        <button *ngIf="validationTerminee" class="btn-goto-users" (click)="allerGestionUtilisateurs()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+          </svg>
+          Voir dans Gestion Utilisateurs
+        </button>
+        <button class="import-close-btn" (click)="fermerImport()">Fermer</button>
+      </div>
     </div>
 
   </div>

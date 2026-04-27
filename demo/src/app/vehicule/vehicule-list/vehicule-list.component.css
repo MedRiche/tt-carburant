@@ -782,3 +782,384 @@
   .conducteur-action-row { flex-direction: column; align-items: stretch; }
   .btn-goto-users { justify-content: center; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   STYLES VALIDATION EN MASSE DES CONDUCTEURS
+   À ajouter à la FIN de vehicule-list.component.css
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Section validation conducteurs ────────────────────────── */
+.conducteur-validation-section {
+  background: rgba(0, 212, 170, 0.04);
+  border: 1px solid rgba(0, 212, 170, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  animation: fadeUp 0.35s ease both;
+}
+
+/* Header section */
+.cval-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: rgba(0, 212, 170, 0.07);
+  border-bottom: 1px solid rgba(0, 212, 170, 0.12);
+}
+
+.cval-header-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(0, 212, 170, 0.12);
+  border: 1px solid rgba(0, 212, 170, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #00d4aa;
+  flex-shrink: 0;
+}
+
+.cval-header-text { flex: 1; min-width: 0; }
+
+.cval-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0 0 2px 0;
+}
+
+.cval-sub {
+  font-size: 11px;
+  color: #475569;
+  margin: 0;
+}
+
+.cval-done-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4ade80;
+  flex-shrink: 0;
+}
+
+/* Zone selection block */
+.cval-zone-block {
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(0, 212, 170, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cval-zone-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.cval-zone-count {
+  color: #00d4aa;
+  font-family: 'DM Mono', monospace;
+}
+
+.cval-zone-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.cval-zone-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  background: #131f35;
+  border: 1px solid #1e2d47;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.cval-zone-chip:hover {
+  border-color: rgba(0, 212, 170, 0.3);
+  background: rgba(0, 212, 170, 0.04);
+}
+
+.cval-zone-chip.selected {
+  border-color: rgba(0, 212, 170, 0.45);
+  background: rgba(0, 212, 170, 0.08);
+}
+
+.cval-zone-check {
+  width: 18px;
+  height: 18px;
+  border: 1px solid #253755;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #00d4aa;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.cval-zone-chip.selected .cval-zone-check {
+  background: rgba(0, 212, 170, 0.15);
+  border-color: rgba(0, 212, 170, 0.45);
+}
+
+.cval-zone-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e2e8f0;
+  white-space: nowrap;
+}
+
+.cval-zone-error {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #f87171;
+  margin: 0;
+}
+
+/* Liste conducteurs */
+.cval-list { border-top: 1px solid rgba(0, 212, 170, 0.08); }
+
+.cval-list-header {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr 0.7fr;
+  gap: 12px;
+  padding: 8px 18px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  background: rgba(255, 255, 255, 0.015);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.cval-list-row {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr 0.7fr;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 18px;
+  border-bottom: 1px solid rgba(30, 45, 71, 0.5);
+  transition: background 0.15s;
+}
+
+.cval-list-row:last-child { border-bottom: none; }
+.cval-list-row:hover { background: rgba(255, 255, 255, 0.015); }
+
+/* Status chips */
+.cval-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cval-status-pending {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.cval-status-validating {
+  background: rgba(59, 130, 246, 0.1);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.cval-status-validated {
+  background: rgba(34, 197, 94, 0.1);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.cval-status-error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  cursor: help;
+}
+
+.cval-status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: blink 1.4s ease infinite;
+}
+
+@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+/* Mini spinner */
+.mini-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(96, 165, 250, 0.3);
+  border-top-color: #60a5fa;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+/* Actions row */
+.cval-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-top: 1px solid rgba(0, 212, 170, 0.1);
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.cval-actions-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #475569;
+}
+
+.cval-actions-hint svg { color: #00d4aa; flex-shrink: 0; }
+
+/* Bouton valider en masse */
+.btn-valider-masse {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  border-radius: 9px;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  background: rgba(34, 197, 94, 0.12);
+  color: #4ade80;
+  font-family: var(--font, 'DM Sans', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.btn-valider-masse:not(:disabled):hover {
+  background: rgba(34, 197, 94, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.2);
+}
+
+.btn-valider-masse:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Succès banner */
+.cval-success-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 18px;
+  background: rgba(34, 197, 94, 0.07);
+  border-top: 1px solid rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.cval-success-banner svg { flex-shrink: 0; margin-top: 2px; }
+
+.cval-success-banner strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.cval-success-banner p {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.cval-success-banner code {
+  background: rgba(0, 212, 170, 0.12);
+  color: #00d4aa;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+}
+
+/* Info conducteurs existants */
+.cval-info-existing {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: rgba(59, 130, 246, 0.07);
+  border: 1px solid rgba(59, 130, 246, 0.18);
+  border-radius: 8px;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.cval-info-existing svg { color: #60a5fa; flex-shrink: 0; }
+
+/* Bouton goto users (dans footer) */
+.btn-goto-users {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: 9px;
+  border: 1px solid rgba(0, 212, 170, 0.35);
+  background: rgba(0, 212, 170, 0.1);
+  color: #00d4aa;
+  font-family: var(--font, 'DM Sans', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.btn-goto-users:hover {
+  background: rgba(0, 212, 170, 0.18);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 212, 170, 0.2);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .cval-list-header,
+  .cval-list-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .cval-list-header span:nth-child(2),
+  .cval-list-row .c-email { display: none; }
+  .cval-actions { flex-direction: column; align-items: stretch; }
+  .btn-valider-masse { justify-content: center; }
+  .cval-zone-grid { gap: 5px; }
+}

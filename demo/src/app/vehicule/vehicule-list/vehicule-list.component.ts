@@ -1,11 +1,11 @@
 // src/app/vehicule/vehicule-list/vehicule-list.component.ts
-// VERSION COMPLÈTE avec création automatique des comptes conducteurs
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Vehicule, TypeCarburant } from '../../models/vehicule';
 import { Zone } from '../../models/zone';
 import { VehiculeService } from '../../services/vehicule.service';
 import { ZoneService } from '../../services/zone.service';
+import { UtilisateurService } from '../../services/utilisateur.service';
 
 export interface ImportResult {
   imported: number;
@@ -14,10 +14,18 @@ export interface ImportResult {
   total: number;
   zone: string;
   errors: string[];
-  // NOUVEAU : conducteurs
   conducteursCreated: number;
   conducteursExistants: number;
-  conducteursDetails: { nomComplet: string; email: string; statut: string }[];
+  conducteursDetails: { nomComplet: string; email: string; statut: string; userId?: number }[];
+}
+
+export interface ConducteurAValider {
+  userId: number;
+  nomComplet: string;
+  email: string;
+  selectedZoneIds: number[];
+  statut: 'pending' | 'validating' | 'validated' | 'error';
+  errorMsg?: string;
 }
 
 @Component({
@@ -41,19 +49,29 @@ export class VehiculeListComponent implements OnInit {
   filtreType   = '';
 
   // Import Excel
-  showImportModal = false;
-  importZoneNom   = '';
-  importLoading   = false;
+  showImportModal     = false;
+  importZoneNom       = '';
+  importLoading       = false;
   importResult: ImportResult | null = null;
 
-  // Panel résultat conducteurs
+  // Panel conducteurs
   showConducteurPanel = false;
+
+  // ── NOUVEAU : Validation en masse des conducteurs ──────────────────────
+  /** Conducteurs prêts à être validés depuis la modal d'import */
+  conducteursAValider: ConducteurAValider[] = [];
+  /** Zone sélectionnée pour la validation en masse (toutes les conducteurs) */
+  zonesMasseIds: number[] = [];
+  validationEnCours = false;
+  validationTerminee = false;
+  nbValides = 0;
 
   TypeCarburant = TypeCarburant;
 
   constructor(
     private vehiculeService: VehiculeService,
     private zoneService: ZoneService,
+    private utilisateurService: UtilisateurService,
     private router: Router
   ) {}
 
@@ -105,16 +123,23 @@ export class VehiculeListComponent implements OnInit {
   // ── Import Excel ──────────────────────────────────────────────────────────
 
   ouvrirImport(): void {
-    this.showImportModal = true;
-    this.importResult = null;
-    this.importZoneNom = '';
-    this.showConducteurPanel = false;
+    this.showImportModal      = true;
+    this.importResult         = null;
+    this.importZoneNom        = '';
+    this.showConducteurPanel  = false;
+    this.conducteursAValider  = [];
+    this.zonesMasseIds        = [];
+    this.validationTerminee   = false;
+    this.nbValides            = 0;
   }
 
   fermerImport(): void {
     this.showImportModal = false;
     if (this.importResult) this.loadVehicules();
     this.importResult = null;
+    this.conducteursAValider = [];
+    this.zonesMasseIds = [];
+    this.validationTerminee = false;
   }
 
   onFichierSelectionne(event: Event, zoneNom: string): void {
@@ -134,18 +159,40 @@ export class VehiculeListComponent implements OnInit {
   }
 
   lancerImport(file: File, zoneNom: string): void {
-    this.importLoading = true;
-    this.importResult  = null;
+    this.importLoading       = true;
+    this.importResult        = null;
     this.showConducteurPanel = false;
+    this.conducteursAValider = [];
+    this.zonesMasseIds       = [];
+    this.validationTerminee  = false;
+    this.nbValides           = 0;
 
     this.vehiculeService.importerExcel(file, zoneNom).subscribe({
       next: (res: any) => {
-        this.importResult = res as ImportResult;
+        this.importResult  = res as ImportResult;
         this.importLoading = false;
-        // Afficher panel conducteurs si des comptes ont été créés
+
+        // Construire la liste des conducteurs à valider (uniquement les CRÉÉS)
         if (this.importResult.conducteursCreated > 0) {
           this.showConducteurPanel = true;
+          this.conducteursAValider = this.importResult.conducteursDetails
+            .filter(c => c.statut === 'CREATED' && c.userId != null)
+            .map(c => ({
+              userId: c.userId!,
+              nomComplet: c.nomComplet,
+              email: c.email,
+              selectedZoneIds: [],
+              statut: 'pending' as const
+            }));
+          // Pré-sélectionner la zone d'import si connue
+          if (zoneNom) {
+            const zone = this.zones.find(z => z.nom.toLowerCase() === zoneNom.toLowerCase());
+            if (zone) {
+              this.zonesMasseIds = [zone.id];
+            }
+          }
         }
+
         this.loadVehicules();
       },
       error: (err: any) => {
@@ -153,6 +200,69 @@ export class VehiculeListComponent implements OnInit {
         alert('❌ Erreur import : ' + (err.error?.message || err.message || 'Erreur'));
       }
     });
+  }
+
+  // ── Validation en masse des conducteurs ───────────────────────────────────
+
+  toggleZoneMasse(zoneId: number): void {
+    const i = this.zonesMasseIds.indexOf(zoneId);
+    if (i > -1) this.zonesMasseIds.splice(i, 1);
+    else this.zonesMasseIds.push(zoneId);
+  }
+
+  isZoneMasseSelected(zoneId: number): boolean {
+    return this.zonesMasseIds.includes(zoneId);
+  }
+
+  /** Valide tous les conducteurs créés lors de l'import avec les zones sélectionnées */
+  validerTousLesConducteurs(): void {
+    if (this.zonesMasseIds.length === 0) {
+      alert('Veuillez sélectionner au moins une zone.');
+      return;
+    }
+    if (this.conducteursAValider.length === 0) return;
+
+    this.validationEnCours = true;
+    this.nbValides = 0;
+
+    const pending = this.conducteursAValider.filter(c => c.statut === 'pending');
+    let completed = 0;
+
+    for (const conducteur of pending) {
+      conducteur.statut = 'validating';
+      this.utilisateurService.validerCompteAvecZones({
+        utilisateurId: conducteur.userId,
+        zoneIds: this.zonesMasseIds
+      }).subscribe({
+        next: () => {
+          conducteur.statut = 'validated';
+          this.nbValides++;
+          completed++;
+          if (completed === pending.length) {
+            this.validationEnCours  = false;
+            this.validationTerminee = true;
+          }
+        },
+        error: (err) => {
+          conducteur.statut  = 'error';
+          conducteur.errorMsg = err.error?.message || 'Erreur';
+          completed++;
+          if (completed === pending.length) {
+            this.validationEnCours  = false;
+            this.validationTerminee = true;
+          }
+        }
+      });
+    }
+  }
+
+  /** Compter combien sont encore en attente */
+  get nbConducteursPending(): number {
+    return this.conducteursAValider.filter(c => c.statut === 'pending').length;
+  }
+
+  get nbConducteursValidated(): number {
+    return this.conducteursAValider.filter(c => c.statut === 'validated').length;
   }
 
   allerGestionUtilisateurs(): void {
@@ -164,8 +274,11 @@ export class VehiculeListComponent implements OnInit {
 
   getTypeLabel(t: TypeCarburant): string {
     const map: Record<string, string> = {
-      ESSENCE: 'Essence', GASOIL_ORDINAIRE: 'Gasoil Ordinaire',
-      GASOIL_SANS_SOUFRE: 'Gasoil Sans Soufre', GASOIL_50: 'Gasoil 50', SUPER_SANS_PLOMB: 'Super Sans Plomb'
+      ESSENCE: 'Essence',
+      GASOIL_ORDINAIRE: 'Gasoil Ordinaire',
+      GASOIL_SANS_SOUFRE: 'Gasoil Sans Soufre',
+      GASOIL_50: 'Gasoil 50',
+      SUPER_SANS_PLOMB: 'Super Sans Plomb'
     };
     return map[t] || t;
   }

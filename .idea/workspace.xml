@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="777fc5d2-3bb5-4db8-8545-4efa7fe5d991" name="Changes" comment="" />
+    <list default="true" id="777fc5d2-3bb5-4db8-8545-4efa7fe5d991" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/ConducteurUserCreationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/ConducteurUserCreationService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/VehiculeImportService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/VehiculeImportService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/VehiculeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/VehiculeService.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -144,7 +149,8 @@
       <workItem from="1776676789559" duration="784000" />
       <workItem from="1777037121471" duration="6708000" />
       <workItem from="1777121560729" duration="6986000" />
-      <workItem from="1777209687340" duration="2870000" />
+      <workItem from="1777209687340" duration="3960000" />
+      <workItem from="1777276213264" duration="1794000" />
     </task>
     <servers />
   </component>
