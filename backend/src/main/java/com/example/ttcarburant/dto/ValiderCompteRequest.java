@@ -1,6 +1,5 @@
 package com.example.ttcarburant.dto;
 
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
@@ -9,7 +8,7 @@ public class ValiderCompteRequest {
     @NotNull(message = "L'ID de l'utilisateur est obligatoire")
     private Long utilisateurId;
 
-    @NotEmpty(message = "Au moins une zone doit être sélectionnée")
+    // ✅ CORRECTION : plus de @NotEmpty — la liste peut être vide (zones facultatives)
     private List<Long> zoneIds;
 
     // Constructeurs

@@ -65,6 +65,14 @@
           </svg>
         </span>
         Maintenance
+      </a>      
+            <a class="nav-item" routerLink="/admin/groupes-electrogenes">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+        </span>
+        Groupes électrogènes
       </a>
     </nav>
 
@@ -80,7 +88,6 @@
   <!-- ═══════════ MAIN ═══════════ -->
   <main class="main-content">
 
-    <!-- Topbar -->
     <header class="topbar">
       <div class="topbar-left">
         <h1 class="page-title">Gestion des Utilisateurs</h1>
@@ -102,7 +109,6 @@
 
     <div class="content-area">
 
-      <!-- ── Tabs ── -->
       <div class="tabs-bar">
         <button class="tab-btn" [class.active]="activeTab === 'en_attente'" (click)="activeTab = 'en_attente'">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -178,13 +184,14 @@
                   <td><span class="u-date">{{ user.dateCreation | date:'dd MMM yyyy HH:mm' }}</span></td>
                   <td>
                     <div class="row-actions">
-                      <button class="btn-act btn-validate" (click)="openValidationModal(user)">
+                      <!-- ✅ CORRECTION : type="button" explicite pour éviter submit implicite -->
+                      <button type="button" class="btn-act btn-validate" (click)="openValidationModal(user)">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                           <polyline points="20 6 9 17 4 12"/>
                         </svg>
                         Valider + Zones
                       </button>
-                      <button class="btn-act btn-refuse" (click)="refuserCompte(user)">
+                      <button type="button" class="btn-act btn-refuse" (click)="refuserCompte(user)">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                         </svg>
@@ -233,13 +240,13 @@
                   <td><span class="u-date">{{ user.dateCreation | date:'dd MMM yyyy' }}</span></td>
                   <td>
                     <div class="row-actions">
-                      <button class="btn-act btn-validate" (click)="openValidationModal(user)">
+                      <button type="button" class="btn-act btn-validate" (click)="openValidationModal(user)">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                           <polyline points="20 6 9 17 4 12"/>
                         </svg>
                         Valider
                       </button>
-                      <button class="btn-act btn-refuse" (click)="refuserCompte(user)">
+                      <button type="button" class="btn-act btn-refuse" (click)="refuserCompte(user)">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                         </svg>
@@ -313,14 +320,14 @@
                 </td>
                 <td>
                   <div class="row-actions">
-                    <button class="btn-act btn-edit" (click)="openEditModal(user)" title="Modifier les zones">
+                    <button type="button" class="btn-act btn-edit" (click)="openEditModal(user)" title="Modifier les zones">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                       </svg>
                       Modifier
                     </button>
-                    <button class="btn-act"
+                    <button type="button" class="btn-act"
                             *ngIf="showToggleButton(user.statutCompte)"
                             [ngClass]="canBeActivated(user.statutCompte) ? 'btn-activate' : 'btn-deactivate'"
                             (click)="toggleActivation(user)">
@@ -329,7 +336,7 @@
                       </svg>
                       {{ canBeActivated(user.statutCompte) ? 'Activer' : 'Désactiver' }}
                     </button>
-                    <button class="btn-act btn-delete" (click)="supprimerUtilisateur(user)" title="Supprimer">
+                    <button type="button" class="btn-act btn-delete" (click)="supprimerUtilisateur(user)" title="Supprimer">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="3 6 5 6 21 6"/>
                         <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/>
@@ -343,14 +350,16 @@
         </div>
       </div>
 
-    </div><!-- /content-area -->
+    </div>
   </main>
 </div>
 
-<!-- ════════════════════════════════════════
-     MODAL — VALIDATION + AFFECTATION ZONES
-     Fonctionne pour conducteurs ET techniciens
-════════════════════════════════════════ -->
+<!-- ════════════════════════════════════════════════════════
+     MODALS — EN DEHORS de .app-shell pour éviter z-index
+     ✅ CORRECTION PRINCIPALE : les modals sont ici, hors du flex container
+════════════════════════════════════════════════════════ -->
+
+<!-- MODAL VALIDATION -->
 <div *ngIf="showValidationModal" class="modal-backdrop" (click)="closeValidationModal()">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-head">
@@ -363,11 +372,11 @@
         <h3 class="modal-title">Valider le compte</h3>
         <p class="modal-sub">
           {{ selectedUser?.nom }}
-          <span *ngIf="isConducteur(selectedUser!)" style="margin-left:6px">🚗 Conducteur</span>
+          <span *ngIf="selectedUser && isConducteur(selectedUser)" style="margin-left:6px">🚗 Conducteur</span>
           · {{ selectedUser?.email }}
         </p>
       </div>
-      <button class="modal-close" (click)="closeValidationModal()">
+      <button type="button" class="modal-close" (click)="closeValidationModal()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
@@ -376,8 +385,14 @@
 
     <div class="modal-body">
 
+      <!-- Chargement zones -->
+      <div *ngIf="zonesLoading" style="display:flex;align-items:center;gap:10px;padding:12px 0;color:#94a3b8;font-size:13px;">
+        <div class="loader-ring" style="width:20px;height:20px;border-width:2px;"></div>
+        Chargement des zones…
+      </div>
+
       <!-- Info conducteur -->
-      <div *ngIf="isConducteur(selectedUser!)" class="conducteur-info-box">
+      <div *ngIf="selectedUser && isConducteur(selectedUser)" class="conducteur-info-box">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
         </svg>
@@ -397,13 +412,22 @@
         </div>
       </div>
 
-      <!-- Sélection des zones (obligatoire) -->
+      <!-- Sélection des zones -->
       <div class="zone-picker-header">
-        <p class="zone-picker-label">Sélectionnez les zones à affecter *</p>
+        <p class="zone-picker-label">
+          Sélectionnez les zones à affecter
+          <span style="color:#475569;font-weight:400">(optionnel)</span>
+        </p>
         <span class="zone-selected-count">{{ selectedZoneIds.length }} sélectionnée(s)</span>
       </div>
 
-      <div class="zone-picker-grid">
+      <!-- Aucune zone disponible -->
+      <div *ngIf="!zonesLoading && toutesZones.length === 0"
+           style="padding:16px;text-align:center;color:#f59e0b;font-size:13px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:8px;">
+        ⚠️ Aucune zone disponible. Créez d'abord des zones dans le menu <strong>Zones</strong>.
+      </div>
+
+      <div *ngIf="!zonesLoading && toutesZones.length > 0" class="zone-picker-grid">
         <div *ngFor="let zone of toutesZones"
              class="zone-chip"
              [class.selected]="isZoneSelected(zone.id)"
@@ -420,38 +444,44 @@
         </div>
       </div>
 
-      <div *ngIf="selectedZoneIds.length === 0" class="field-error">
+      <!-- Avertissement si aucune zone sélectionnée (pas bloquant) -->
+      <div *ngIf="!zonesLoading && toutesZones.length > 0 && selectedZoneIds.length === 0"
+           style="display:flex;align-items:center;gap:6px;font-size:12px;color:#f59e0b;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
         </svg>
-        Veuillez sélectionner au moins une zone
+        Aucune zone sélectionnée — le compte sera activé sans affectation de zone.
       </div>
     </div>
 
     <div class="modal-foot">
-      <button class="btn-modal btn-cancel" (click)="closeValidationModal()" [disabled]="submitting">Annuler</button>
-      <button class="btn-modal btn-confirm-green"
+      <button type="button" class="btn-modal btn-cancel" (click)="closeValidationModal()" [disabled]="submitting">
+        Annuler
+      </button>
+      <!-- ✅ CORRECTION : disabled uniquement sur submitting, plus sur selectedZoneIds.length -->
+      <button type="button" class="btn-modal btn-confirm-green"
               (click)="validerCompte()"
-              [disabled]="selectedZoneIds.length === 0 || submitting">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              [disabled]="submitting || zonesLoading">
+        <svg *ngIf="!submitting" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <polyline points="20 6 9 17 4 12"/>
         </svg>
+        <span *ngIf="submitting" class="loader-ring" style="width:14px;height:14px;border-width:2px;display:inline-block;"></span>
         {{ submitting ? 'Validation…' : 'Valider le compte' }}
       </button>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════════ Modal Modification des zones ════════════════════════ -->
+<!-- MODAL MODIFICATION -->
 <div *ngIf="showEditModal" class="modal-overlay" (click)="closeEditModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>
         ✏️ Modifier
-        <span *ngIf="isConducteur(selectedUser!)">🚗</span>
+        <span *ngIf="selectedUser && isConducteur(selectedUser)">🚗</span>
         {{ selectedUser?.nom }}
       </h3>
-      <button class="btn-close" (click)="closeEditModal()">✕</button>
+      <button type="button" class="btn-close" (click)="closeEditModal()">✕</button>
     </div>
     <div class="modal-body">
       <div class="user-info-box">
@@ -485,8 +515,8 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeEditModal()" [disabled]="submitting">Annuler</button>
-      <button class="btn btn-primary" (click)="modifierUtilisateur()" [disabled]="submitting">
+      <button type="button" class="btn btn-secondary" (click)="closeEditModal()" [disabled]="submitting">Annuler</button>
+      <button type="button" class="btn btn-primary" (click)="modifierUtilisateur()" [disabled]="submitting">
         {{ submitting ? 'Modification...' : 'Enregistrer les zones' }}
       </button>
     </div>

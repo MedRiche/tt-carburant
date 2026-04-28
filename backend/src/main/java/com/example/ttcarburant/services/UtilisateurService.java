@@ -78,12 +78,14 @@ public class UtilisateurService {
         utilisateur.setStatutCompte(StatutCompte.ACTIF);
         utilisateurRepository.save(utilisateur);
 
-        // Affecter les zones sélectionnées
-        for (Long zoneId : request.getZoneIds()) {
-            Zone zone = zoneRepository.findById(zoneId)
-                    .orElseThrow(() -> new RuntimeException("Zone non trouvée: " + zoneId));
-            if (!affectationRepository.existsByUtilisateurAndZone(utilisateur, zone)) {
-                affectationRepository.save(new AffectationUtilisateurZone(utilisateur, zone, admin));
+        // Affecter les zones sélectionnées (si présentes)
+        if (request.getZoneIds() != null && !request.getZoneIds().isEmpty()) {
+            for (Long zoneId : request.getZoneIds()) {
+                Zone zone = zoneRepository.findById(zoneId)
+                        .orElseThrow(() -> new RuntimeException("Zone non trouvée: " + zoneId));
+                if (!affectationRepository.existsByUtilisateurAndZone(utilisateur, zone)) {
+                    affectationRepository.save(new AffectationUtilisateurZone(utilisateur, zone, admin));
+                }
             }
         }
 

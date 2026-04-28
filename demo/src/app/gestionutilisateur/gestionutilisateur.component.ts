@@ -1,17 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { finalize, timeout } from 'rxjs/operators';
+import { of, forkJoin } from 'rxjs';
 import { Utilisateur, StatutCompte } from '../models/utilisateur';
 import { Zone } from '../models/zone';
 import { UtilisateurService } from '../services/utilisateur.service';
 import { ZoneService } from '../services/zone.service';
-import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-gestionutilisateur',
   standalone: false,
   templateUrl: './gestionutilisateur.component.html',
-  styleUrl: './gestionutilisateur.component.css'
+  styleUrls: ['./gestionutilisateur.component.css']
 })
 export class GestionutilisateurComponent implements OnInit {
 
@@ -26,6 +26,9 @@ export class GestionutilisateurComponent implements OnInit {
   showEditModal = false;
   loading = false;
   submitting = false;
+
+  zonesLoading = false;
+  zonesLoaded = false;
 
   activeTab: 'en_attente' | 'tous' = 'en_attente';
   StatutCompte = StatutCompte;
@@ -42,13 +45,12 @@ export class GestionutilisateurComponent implements OnInit {
     this.loadZones();
   }
 
-  // ── Chargement ─────────────────────────────────────────────────────────────
-
+  // ----- CHARGEMENT -------------------------------------------------
   loadUtilisateursEnAttente(): void {
     this.loading = true;
     this.utilisateurService.getUtilisateursEnAttente().subscribe({
       next: (data) => { this.utilisateursEnAttente = data; this.loading = false; },
-      error: () => { this.loading = false; }
+      error: (err) => { console.error(err); this.loading = false; }
     });
   }
 
@@ -60,41 +62,78 @@ export class GestionutilisateurComponent implements OnInit {
   }
 
   loadZones(): void {
+    this.zonesLoading = true;
     this.zoneService.getAllZones().subscribe({
-      next: (data) => { this.toutesZones = data; },
-      error: (err) => console.error(err)
+      next: (data) => {
+        this.toutesZones = data;
+        this.zonesLoading = false;
+        this.zonesLoaded = true;
+      },
+      error: (err) => {
+        console.error('Erreur chargement zones:', err);
+        this.zonesLoading = false;
+        this.zonesLoaded = false;
+      }
     });
   }
 
-  // ── Modals ─────────────────────────────────────────────────────────────────
-
+  // ----- MODALS ----------------------------------------------------
   openValidationModal(user: Utilisateur): void {
     this.selectedUser = user;
-    // Pré-sélectionner les zones déjà affectées si modification
     this.selectedZoneIds = user.zones ? user.zones.map(z => z.id) : [];
-    this.showValidationModal = true;
+
+    if (!this.zonesLoaded || this.toutesZones.length === 0) {
+      this.zonesLoading = true;
+      this.zoneService.getAllZones().subscribe({
+        next: (data) => {
+          this.toutesZones = data;
+          this.zonesLoading = false;
+          this.zonesLoaded = true;
+          this.showValidationModal = true;
+        },
+        error: () => {
+          this.zonesLoading = false;
+          this.showValidationModal = true;
+        }
+      });
+    } else {
+      this.showValidationModal = true;
+    }
   }
 
   closeValidationModal(): void {
     this.showValidationModal = false;
     this.selectedUser = null;
     this.selectedZoneIds = [];
+    this.submitting = false;
   }
 
   openEditModal(user: Utilisateur): void {
     this.selectedUser = user;
     this.selectedZoneIds = user.zones ? user.zones.map(z => z.id) : [];
-    this.showEditModal = true;
+
+    if (!this.zonesLoaded || this.toutesZones.length === 0) {
+      this.zoneService.getAllZones().subscribe({
+        next: (data) => {
+          this.toutesZones = data;
+          this.zonesLoaded = true;
+          this.showEditModal = true;
+        },
+        error: () => { this.showEditModal = true; }
+      });
+    } else {
+      this.showEditModal = true;
+    }
   }
 
   closeEditModal(): void {
     this.showEditModal = false;
     this.selectedUser = null;
     this.selectedZoneIds = [];
+    this.submitting = false;
   }
 
-  // ── Sélection des zones ────────────────────────────────────────────────────
-
+  // ----- ZONES ----------------------------------------------------
   toggleZoneSelection(zoneId: number): void {
     const i = this.selectedZoneIds.indexOf(zoneId);
     if (i > -1) this.selectedZoneIds.splice(i, 1);
@@ -105,32 +144,50 @@ export class GestionutilisateurComponent implements OnInit {
     return this.selectedZoneIds.includes(zoneId);
   }
 
-  // ── Actions ────────────────────────────────────────────────────────────────
-
+  // ----- ACTIONS --------------------------------------------------
   validerCompte(): void {
-    if (!this.selectedUser || this.selectedZoneIds.length === 0) return;
+    if (!this.selectedUser || this.submitting) return;
+
+    if (this.selectedZoneIds.length === 0) {
+      if (!confirm(`Valider le compte de ${this.selectedUser.nom} sans affecter de zone ?`)) return;
+    }
+
     this.submitting = true;
+
     this.utilisateurService.validerCompteAvecZones({
       utilisateurId: this.selectedUser.id,
       zoneIds: this.selectedZoneIds
-    }).subscribe({
+    }).pipe(
+      timeout(30000), // 30 secondes max
+      finalize(() => {
+        // Sécurité : réinitialiser submitting même en cas d'erreur réseau non capturée
+        setTimeout(() => { this.submitting = false; }, 500);
+      })
+    ).subscribe({
       next: (res) => {
+        this.submitting = false;
         alert(res.message || 'Compte validé avec succès');
         this.closeValidationModal();
         this.loadUtilisateursEnAttente();
         this.loadTousUtilisateurs();
-        this.submitting = false;
       },
-      error: (err) => { alert(err.error?.message || 'Erreur'); this.submitting = false; }
+      error: (err) => {
+        this.submitting = false;
+        console.error('Validation error:', err);
+        let msg = err.error?.message || err.message || 'Erreur lors de la validation';
+        if (err.name === 'TimeoutError') msg = 'Le serveur ne répond pas. Vérifiez votre connexion.';
+        alert('❌ ' + msg);
+        // On ne ferme pas le modal pour permettre à l'utilisateur de réessayer
+      }
     });
   }
 
   modifierUtilisateur(): void {
-    if (!this.selectedUser) return;
+    if (!this.selectedUser || this.submitting) return;
     this.submitting = true;
 
-    const current  = this.selectedUser.zones?.map(z => z.id) || [];
-    const toAdd    = this.selectedZoneIds.filter(id => !current.includes(id));
+    const current = this.selectedUser.zones?.map(z => z.id) || [];
+    const toAdd = this.selectedZoneIds.filter(id => !current.includes(id));
     const toRemove = current.filter(id => !this.selectedZoneIds.includes(id));
 
     if (!toAdd.length && !toRemove.length) {
@@ -141,18 +198,30 @@ export class GestionutilisateurComponent implements OnInit {
 
     const uid = this.selectedUser.id;
     const ops = [
-      ...toAdd.map(z    => this.utilisateurService.ajouterZone(uid, z).pipe(catchError(() => of(null)))),
-      ...toRemove.map(z => this.utilisateurService.retirerZone(uid, z).pipe(catchError(() => of(null))))
+      ...toAdd.map(z => this.utilisateurService.ajouterZone(uid, z).pipe(
+        timeout(10000),
+        finalize(() => {})
+      )),
+      ...toRemove.map(z => this.utilisateurService.retirerZone(uid, z).pipe(
+        timeout(10000),
+        finalize(() => {})
+      ))
     ];
 
-    forkJoin(ops).subscribe({
+    forkJoin(ops).pipe(
+      timeout(30000),
+      finalize(() => { this.submitting = false; })
+    ).subscribe({
       next: () => {
         alert('Zones modifiées avec succès');
         this.closeEditModal();
         this.loadTousUtilisateurs();
-        this.submitting = false;
       },
-      error: () => { alert('Erreur lors de la modification'); this.submitting = false; }
+      error: (err) => {
+        console.error('Modification error:', err);
+        alert('❌ ' + (err.error?.message || err.message || 'Erreur lors de la modification'));
+        this.submitting = false;
+      }
     });
   }
 
@@ -189,18 +258,22 @@ export class GestionutilisateurComponent implements OnInit {
     });
   }
 
-  // ── Navigation ─────────────────────────────────────────────────────────────
+  // ----- NAVIGATION ------------------------------------------------
+  navigateToDashboard(): void {
+    this.router.navigate(['/admin/dashboardAdmin']);
+  }
 
-  navigateToDashboard(): void { this.router.navigate(['/admin/dashboardAdmin']); }
+  // ----- HELPERS UI ------------------------------------------------
+  showToggleButton(s: StatutCompte): boolean {
+    return s !== StatutCompte.EN_ATTENTE;
+  }
 
-  // ── Helpers UI ─────────────────────────────────────────────────────────────
+  canBeActivated(s: StatutCompte): boolean {
+    return s === StatutCompte.DESACTIVE || s === StatutCompte.REFUSE;
+  }
 
-  showToggleButton(s: StatutCompte): boolean { return s !== StatutCompte.EN_ATTENTE; }
-  canBeActivated(s: StatutCompte): boolean   { return s === StatutCompte.DESACTIVE || s === StatutCompte.REFUSE; }
-
-  /** Indique si le compte est un conducteur importé depuis Excel */
   isConducteur(user: Utilisateur): boolean {
-    return user.specialite === 'Conducteur';
+    return !!user && user.specialite === 'Conducteur';
   }
 
   getInitials(nom: string): string {
@@ -223,15 +296,14 @@ export class GestionutilisateurComponent implements OnInit {
     return map[s] || s;
   }
 
-  /** Compteur d'utilisateurs en attente (pour le badge sidebar) */
-  get nbEnAttente(): number { return this.utilisateursEnAttente.length; }
+  get nbEnAttente(): number {
+    return this.utilisateursEnAttente.length;
+  }
 
-  /** Conducteurs en attente de validation (importés depuis Excel) */
   get conducteursEnAttente(): Utilisateur[] {
     return this.utilisateursEnAttente.filter(u => this.isConducteur(u));
   }
 
-  /** Techniciens normaux en attente (inscrits via le formulaire) */
   get techniciensEnAttente(): Utilisateur[] {
     return this.utilisateursEnAttente.filter(u => !this.isConducteur(u));
   }

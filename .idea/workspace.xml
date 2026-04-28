@@ -6,9 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="777fc5d2-3bb5-4db8-8545-4efa7fe5d991" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/ConducteurUserCreationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/ConducteurUserCreationService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/VehiculeImportService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/VehiculeImportService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/VehiculeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/VehiculeService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/dto/ValiderCompteRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/dto/ValiderCompteRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/UtilisateurService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/services/UtilisateurService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/app/gestionutilisateur/gestionutilisateur.component.html" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/gestionutilisateur/gestionutilisateur.component.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/app/gestionutilisateur/gestionutilisateur.component.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/gestionutilisateur/gestionutilisateur.component.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -150,7 +151,7 @@
       <workItem from="1777037121471" duration="6708000" />
       <workItem from="1777121560729" duration="6986000" />
       <workItem from="1777209687340" duration="3960000" />
-      <workItem from="1777276213264" duration="1794000" />
+      <workItem from="1777276213264" duration="3557000" />
     </task>
     <servers />
   </component>
