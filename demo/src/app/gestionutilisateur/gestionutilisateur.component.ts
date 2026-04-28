@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { finalize, timeout } from 'rxjs/operators';
-import { of, forkJoin } from 'rxjs';
+import { forkJoin } from 'rxjs';
 import { Utilisateur, StatutCompte } from '../models/utilisateur';
 import { Zone } from '../models/zone';
 import { UtilisateurService } from '../services/utilisateur.service';
@@ -81,6 +81,7 @@ export class GestionutilisateurComponent implements OnInit {
   openValidationModal(user: Utilisateur): void {
     this.selectedUser = user;
     this.selectedZoneIds = user.zones ? user.zones.map(z => z.id) : [];
+    this.submitting = false;
 
     if (!this.zonesLoaded || this.toutesZones.length === 0) {
       this.zonesLoading = true;
@@ -89,15 +90,17 @@ export class GestionutilisateurComponent implements OnInit {
           this.toutesZones = data;
           this.zonesLoading = false;
           this.zonesLoaded = true;
-          this.showValidationModal = true;
+          // Ouvrir le modal APRÈS que les zones sont chargées
+          setTimeout(() => { this.showValidationModal = true; }, 0);
         },
         error: () => {
           this.zonesLoading = false;
-          this.showValidationModal = true;
+          setTimeout(() => { this.showValidationModal = true; }, 0);
         }
       });
     } else {
-      this.showValidationModal = true;
+      // Forcer la détection de changement via setTimeout
+      setTimeout(() => { this.showValidationModal = true; }, 0);
     }
   }
 
@@ -111,18 +114,19 @@ export class GestionutilisateurComponent implements OnInit {
   openEditModal(user: Utilisateur): void {
     this.selectedUser = user;
     this.selectedZoneIds = user.zones ? user.zones.map(z => z.id) : [];
+    this.submitting = false;
 
     if (!this.zonesLoaded || this.toutesZones.length === 0) {
       this.zoneService.getAllZones().subscribe({
         next: (data) => {
           this.toutesZones = data;
           this.zonesLoaded = true;
-          this.showEditModal = true;
+          setTimeout(() => { this.showEditModal = true; }, 0);
         },
-        error: () => { this.showEditModal = true; }
+        error: () => { setTimeout(() => { this.showEditModal = true; }, 0); }
       });
     } else {
-      this.showEditModal = true;
+      setTimeout(() => { this.showEditModal = true; }, 0);
     }
   }
 
@@ -158,9 +162,8 @@ export class GestionutilisateurComponent implements OnInit {
       utilisateurId: this.selectedUser.id,
       zoneIds: this.selectedZoneIds
     }).pipe(
-      timeout(30000), // 30 secondes max
+      timeout(30000),
       finalize(() => {
-        // Sécurité : réinitialiser submitting même en cas d'erreur réseau non capturée
         setTimeout(() => { this.submitting = false; }, 500);
       })
     ).subscribe({
@@ -177,7 +180,6 @@ export class GestionutilisateurComponent implements OnInit {
         let msg = err.error?.message || err.message || 'Erreur lors de la validation';
         if (err.name === 'TimeoutError') msg = 'Le serveur ne répond pas. Vérifiez votre connexion.';
         alert('❌ ' + msg);
-        // On ne ferme pas le modal pour permettre à l'utilisateur de réessayer
       }
     });
   }
@@ -294,6 +296,15 @@ export class GestionutilisateurComponent implements OnInit {
       REFUSE: 'Refusé', DESACTIVE: 'Désactivé'
     };
     return map[s] || s;
+  }
+
+  /**
+   * Retourne le label du rôle/type à afficher.
+   * Les conducteurs (TECHNICIEN avec specialite=Conducteur) affichent "Conducteur".
+   */
+  getRoleLabel(user: Utilisateur): string {
+    if (this.isConducteur(user)) return 'Conducteur';
+    return user.role as string;
   }
 
   get nbEnAttente(): number {

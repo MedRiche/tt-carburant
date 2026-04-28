@@ -888,42 +888,43 @@
    On les neutralise ici de façon ciblée.
 ═══════════════════════════════════════════════════════════ */
 
-/* Neutraliser tout stacking context sur le host */
-:host {
-  display: contents; /* évite que :host crée un bloc isolé */
+
+
+
+/* ===== FIX MODAL ===== */
+
+.modal-backdrop,
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 999999 !important;
 }
 
-/* S'assurer que rien sur le chemin DOM ne bloque fixed */
-:host ::ng-deep .app-shell,
-:host ::ng-deep .main-content,
-:host ::ng-deep .sidebar,
-:host ::ng-deep .topbar,
-:host ::ng-deep .content-area {
-  transform: none !important;
-  filter: none !important;
-  will-change: auto !important;
-  contain: none !important;
-  isolation: auto !important;
-  /* NE PAS mettre overflow:hidden sur ces éléments */
+.modal,
+.modal-content {
+  position: relative;
+  z-index: 1000000 !important;
+
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+
+  width: 90%;
+  max-width: 650px;
+
+  background: #0f172a;
+  border: 1px solid #1e2d47;
+  border-radius: 14px;
+
+  box-shadow: 0 20px 60px rgba(0,0,0,0.7);
 }
 
-/* Garantir que les backdrops couvrent TOUTE la fenêtre */
-:host ::ng-deep .modal-backdrop,
-:host ::ng-deep .modal-overlay {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  z-index: 99999 !important;
-}
-
-/* Garantir que les boîtes de dialog s'affichent par-dessus */
-:host ::ng-deep .modal,
-:host ::ng-deep .modal-content {
-  position: relative !important;
-  z-index: 100000 !important;
-}
 
 /* ═══════════════════════════════════════════════════════════
    RESPONSIVE
