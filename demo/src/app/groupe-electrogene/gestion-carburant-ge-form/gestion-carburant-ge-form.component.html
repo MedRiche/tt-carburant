@@ -35,9 +35,7 @@
     <!-- Topbar -->
     <header class="topbar">
       <div class="topbar-left">
-        <button class="btn-back" (click)="navigateTo('/admin/groupes-electrogenes')">
-          ← Retour
-        </button>
+        <button class="btn-back" (click)="navigateTo('/admin/groupes-electrogenes')">← Retour</button>
         <div>
           <h1 class="page-title">Gestion Carburant — Groupes Électrogènes</h1>
           <p class="page-subtitle">Saisie et calcul semestriel par site</p>
@@ -57,9 +55,22 @@
             <option value="DEUXIEME">2ème Semestre</option>
           </select>
         </div>
-        <div class="pill pill-violet">
-          {{ saisiesFiltrees.length }} saisies
-        </div>
+        <div class="pill pill-violet">{{ saisiesFiltrees.length }} saisies</div>
+
+        <!-- ★ NEW: Export Excel button -->
+        <button
+          class="btn-excel-export"
+          (click)="exportCarburantExcel()"
+          [disabled]="exporting || groupes.length === 0"
+          title="Télécharger les données semestrielles en Excel coloré">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="12" y1="18" x2="12" y2="12"/>
+            <polyline points="9 15 12 18 15 15"/>
+          </svg>
+          {{ exporting ? 'Export…' : '⬇ Excel' }}
+        </button>
       </div>
     </header>
 
@@ -86,9 +97,11 @@
               <span class="section-sub">{{ groupes.length }} sites configurés</span>
             </div>
           </div>
-          <button class="btn-new-saisie" (click)="openSaisieModal(null, null)">
-            + Nouvelle saisie
-          </button>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="btn-new-saisie" (click)="openSaisieModal(null, null)">
+              + Nouvelle saisie
+            </button>
+          </div>
         </div>
 
         <div class="table-scroll">
@@ -105,13 +118,11 @@
                 <th rowspan="2" class="th-actions">Actions</th>
               </tr>
               <tr class="head-row-2">
-                <!-- Saisies -->
                 <th class="th-sub">Index Début (h) (1)</th>
                 <th class="th-sub">Montant Réserv. Préc. (DT) (2)</th>
                 <th class="th-sub">Ravitaillement Préc. (DT) (3)</th>
                 <th class="th-sub">Montant Fin Sem. (DT) (4)</th>
                 <th class="th-sub">Index Fin (h) (5)</th>
-                <!-- Calculés -->
                 <th class="th-sub th-calc-cell">Total Ravit. (L)</th>
                 <th class="th-sub th-calc-cell">Qté Restante (L)</th>
                 <th class="th-sub th-calc-cell">Nb Heures (6)=(5)-(1)</th>
@@ -123,52 +134,31 @@
             <tbody>
               <ng-container *ngFor="let ge of groupes">
                 <tr class="data-row" [class.row-has-saisie]="getSaisie(ge.site)">
-                  <!-- Site -->
-                  <td class="td-site">
-                    <span class="site-badge">{{ ge.site }}</span>
-                  </td>
-                  <!-- Type carburant -->
-                  <td>
-                    <span class="chip-carb-sm">{{ getTypeLabel(ge.typeCarburant) }}</span>
-                  </td>
-                  <!-- Taux conso -->
+                  <td class="td-site"><span class="site-badge">{{ ge.site }}</span></td>
+                  <td><span class="chip-carb-sm">{{ getTypeLabel(ge.typeCarburant) }}</span></td>
                   <td class="td-num">{{ ge.tauxConsommationParHeure ?? '—' }}</td>
-                  <!-- Conso max -->
                   <td class="td-num">{{ ge.consommationTotaleMaxParSemestre ?? '—' }}</td>
-                  <!-- Prix -->
                   <td class="td-num">
                     <span *ngIf="ge.prixCarburant" class="prix-val">{{ ge.prixCarburant }}</span>
                     <span *ngIf="!ge.prixCarburant" class="u-none">—</span>
                   </td>
 
-                  <!-- ── Saisies ou vide ── -->
                   <ng-container *ngIf="getSaisie(ge.site) as s; else noSaisie">
                     <td class="td-num td-input">{{ s.indexHeureSemestrePrecedent ?? '—' }}</td>
                     <td class="td-num td-input">{{ s.montantCarburantRestantReservoirPrecedent ?? '—' }}</td>
                     <td class="td-num td-input">{{ s.ravitaillementSemestrePrecedentDinars ?? '—' }}</td>
                     <td class="td-num td-input">{{ s.montantRestantAgilisFinSemestre ?? '—' }}</td>
                     <td class="td-num td-input">{{ s.indexFinSemestre ?? '—' }}</td>
-
-                    <!-- ── Calculés ── -->
+                    <td class="td-num td-calc">{{ s.totalRavitaillementLitres != null ? (s.totalRavitaillementLitres | number:'1.0-1') : '—' }}</td>
+                    <td class="td-num td-calc">{{ s.quantiteRestanteReservoirAgilis != null ? (s.quantiteRestanteReservoirAgilis | number:'1.0-1') : '—' }}</td>
+                    <td class="td-num td-calc">{{ s.nbHeuresTravail != null ? (s.nbHeuresTravail | number:'1.0-1') : '—' }}</td>
                     <td class="td-num td-calc">
-                      {{ s.totalRavitaillementLitres != null ? (s.totalRavitaillementLitres | number:'1.0-1') : '—' }}
-                    </td>
-                    <td class="td-num td-calc">
-                      {{ s.quantiteRestanteReservoirAgilis != null ? (s.quantiteRestanteReservoirAgilis | number:'1.0-1') : '—' }}
-                    </td>
-                    <td class="td-num td-calc">
-                      {{ s.nbHeuresTravail != null ? (s.nbHeuresTravail | number:'1.0-1') : '—' }}
-                    </td>
-                    <td class="td-num td-calc">
-                      <span *ngIf="s.pourcentageConsommation != null"
-                            [class]="getPctClass(s.pourcentageConsommation)">
+                      <span *ngIf="s.pourcentageConsommation != null" [class]="getPctClass(s.pourcentageConsommation)">
                         {{ s.pourcentageConsommation | number:'1.0-1' }}%
                       </span>
                       <span *ngIf="s.pourcentageConsommation == null" class="u-none">—</span>
                     </td>
-                    <td class="td-num td-calc">
-                      {{ s.carburantDemandeDinarsCours != null ? (s.carburantDemandeDinarsCours | number:'1.0-0') + ' DT' : '—' }}
-                    </td>
+                    <td class="td-num td-calc">{{ s.carburantDemandeDinarsCours != null ? (s.carburantDemandeDinarsCours | number:'1.0-0') + ' DT' : '—' }}</td>
                     <td class="td-eval">
                       <span *ngIf="s.evaluationTauxConsommation" class="eval-badge"
                             [class.eval-ok]="s.evaluationTauxConsommation === 'OUI'"
@@ -177,7 +167,6 @@
                       </span>
                       <span *ngIf="!s.evaluationTauxConsommation" class="u-none">—</span>
                     </td>
-                    <!-- Actions -->
                     <td>
                       <div class="row-actions">
                         <button class="btn-act btn-edit" (click)="openSaisieModal(ge, s)">✏️</button>
@@ -186,14 +175,11 @@
                     </td>
                   </ng-container>
 
-                  <!-- Pas de saisie -->
                   <ng-template #noSaisie>
                     <td class="td-empty" colspan="5">—</td>
                     <td class="td-calc" colspan="6">—</td>
                     <td>
-                      <button class="btn-act btn-saisir" (click)="openSaisieModal(ge, null)">
-                        ⛽ Saisir
-                      </button>
+                      <button class="btn-act btn-saisir" (click)="openSaisieModal(ge, null)">⛽ Saisir</button>
                     </td>
                   </ng-template>
                 </tr>
@@ -220,9 +206,7 @@
       <div *ngIf="!loading && groupes.length === 0" class="state-empty">
         <div class="state-icon">⚡</div>
         <p class="state-title">Aucun groupe électrogène configuré</p>
-        <button class="btn-back" (click)="navigateTo('/admin/groupes-electrogenes')">
-          ← Aller aux groupes électrogènes
-        </button>
+        <button class="btn-back" (click)="navigateTo('/admin/groupes-electrogenes')">← Aller aux groupes électrogènes</button>
       </div>
 
     </div>

@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { GroupeElectrogeneService } from '../../services/groupe-electrogene.service';
 import { CarburantGeService } from '../../services/carburant-ge.service';
+import { ExcelExportService } from '../../services/ge-excel-export.service';
 import { GroupeElectrogene } from '../../models/groupe-electrogene';
 import { GestionCarburantGE } from '../../models/gestion-carburant-ge';
 
@@ -16,7 +17,8 @@ export class GestionCarburantGEFormComponent implements OnInit {
 
   groupes:  GroupeElectrogene[]  = [];
   saisies:  GestionCarburantGE[] = [];
-  loading = false;
+  loading   = false;
+  exporting = false;   // ← NEW
 
   // Filtres période
   filtreAnnee: number = new Date().getFullYear();
@@ -36,9 +38,10 @@ export class GestionCarburantGEFormComponent implements OnInit {
   };
 
   constructor(
-    private geService:   GroupeElectrogeneService,
-    private carbService: CarburantGeService,
-    private router:      Router
+    private geService:    GroupeElectrogeneService,
+    private carbService:  CarburantGeService,
+    private excelService: ExcelExportService,   // ← NEW
+    private router:       Router
   ) {}
 
   ngOnInit(): void {
@@ -67,7 +70,7 @@ export class GestionCarburantGEFormComponent implements OnInit {
   }
 
   onFiltreChange(): void {
-    // Le filtrage est réactif via le getter saisiesFiltrees
+    // reactive via getter
   }
 
   get saisiesFiltrees(): GestionCarburantGE[] {
@@ -92,13 +95,31 @@ export class GestionCarburantGEFormComponent implements OnInit {
     return this.saisiesFiltrees.reduce((acc, s) => acc + (s.carburantDemandeDinarsCours ?? 0), 0);
   }
 
-  /** Ouvre le modal de saisie.
-   * ge = null → saisie libre (sélection du site dans le modal)
-   * saisie = null → création, sinon édition
-   */
+  // ── ★ Export Excel — Gestion Carburant GE ────────────────────────────────
+
+  async exportCarburantExcel(): Promise<void> {
+    if (this.exporting) return;
+    this.exporting = true;
+    try {
+      await this.excelService.exportGestionCarburant(
+        this.groupes,
+        this.saisiesFiltrees,
+        this.filtreAnnee,
+        this.filtreSemestre
+      );
+    } catch (err) {
+      console.error('Erreur export Excel:', err);
+      alert('Erreur lors de la génération du fichier Excel.');
+    } finally {
+      this.exporting = false;
+    }
+  }
+
+  // ── Modal ────────────────────────────────────────────────────────────────
+
   openSaisieModal(ge: GroupeElectrogene | null, saisie: GestionCarburantGE | null): void {
-    this.selectedGE     = ge;
-    this.selectedSaisie = saisie;
+    this.selectedGE      = ge;
+    this.selectedSaisie  = saisie;
     this.showSaisieModal = true;
   }
 

@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { GroupeElectrogeneService } from '../../services/groupe-electrogene.service';
 import { CarburantGeService } from '../../services/carburant-ge.service';
 import { ZoneService } from '../../services/zone.service';
+import { ExcelExportService } from '../../services/ge-excel-export.service';
 import { GroupeElectrogene } from '../../models/groupe-electrogene';
 import { GestionCarburantGE, Semestre, SEMESTRE_LABELS } from '../../models/gestion-carburant-ge';
 import { Zone } from '../../models/zone';
@@ -19,8 +20,9 @@ export class GroupeElectrogeneListComponent implements OnInit {
   groupes: GroupeElectrogene[]  = [];
   zones:   Zone[]               = [];
   saisies: GestionCarburantGE[] = [];
-  loading   = false;
-  loadError = '';
+  loading      = false;
+  loadError    = '';
+  exporting    = false;   // ← NEW: tracks Excel export state
 
   // Filtres
   searchText = '';
@@ -56,10 +58,11 @@ export class GroupeElectrogeneListComponent implements OnInit {
   };
 
   constructor(
-    private geService:   GroupeElectrogeneService,
-    private carbService: CarburantGeService,
-    private zoneService: ZoneService,
-    private router:      Router
+    private geService:     GroupeElectrogeneService,
+    private carbService:   CarburantGeService,
+    private zoneService:   ZoneService,
+    private excelService:  ExcelExportService,   // ← NEW
+    private router:        Router
   ) {}
 
   ngOnInit(): void {
@@ -108,6 +111,21 @@ export class GroupeElectrogeneListComponent implements OnInit {
     );
   }
 
+  // ── ★ Export Excel — Groupes avec détails Agilis ─────────────────────
+
+  async exportGroupesExcel(): Promise<void> {
+    if (this.exporting || this.groupes.length === 0) return;
+    this.exporting = true;
+    try {
+      await this.excelService.exportGroupes(this.filteredGroupes);
+    } catch (err) {
+      console.error('Erreur export Excel:', err);
+      alert('Erreur lors de la génération du fichier Excel.');
+    } finally {
+      this.exporting = false;
+    }
+  }
+
   // ── Actions CRUD Groupe ───────────────────────────────────────────────
 
   openCreateGE(): void {
@@ -137,7 +155,6 @@ export class GroupeElectrogeneListComponent implements OnInit {
 
   // ── Modal Saisie Carburant ────────────────────────────────────────────
 
-  /** Ouvre le modal de saisie directement depuis la liste */
   openSaisieModal(ge: GroupeElectrogene, saisie?: GestionCarburantGE): void {
     this.selectedGE         = ge;
     this.selectedFuelSaisie = saisie ?? null;
@@ -146,7 +163,6 @@ export class GroupeElectrogeneListComponent implements OnInit {
 
   onSaisieSaved(): void {
     this.showSaisieModal = false;
-    // Pas besoin de recharger la liste ici, on est sur la page liste
   }
 
   // ── Modal Détail Carte Agilis ─────────────────────────────────────────

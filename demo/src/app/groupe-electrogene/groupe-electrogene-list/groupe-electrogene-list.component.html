@@ -11,27 +11,13 @@
       </div>
     </div>
     <nav class="sidebar-nav">
-      <a class="nav-item" (click)="navigateTo('/admin/dashboardAdmin')">
-        <span class="nav-icon">📊</span> Dashboard
-      </a>
-      <a class="nav-item" (click)="navigateTo('/admin/utilisateurs')">
-        <span class="nav-icon">👥</span> Utilisateurs
-      </a>
-      <a class="nav-item" (click)="navigateTo('/admin/zones')">
-        <span class="nav-icon">📍</span> Zones
-      </a>
-      <a class="nav-item" (click)="navigateTo('/admin/vehicules')">
-        <span class="nav-icon">🚗</span> Véhicules
-      </a>
-      <a class="nav-item" (click)="navigateTo('/admin/carburant')">
-        <span class="nav-icon">⛽</span> Carburant
-      </a>
-      <a class="nav-item" (click)="navigateTo('/admin/maintenance')">
-        <span class="nav-icon">🔧</span> Maintenance
-      </a>
-      <a class="nav-item active">
-        <span class="nav-icon">⚡</span> Groupes électrogènes
-      </a>
+      <a class="nav-item" (click)="navigateTo('/admin/dashboardAdmin')"><span class="nav-icon">📊</span> Dashboard</a>
+      <a class="nav-item" (click)="navigateTo('/admin/utilisateurs')"><span class="nav-icon">👥</span> Utilisateurs</a>
+      <a class="nav-item" (click)="navigateTo('/admin/zones')"><span class="nav-icon">📍</span> Zones</a>
+      <a class="nav-item" (click)="navigateTo('/admin/vehicules')"><span class="nav-icon">🚗</span> Véhicules</a>
+      <a class="nav-item" (click)="navigateTo('/admin/carburant')"><span class="nav-icon">⛽</span> Carburant</a>
+      <a class="nav-item" (click)="navigateTo('/admin/maintenance')"><span class="nav-icon">🔧</span> Maintenance</a>
+      <a class="nav-item active"><span class="nav-icon">⚡</span> Groupes électrogènes</a>
     </nav>
     <div class="sidebar-footer">
       <div class="user-avatar">AD</div>
@@ -63,6 +49,17 @@
           Gestion Carburant
         </button>
 
+        <!-- ★ NEW: Export Excel button -->
+        <button class="btn-excel" (click)="exportGroupesExcel()" [disabled]="exporting || groupes.length === 0" [title]="'Télécharger la liste complète avec détails Agilis en Excel'">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="12" y1="18" x2="12" y2="12"/>
+            <polyline points="9 15 12 18 15 15"/>
+          </svg>
+          {{ exporting ? 'Export…' : 'Télécharger Excel' }}
+        </button>
+
         <button class="btn-import" (click)="ouvrirImport()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -70,6 +67,7 @@
           </svg>
           Importer Excel
         </button>
+
         <button class="btn-new" (click)="openCreateGE()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
@@ -85,13 +83,10 @@
       <!-- Filtres -->
       <div class="filter-bar">
         <div class="search-wrap">
-          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
-          <input class="search-input"
-                 placeholder="Rechercher site, utilisateur ROC…"
-                 [(ngModel)]="searchText"/>
+          <input class="search-input" placeholder="Rechercher site, utilisateur ROC…" [(ngModel)]="searchText"/>
         </div>
       </div>
 
@@ -143,7 +138,6 @@
               <td>
                 <div class="row-actions">
                   <button class="btn-act btn-detail" (click)="openDetail(ge)">🪪 Détail</button>
-                  <!-- ✅ CORRIGÉ : ouvre le modal de saisie directement -->
                   <button class="btn-act btn-fuel" (click)="openSaisieModal(ge)">⛽ Saisir</button>
                   <button class="btn-act btn-edit" (click)="openEditGE(ge)">✏️</button>
                   <button class="btn-act btn-delete" (click)="deleteGE(ge.site)">🗑</button>
@@ -158,7 +152,7 @@
   </main>
 </div>
 
-<!-- ══════════════════ FORMULAIRE GROUPE (création / édition) ══════════════════ -->
+<!-- ══════════════════ FORMULAIRE GROUPE ══════════════════ -->
 <app-groupe-electrogene-form
   *ngIf="showGroupeForm"
   [mode]="formMode"
@@ -181,7 +175,6 @@
 <!-- ══════════════════ MODAL DÉTAIL CARTE AGILIS ══════════════════ -->
 <div *ngIf="showDetailModal && detailGE" class="detail-modal-overlay" (click)="closeDetail()">
   <div class="detail-modal" (click)="$event.stopPropagation()">
-
     <div class="detail-header">
       <div class="detail-header-left">
         <div class="detail-icon">🪪</div>
@@ -192,7 +185,6 @@
       </div>
       <button class="detail-close" (click)="closeDetail()">✕</button>
     </div>
-
     <div class="detail-body">
       <div class="detail-grid">
         <div class="detail-card">
@@ -204,7 +196,6 @@
           <div class="detail-card-value mono">{{ detailGE.numeroCarte || '—' }}</div>
         </div>
       </div>
-
       <div class="detail-grid detail-grid-3">
         <div class="detail-card">
           <div class="detail-card-label"><span class="detail-card-icon">📅</span> Date Expiration</div>
@@ -229,13 +220,11 @@
           <div class="detail-card-hint">Cliquez pour afficher</div>
         </div>
       </div>
-
       <div class="detail-card detail-card-full">
         <div class="detail-card-label"><span class="detail-card-icon">👤</span> Utilisateur ROC</div>
         <div class="detail-card-value">{{ detailGE.utilisateurRoc || '—' }}</div>
       </div>
     </div>
-
     <div class="detail-footer">
       <button class="btn-act btn-edit" (click)="openEditGE(detailGE); closeDetail()">✏️ Modifier</button>
       <button class="detail-close-btn" (click)="closeDetail()">Fermer</button>
@@ -246,52 +235,36 @@
 <!-- ══════════════════ MODAL IMPORT EXCEL ══════════════════ -->
 <div *ngIf="showImportModal" class="import-modal-overlay" (click)="fermerImport()">
   <div class="import-modal" (click)="$event.stopPropagation()">
-
     <div class="import-modal-header">
       <div class="import-header-left">
         <div class="import-icon">📥</div>
         <div>
           <h3>Importer groupes électrogènes</h3>
-          <p style="font-size:12px;color:#64748b;margin-top:2px;">
-            Fichier Excel « Gestion de Carburant Groupe Electrogène.xlsx »
-          </p>
+          <p style="font-size:12px;color:#64748b;margin-top:2px;">Fichier Excel « Gestion de Carburant Groupe Electrogène.xlsx »</p>
         </div>
       </div>
       <button class="import-close" (click)="fermerImport()">✕</button>
     </div>
-
     <div class="import-modal-body">
       <div class="import-info-banner">
         ⚡ Sélectionnez le fichier Excel. Les sites existants seront mis à jour, les nouveaux seront créés.
       </div>
-
       <div *ngIf="importResult" class="import-result import-result-success">
         <div class="import-result-header">✅ Import terminé</div>
         <div class="import-result-stats">
-          <div class="import-stat">
-            <span class="import-stat-num" style="color:#22c55e">{{ importResult.imported }}</span>
-            <span>Créés</span>
-          </div>
-          <div class="import-stat">
-            <span class="import-stat-num" style="color:#3b82f6">{{ importResult.updated }}</span>
-            <span>Mis à jour</span>
-          </div>
-          <div class="import-stat">
-            <span class="import-stat-num" style="color:#f59e0b">{{ importResult.skipped }}</span>
-            <span>Ignorés</span>
-          </div>
+          <div class="import-stat"><span class="import-stat-num" style="color:#22c55e">{{ importResult.imported }}</span><span>Créés</span></div>
+          <div class="import-stat"><span class="import-stat-num" style="color:#3b82f6">{{ importResult.updated }}</span><span>Mis à jour</span></div>
+          <div class="import-stat"><span class="import-stat-num" style="color:#f59e0b">{{ importResult.skipped }}</span><span>Ignorés</span></div>
         </div>
         <div *ngIf="importResult.errors?.length" class="import-errors">
           <strong style="color:#ef4444">Erreurs :</strong>
           <ul><li *ngFor="let e of importResult.errors">{{ e }}</li></ul>
         </div>
       </div>
-
       <div *ngIf="importLoading" class="import-loading">
         <div class="import-spinner"></div>
         <span>Import en cours…</span>
       </div>
-
       <div *ngIf="!importLoading" class="import-file-section">
         <label class="btn-import" style="display:inline-flex;cursor:pointer;padding:10px 20px;">
           📂 Choisir le fichier Excel
@@ -300,7 +273,6 @@
         <p class="import-note">Seuls les fichiers .xlsx sont acceptés.</p>
       </div>
     </div>
-
     <div class="import-modal-footer">
       <button class="import-close-btn" (click)="fermerImport()">Fermer</button>
     </div>
