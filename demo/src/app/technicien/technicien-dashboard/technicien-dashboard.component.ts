@@ -1,5 +1,5 @@
-// src/app/technicien/dashboard/technicien-dashboard.component.ts
-import { Component, OnInit } from '@angular/core';
+// src/app/technicien/technicien-dashboard/technicien-dashboard.component.ts
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { TechnicienService } from '../../services/technicien.service';
@@ -12,12 +12,14 @@ import { Zone } from '../../models/zone';
   templateUrl: './technicien-dashboard.component.html',
   styleUrls: ['./technicien-dashboard.component.css']
 })
-export class TechnicienDashboardComponent implements OnInit {
+export class TechnicienDashboardComponent implements OnInit, OnDestroy {
 
   profil: Utilisateur | null = null;
   zones: Zone[] = [];
   loading = true;
+  error: string | null = null;
   currentTime = new Date();
+  private timerInterval: any;
 
   constructor(
     private authService: AuthService,
@@ -27,19 +29,50 @@ export class TechnicienDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadProfil();
-    // Met à jour l'heure chaque minute
-    setInterval(() => { this.currentTime = new Date(); }, 60000);
+    this.timerInterval = setInterval(() => {
+      this.currentTime = new Date();
+    }, 60000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.timerInterval) clearInterval(this.timerInterval);
   }
 
   loadProfil(): void {
     this.loading = true;
+    this.error = null;
+
+    // On appelle les deux endpoints en parallèle pour fiabilité
     this.technicienService.getProfil().subscribe({
       next: (data) => {
         this.profil = data;
-        this.zones  = data.zones || [];
+        // Zones viennent du profil
+        if (data.zones && data.zones.length > 0) {
+          this.zones = data.zones;
+          this.loading = false;
+        } else {
+          // Fallback : appel direct /mes-zones
+          this.loadZonesFallback();
+        }
+      },
+      error: (err) => {
+        console.error('Erreur getProfil:', err);
+        this.error = 'Impossible de charger le profil.';
+        this.loading = false;
+      }
+    });
+  }
+
+  /** Fallback si le profil ne retourne pas les zones */
+  private loadZonesFallback(): void {
+    this.technicienService.getMesZones().subscribe({
+      next: (zones) => {
+        this.zones = zones || [];
         this.loading = false;
       },
-      error: () => {
+      error: (err) => {
+        console.error('Erreur getMesZones:', err);
+        this.zones = [];
         this.loading = false;
       }
     });
@@ -74,5 +107,9 @@ export class TechnicienDashboardComponent implements OnInit {
 
   get isConducteur(): boolean {
     return this.profil?.specialite === 'Conducteur';
+  }
+
+  get nbZones(): number {
+    return this.zones.length;
   }
 }

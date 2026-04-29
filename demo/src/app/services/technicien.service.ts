@@ -32,7 +32,7 @@ export class TechnicienService {
   }
 
   /**
-   * Récupère uniquement les zones affectées au technicien
+   * Récupère uniquement les zones affectées au technicien (endpoint dédié)
    */
   getMesZones(): Observable<Zone[]> {
     return this.http.get<Zone[]>(`${this.apiUrl}/mes-zones`, {
