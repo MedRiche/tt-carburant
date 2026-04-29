@@ -1,4 +1,5 @@
 <!-- src/app/technicien/technicien-dashboard/technicien-dashboard.component.html -->
+<!-- ✅ FIX: Removed :'fr' locale argument from date pipes — locale is now registered globally in app.module.ts -->
 <div class="tech-shell">
 
   <!-- ══════════════════════════════════════════════════
@@ -108,8 +109,9 @@
           <span class="greeting-text">{{ getGreeting() }},</span>
           <span class="greeting-name">{{ nomAffiche.split(' ')[0] }}</span>
         </div>
+        <!-- ✅ FIX: Removed :'':fr locale arg — locale is now global via LOCALE_ID provider -->
         <div class="topbar-date">
-          {{ currentTime | date:'EEEE d MMMM yyyy':'':'fr' }} · {{ currentTime | date:'HH:mm' }}
+          {{ currentTime | date:'EEEE d MMMM yyyy' }} · {{ currentTime | date:'HH:mm' }}
         </div>
       </div>
       <div class="topbar-right">

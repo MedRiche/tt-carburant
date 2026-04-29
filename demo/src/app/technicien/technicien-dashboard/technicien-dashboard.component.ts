@@ -29,6 +29,7 @@ export class TechnicienDashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadProfil();
+    // Update clock every minute
     this.timerInterval = setInterval(() => {
       this.currentTime = new Date();
     }, 60000);
@@ -42,28 +43,31 @@ export class TechnicienDashboardComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error = null;
 
-    // On appelle les deux endpoints en parallèle pour fiabilité
     this.technicienService.getProfil().subscribe({
       next: (data) => {
         this.profil = data;
-        // Zones viennent du profil
-        if (data.zones && data.zones.length > 0) {
-          this.zones = data.zones;
-          this.loading = false;
-        } else {
-          // Fallback : appel direct /mes-zones
+        // Zones come embedded in the profil response
+        this.zones = (data.zones && data.zones.length > 0) ? data.zones : [];
+
+        if (this.zones.length === 0) {
+          // Fallback: fetch zones via dedicated endpoint
           this.loadZonesFallback();
+        } else {
+          this.loading = false;
         }
       },
       error: (err) => {
         console.error('Erreur getProfil:', err);
+
+        // If 404 or any error, try to at least get zones from localStorage context
+        // and fetch zones separately so the page isn't completely broken
         this.error = 'Impossible de charger le profil.';
         this.loading = false;
       }
     });
   }
 
-  /** Fallback si le profil ne retourne pas les zones */
+  /** Fallback if profil endpoint doesn't return zones */
   private loadZonesFallback(): void {
     this.technicienService.getMesZones().subscribe({
       next: (zones) => {
@@ -94,7 +98,8 @@ export class TechnicienDashboardComponent implements OnInit, OnDestroy {
   }
 
   getInitials(nom: string): string {
-    return (nom || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    if (!nom) return '?';
+    return nom.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
   }
 
   get nomAffiche(): string {

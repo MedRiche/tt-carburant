@@ -6,8 +6,10 @@ import com.example.ttcarburant.model.entity.AffectationUtilisateurZone;
 import com.example.ttcarburant.model.entity.Utilisateur;
 import com.example.ttcarburant.repository.AffectationUtilisateurZoneRepository;
 import com.example.ttcarburant.repository.UtilisateurRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,14 +32,22 @@ public class TechnicienController {
     }
 
     /**
-     * Récupère le profil du technicien connecté avec ses zones affectées
+     * Récupère le profil du technicien connecté avec ses zones affectées.
+     * GET /api/technicien/profil
      */
     @GetMapping("/profil")
     public ResponseEntity<?> getProfil() {
         try {
-            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            // ✅ FIX: Get authentication safely
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ErrorResponse("Non authentifié"));
+            }
+
+            String email = authentication.getName();
             Utilisateur technicien = utilisateurRepository.findByEmail(email)
-                    .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+                    .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé: " + email));
 
             List<AffectationUtilisateurZone> affectations =
                     affectationRepository.findByUtilisateur(technicien);
@@ -65,20 +75,29 @@ public class TechnicienController {
             dto.setZones(zones);
 
             return ResponseEntity.ok(dto);
+
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse(e.getMessage()));
         }
     }
 
     /**
-     * Récupère uniquement les zones affectées au technicien connecté
+     * Récupère uniquement les zones affectées au technicien connecté.
+     * GET /api/technicien/mes-zones
      */
     @GetMapping("/mes-zones")
     public ResponseEntity<?> getMesZones() {
         try {
-            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ErrorResponse("Non authentifié"));
+            }
+
+            String email = authentication.getName();
             Utilisateur technicien = utilisateurRepository.findByEmail(email)
-                    .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+                    .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé: " + email));
 
             List<AffectationUtilisateurZone> affectations =
                     affectationRepository.findByUtilisateur(technicien);
@@ -96,8 +115,10 @@ public class TechnicienController {
                     .collect(Collectors.toList());
 
             return ResponseEntity.ok(zones);
+
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse(e.getMessage()));
         }
     }
 

@@ -1,9 +1,12 @@
-import { NgModule } from '@angular/core';
+import { NgModule, LOCALE_ID } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { CommonModule, registerLocaleData } from '@angular/common';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import localeFr from '@angular/common/locales/fr';
 
+// ✅ FIX: Register French locale data to avoid NG0701 error with date pipe
+registerLocaleData(localeFr, 'fr');
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -15,6 +18,7 @@ import { ZoneFormComponent } from './zones/zone-form/zone-form.component';
 import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
 import { ProfileComponent } from './profile/profile.component';
+
 // Services
 import { AuthService } from './services/auth.service';
 import { ZoneService } from './services/zone.service';
@@ -49,6 +53,7 @@ import { GroupeElectrogeneFormComponent } from './groupe-electrogene/groupe-elec
 import { SaisieCarburantModalComponent } from './groupe-electrogene/saisie-modal/saisie-modal.component';
 import { TechnicienDashboardComponent } from './technicien/technicien-dashboard/technicien-dashboard.component';
 import { TechnicienZonesComponent } from './technicien/technicien-zones/technicien-zones.component';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -75,21 +80,19 @@ import { TechnicienZonesComponent } from './technicien/technicien-zones/technici
     SaisieCarburantModalComponent,
     TechnicienDashboardComponent,
     TechnicienZonesComponent,
-
-
-    
-
   ],
-    imports: [
+  imports: [
     BrowserModule,
     AppRoutingModule,
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
     CommonModule,
-
   ],
- providers: [
+  providers: [
+    // ✅ FIX: Provide French locale globally so date/currency pipes work
+    { provide: LOCALE_ID, useValue: 'fr' },
+
     // Services
     AuthService,
     ZoneService,
@@ -101,12 +104,12 @@ import { TechnicienZonesComponent } from './technicien/technicien-zones/technici
     GroupeElectrogeneService,
     CarburantGeService,
     ConducteurService,
-    
+
     // Guards
     AuthGuard,
     AdminGuard,
     TechnicienGuard,
-    
+
     // HTTP Interceptor pour ajouter automatiquement le token
     {
       provide: HTTP_INTERCEPTORS,
