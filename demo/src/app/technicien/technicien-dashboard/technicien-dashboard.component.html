@@ -1,0 +1,351 @@
+<!-- src/app/technicien/dashboard/technicien-dashboard.component.html -->
+<div class="tech-shell">
+
+  <!-- ══════════════════════════════════════════════════
+       SIDEBAR
+  ══════════════════════════════════════════════════ -->
+  <aside class="sidebar">
+
+    <!-- Brand -->
+    <div class="sidebar-brand">
+      <div class="brand-mark">
+        <div class="brand-sq bq1"></div>
+        <div class="brand-sq bq2"></div>
+        <div class="brand-bar"></div>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">TT Carburant</span>
+        <span class="brand-sub">Espace Technicien</span>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Navigation</div>
+
+      <a class="nav-item active" (click)="navigateTo('/technicien/dashboard')">
+        <span class="nav-icon nav-icon--active">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+          </svg>
+        </span>
+        <span>Tableau de bord</span>
+      </a>
+
+      <a class="nav-item" (click)="navigateTo('/technicien/zones')">
+        <span class="nav-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+          </svg>
+        </span>
+        <span>Mes Zones</span>
+        <span class="nav-badge">{{ zones.length }}</span>
+      </a>
+
+      <div class="nav-section-label" style="margin-top:16px">Prochainement</div>
+
+      <a class="nav-item nav-item--disabled">
+        <span class="nav-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="1" y="3" width="15" height="13" rx="2"/>
+            <path d="M16 8h4l3 5v3h-7V8z"/>
+            <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+          </svg>
+        </span>
+        <span>Mes Véhicules</span>
+        <span class="nav-soon">Bientôt</span>
+      </a>
+
+      <a class="nav-item nav-item--disabled">
+        <span class="nav-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/>
+          </svg>
+        </span>
+        <span>Carburant</span>
+        <span class="nav-soon">Bientôt</span>
+      </a>
+
+      <a class="nav-item nav-item--disabled">
+        <span class="nav-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+        </span>
+        <span>Maintenance</span>
+        <span class="nav-soon">Bientôt</span>
+      </a>
+    </nav>
+
+    <!-- User footer -->
+    <div class="sidebar-footer">
+      <div class="sf-avatar">{{ getInitials(nomAffiche) }}</div>
+      <div class="sf-meta">
+        <span class="sf-name">{{ nomAffiche }}</span>
+        <span class="sf-role">{{ isConducteur ? '🚗 Conducteur' : '🔧 Technicien' }}</span>
+      </div>
+      <button class="sf-logout" (click)="logout()" title="Déconnexion">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- ══════════════════════════════════════════════════
+       MAIN CONTENT
+  ══════════════════════════════════════════════════ -->
+  <main class="main-content">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-greeting">
+          <span class="greeting-text">{{ getGreeting() }},</span>
+          <span class="greeting-name">{{ nomAffiche.split(' ')[0] }}</span>
+        </div>
+        <div class="topbar-date">
+          {{ currentTime | date:'EEEE d MMMM yyyy':'':'fr' }} · {{ currentTime | date:'HH:mm' }}
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="status-pill">
+          <span class="status-dot"></span>
+          <span>En service</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="content-area">
+
+      <!-- Loading -->
+      <div *ngIf="loading" class="loading-screen">
+        <div class="loading-ring"></div>
+        <p class="loading-text">Chargement de votre espace…</p>
+      </div>
+
+      <ng-container *ngIf="!loading">
+
+        <!-- ── WELCOME HERO ── -->
+        <div class="welcome-hero">
+          <div class="hero-bg-circle"></div>
+          <div class="hero-content">
+            <div class="hero-avatar">{{ getInitials(nomAffiche) }}</div>
+            <div class="hero-info">
+              <h1 class="hero-title">{{ getGreeting() }}, {{ nomAffiche }}</h1>
+              <p class="hero-sub">
+                <span *ngIf="!isConducteur">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:4px">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                  </svg>
+                  Technicien · {{ specialite || 'Généraliste' }}
+                </span>
+                <span *ngIf="isConducteur">
+                  🚗 Conducteur · Tunisie Telecom
+                </span>
+              </p>
+              <div class="hero-meta">
+                <span class="hero-meta-item">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+                  </svg>
+                  {{ zones.length }} zone{{ zones.length > 1 ? 's' : '' }} affectée{{ zones.length > 1 ? 's' : '' }}
+                </span>
+                <span class="hero-meta-sep">·</span>
+                <span class="hero-meta-item">{{ profil?.email }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── QUICK STATS ── -->
+        <div class="quick-stats">
+          <div class="stat-card stat-card--zones">
+            <div class="stat-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <span class="stat-number">{{ zones.length }}</span>
+              <span class="stat-label">Zones affectées</span>
+            </div>
+            <div class="stat-arrow" (click)="navigateTo('/technicien/zones')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="stat-card stat-card--muted">
+            <div class="stat-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="1" y="3" width="15" height="13" rx="2"/>
+                <path d="M16 8h4l3 5v3h-7V8z"/>
+                <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <span class="stat-number stat-number--muted">—</span>
+              <span class="stat-label">Véhicules</span>
+            </div>
+            <span class="stat-soon-badge">Bientôt</span>
+          </div>
+
+          <div class="stat-card stat-card--muted">
+            <div class="stat-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <span class="stat-number stat-number--muted">—</span>
+              <span class="stat-label">Carburant</span>
+            </div>
+            <span class="stat-soon-badge">Bientôt</span>
+          </div>
+
+          <div class="stat-card stat-card--muted">
+            <div class="stat-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <span class="stat-number stat-number--muted">—</span>
+              <span class="stat-label">Maintenance</span>
+            </div>
+            <span class="stat-soon-badge">Bientôt</span>
+          </div>
+        </div>
+
+        <!-- ── MES ZONES APERÇU ── -->
+        <div class="section">
+          <div class="section-header">
+            <div class="section-title-wrap">
+              <h2 class="section-title">Mes Zones Affectées</h2>
+              <span class="section-count">{{ zones.length }}</span>
+            </div>
+            <button class="section-action" (click)="navigateTo('/technicien/zones')">
+              Voir tout
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Aucune zone -->
+          <div *ngIf="zones.length === 0" class="empty-zones">
+            <div class="empty-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+              </svg>
+            </div>
+            <p class="empty-title">Aucune zone affectée</p>
+            <p class="empty-sub">Contactez votre administrateur pour obtenir des affectations.</p>
+          </div>
+
+          <!-- Grille des zones -->
+          <div *ngIf="zones.length > 0" class="zones-preview-grid">
+            <div *ngFor="let zone of zones; let i = index"
+                 class="zone-preview-card"
+                 [style.animation-delay]="(i * 80) + 'ms'"
+                 (click)="navigateTo('/technicien/zones')">
+
+              <div class="zpc-header">
+                <div class="zpc-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+                  </svg>
+                </div>
+                <span class="zpc-name">{{ zone.nom }}</span>
+                <div class="zpc-arrow">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="9 18 15 12 9 6"/>
+                  </svg>
+                </div>
+              </div>
+
+              <p *ngIf="zone.description" class="zpc-desc">{{ zone.description }}</p>
+              <p *ngIf="!zone.description" class="zpc-desc zpc-desc--empty">Pas de description</p>
+
+              <div class="zpc-footer">
+                <span *ngIf="zone.responsable" class="zpc-resp">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                  {{ zone.responsable }}
+                </span>
+                <span class="zpc-active-dot"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── ACCÈS RAPIDE ── -->
+        <div class="section">
+          <div class="section-header">
+            <h2 class="section-title">Accès Rapide</h2>
+          </div>
+          <div class="quick-actions-grid">
+
+            <button class="qa-card qa-card--active" (click)="navigateTo('/technicien/zones')">
+              <div class="qa-icon qa-icon--cyan">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+                </svg>
+              </div>
+              <span class="qa-label">Mes Zones</span>
+              <span class="qa-sub">Consulter vos zones</span>
+              <div class="qa-badge qa-badge--available">Disponible</div>
+            </button>
+
+            <button class="qa-card qa-card--locked">
+              <div class="qa-icon qa-icon--gray">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="1" y="3" width="15" height="13" rx="2"/>
+                  <path d="M16 8h4l3 5v3h-7V8z"/>
+                  <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+                </svg>
+              </div>
+              <span class="qa-label">Véhicules</span>
+              <span class="qa-sub">Vos véhicules affectés</span>
+              <div class="qa-badge qa-badge--soon">Étape 3</div>
+            </button>
+
+            <button class="qa-card qa-card--locked">
+              <div class="qa-icon qa-icon--gray">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/>
+                </svg>
+              </div>
+              <span class="qa-label">Carburant</span>
+              <span class="qa-sub">Gestion ravitaillement</span>
+              <div class="qa-badge qa-badge--soon">Étape 4</div>
+            </button>
+
+            <button class="qa-card qa-card--locked">
+              <div class="qa-icon qa-icon--gray">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                </svg>
+              </div>
+              <span class="qa-label">Maintenance</span>
+              <span class="qa-sub">Suivi des interventions</span>
+              <div class="qa-badge qa-badge--soon">Étape 5</div>
+            </button>
+
+          </div>
+        </div>
+
+      </ng-container>
+    </div>
+
+  </main>
+</div>

@@ -47,6 +47,8 @@ import { GroupeElectrogeneListComponent } from './groupe-electrogene/groupe-elec
 import { GestionCarburantGEFormComponent } from './groupe-electrogene/gestion-carburant-ge-form/gestion-carburant-ge-form.component';
 import { GroupeElectrogeneFormComponent } from './groupe-electrogene/groupe-electrogene-form/groupe-electrogene-form.component';
 import { SaisieCarburantModalComponent } from './groupe-electrogene/saisie-modal/saisie-modal.component';
+import { TechnicienDashboardComponent } from './technicien/technicien-dashboard/technicien-dashboard.component';
+import { TechnicienZonesComponent } from './technicien/technicien-zones/technicien-zones.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -71,6 +73,8 @@ import { SaisieCarburantModalComponent } from './groupe-electrogene/saisie-modal
     GestionCarburantGEFormComponent,
     GroupeElectrogeneFormComponent,
     SaisieCarburantModalComponent,
+    TechnicienDashboardComponent,
+    TechnicienZonesComponent,
 
 
     

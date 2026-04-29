@@ -12,6 +12,8 @@ import { CarburantAnalyticsComponent } from './carburant/carburant-analytics/car
 import { MaintenanceListComponent } from './maintenance/maintenance-list/maintenance-list.component';
 import { GroupeElectrogeneListComponent } from './groupe-electrogene/groupe-electrogene-list/groupe-electrogene-list.component';
 import { GestionCarburantGEFormComponent } from './groupe-electrogene/gestion-carburant-ge-form/gestion-carburant-ge-form.component';
+import { TechnicienDashboardComponent } from './technicien/technicien-dashboard/technicien-dashboard.component';
+import { TechnicienZonesComponent } from './technicien/technicien-zones/technicien-zones.component';
 const routes: Routes = [
   // Route par défaut
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -42,7 +44,15 @@ const routes: Routes = [
   },
 
     // Route 404
-  { path: '**', redirectTo: '/login' }
+  {
+  path: 'technicien',
+  canActivate: [TechnicienGuard],
+  children: [
+    { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+    { path: 'dashboard', component: TechnicienDashboardComponent },
+    { path: 'zones', component: TechnicienZonesComponent },
+  ]
+}
 ];
 
 @NgModule({

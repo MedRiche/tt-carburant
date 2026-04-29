@@ -55,6 +55,7 @@ public class SecurityConfig {
                         ).permitAll()
                         // Routes admin uniquement
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/technicien/**").hasRole("TECHNICIEN")
                         // Toutes les autres routes nécessitent une authentification
                         .anyRequest().authenticated()
                 )

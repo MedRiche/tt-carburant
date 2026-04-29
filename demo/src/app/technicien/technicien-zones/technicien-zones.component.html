@@ -1,0 +1,367 @@
+<!-- src/app/technicien/zones/technicien-zones.component.html -->
+<div class="tech-shell">
+
+  <!-- ══════════════ SIDEBAR ══════════════ -->
+  <aside class="sidebar">
+
+    <div class="sidebar-brand">
+      <div class="brand-mark">
+        <div class="brand-sq bq1"></div>
+        <div class="brand-sq bq2"></div>
+        <div class="brand-bar"></div>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">TT Carburant</span>
+        <span class="brand-sub">Espace Technicien</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Navigation</div>
+
+      <a class="nav-item" (click)="navigateTo('/technicien/dashboard')">
+        <span class="nav-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+          </svg>
+        </span>
+        <span>Tableau de bord</span>
+      </a>
+
+      <a class="nav-item active">
+        <span class="nav-icon nav-icon--active">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+          </svg>
+        </span>
+        <span>Mes Zones</span>
+        <span class="nav-badge">{{ zones.length }}</span>
+      </a>
+
+      <div class="nav-section-label" style="margin-top:16px">Prochainement</div>
+
+      <a class="nav-item nav-item--disabled">
+        <span class="nav-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="1" y="3" width="15" height="13" rx="2"/>
+            <path d="M16 8h4l3 5v3h-7V8z"/>
+            <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+          </svg>
+        </span>
+        <span>Mes Véhicules</span>
+        <span class="nav-soon">Bientôt</span>
+      </a>
+
+      <a class="nav-item nav-item--disabled">
+        <span class="nav-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/>
+          </svg>
+        </span>
+        <span>Carburant</span>
+        <span class="nav-soon">Bientôt</span>
+      </a>
+
+      <a class="nav-item nav-item--disabled">
+        <span class="nav-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+        </span>
+        <span>Maintenance</span>
+        <span class="nav-soon">Bientôt</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sf-avatar">{{ getInitials(nomAffiche) }}</div>
+      <div class="sf-meta">
+        <span class="sf-name">{{ nomAffiche }}</span>
+        <span class="sf-role">🔧 Technicien</span>
+      </div>
+      <button class="sf-logout" (click)="logout()" title="Déconnexion">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ══════════════ MAIN ══════════════ -->
+  <main class="main-content">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="back-btn" (click)="navigateTo('/technicien/dashboard')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Retour
+        </button>
+        <div class="topbar-titles">
+          <h1 class="page-title">Mes Zones Affectées</h1>
+          <p class="page-sub">Zones sur lesquelles vous êtes affecté</p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="zones-count-pill">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+          </svg>
+          <span>{{ zones.length }} zone{{ zones.length > 1 ? 's' : '' }}</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="content-area">
+
+      <!-- Loading -->
+      <div *ngIf="loading" class="loading-screen">
+        <div class="loading-ring"></div>
+        <p>Chargement de vos zones…</p>
+      </div>
+
+      <!-- Empty -->
+      <div *ngIf="!loading && zones.length === 0" class="empty-state">
+        <div class="empty-visual">
+          <div class="empty-icon-wrap">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3">
+              <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+            </svg>
+          </div>
+          <div class="empty-rings">
+            <div class="empty-ring ring-1"></div>
+            <div class="empty-ring ring-2"></div>
+          </div>
+        </div>
+        <h2 class="empty-title">Aucune zone affectée</h2>
+        <p class="empty-sub">
+          Votre compte n'a pas encore de zones assignées.<br>
+          Contactez votre administrateur pour obtenir des affectations.
+        </p>
+        <button class="empty-action" (click)="navigateTo('/technicien/dashboard')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Retour au tableau de bord
+        </button>
+      </div>
+
+      <!-- Zones Grid -->
+      <div *ngIf="!loading && zones.length > 0" class="zones-grid-wrap">
+
+        <!-- Info banner -->
+        <div class="info-banner">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span>
+            Vous avez accès à <strong>{{ zones.length }}</strong> zone{{ zones.length > 1 ? 's' : '' }}.
+            Cliquez sur une zone pour voir ses détails.
+          </span>
+        </div>
+
+        <div class="zones-grid">
+          <div *ngFor="let zone of zones; let i = index"
+               class="zone-card"
+               [style.animation-delay]="(i * 90) + 'ms'"
+               (click)="openDetail(zone)">
+
+            <!-- Card decoration -->
+            <div class="zc-accent-bar" [style.background]="getZoneColor(i)"></div>
+
+            <!-- Card header -->
+            <div class="zc-header">
+              <div class="zc-avatar" [style.background]="getZoneColor(i)">
+                {{ getZoneInitial(zone.nom) }}
+              </div>
+              <div class="zc-head-info">
+                <h3 class="zc-name">{{ zone.nom }}</h3>
+                <span class="zc-active">
+                  <span class="zc-active-dot"></span>
+                  Zone active
+                </span>
+              </div>
+              <div class="zc-expand-btn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Card body -->
+            <div class="zc-body">
+              <p *ngIf="zone.description" class="zc-desc">{{ zone.description }}</p>
+              <p *ngIf="!zone.description" class="zc-desc zc-desc--empty">Aucune description disponible</p>
+
+              <div class="zc-meta-row">
+                <div *ngIf="zone.responsable" class="zc-meta-item">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                  <span>{{ zone.responsable }}</span>
+                </div>
+                <div *ngIf="zone.dateCreation" class="zc-meta-item">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                  <span>{{ zone.dateCreation | date:'dd/MM/yyyy' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card footer chips -->
+            <div class="zc-footer">
+              <div class="zc-chip zc-chip--vehicles">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="1" y="3" width="15" height="13" rx="2"/>
+                  <path d="M16 8h4l3 5v3h-7V8z"/>
+                  <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+                </svg>
+                Véhicules (bientôt)
+              </div>
+              <div class="zc-chip zc-chip--fuel">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M2 20h20M5 20V8l7-5 7 5v12"/>
+                </svg>
+                Carburant (bientôt)
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     MODAL DÉTAIL ZONE
+════════════════════════════════════════════════════════ -->
+<ng-container *ngIf="showDetail && selectedZone">
+  <div class="detail-overlay" (click)="closeDetail()">
+    <div class="detail-modal" (click)="$event.stopPropagation()">
+
+      <!-- Modal header -->
+      <div class="dm-header">
+        <div class="dm-avatar" [style.background]="getZoneColor(zones.indexOf(selectedZone))">
+          {{ getZoneInitial(selectedZone.nom) }}
+        </div>
+        <div class="dm-head-text">
+          <h2 class="dm-title">{{ selectedZone.nom }}</h2>
+          <div class="dm-active-badge">
+            <span class="dm-active-dot"></span>
+            Zone active · Affectée à vous
+          </div>
+        </div>
+        <button class="dm-close" (click)="closeDetail()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal body -->
+      <div class="dm-body">
+
+        <!-- Description -->
+        <div class="dm-section">
+          <label class="dm-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+              <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>
+            Description
+          </label>
+          <p class="dm-value" *ngIf="selectedZone.description">{{ selectedZone.description }}</p>
+          <p class="dm-value dm-value--empty" *ngIf="!selectedZone.description">Aucune description renseignée</p>
+        </div>
+
+        <!-- Responsable -->
+        <div class="dm-section" *ngIf="selectedZone.responsable">
+          <label class="dm-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            Responsable
+          </label>
+          <p class="dm-value">{{ selectedZone.responsable }}</p>
+        </div>
+
+        <!-- Date -->
+        <div class="dm-section" *ngIf="selectedZone.dateCreation">
+          <label class="dm-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            Date de création
+          </label>
+          <p class="dm-value">{{ selectedZone.dateCreation | date:'d MMMM yyyy' }}</p>
+        </div>
+
+        <!-- Fonctionnalités à venir -->
+        <div class="dm-coming-soon">
+          <h3 class="dm-cs-title">Fonctionnalités disponibles dans cette zone</h3>
+          <div class="dm-cs-list">
+            <div class="dm-cs-item dm-cs-item--coming">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="1" y="3" width="15" height="13" rx="2"/>
+                <path d="M16 8h4l3 5v3h-7V8z"/>
+                <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+              </svg>
+              <div>
+                <strong>Véhicules</strong>
+                <span>Consulter les véhicules de la zone</span>
+              </div>
+              <span class="dm-soon-tag">Étape 3</span>
+            </div>
+            <div class="dm-cs-item dm-cs-item--coming">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/>
+              </svg>
+              <div>
+                <strong>Carburant</strong>
+                <span>Enregistrer les ravitaillements</span>
+              </div>
+              <span class="dm-soon-tag">Étape 4</span>
+            </div>
+            <div class="dm-cs-item dm-cs-item--coming">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+              </svg>
+              <div>
+                <strong>Maintenance</strong>
+                <span>Gérer les opérations de maintenance</span>
+              </div>
+              <span class="dm-soon-tag">Étape 5</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal footer -->
+      <div class="dm-footer">
+        <button class="dm-close-btn" (click)="closeDetail()">Fermer</button>
+      </div>
+
+    </div>
+  </div>
+</ng-container>
