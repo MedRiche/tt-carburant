@@ -65,7 +65,7 @@
           </svg>
         </span>
         Maintenance
-      </a>      
+      </a>
       <a class="nav-item" routerLink="/admin/groupes-electrogenes">
         <span class="nav-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -163,7 +163,7 @@
                 <tr>
                   <th>Conducteur</th>
                   <th>Email généré</th>
-                  <th>Spécialité</th>
+                  <th>Type</th>
                   <th>Date import</th>
                   <th>Actions</th>
                 </tr>
@@ -180,7 +180,6 @@
                     </div>
                   </td>
                   <td><span class="u-email">{{ user.email }}</span></td>
-                  <!-- ✅ FIX: Affiche "Conducteur" et non le rôle TECHNICIEN -->
                   <td><span class="chip chip-conducteur">Conducteur</span></td>
                   <td><span class="u-date">{{ user.dateCreation | date:'dd MMM yyyy HH:mm' }}</span></td>
                   <td>
@@ -235,7 +234,6 @@
                     </div>
                   </td>
                   <td><span class="u-email">{{ user.email }}</span></td>
-                  <!-- ✅ FIX: Affiche le vrai rôle TECHNICIEN -->
                   <td><span class="chip chip-role">TECHNICIEN</span></td>
                   <td><span class="u-spec">{{ user.specialite || '—' }}</span></td>
                   <td><span class="u-date">{{ user.dateCreation | date:'dd MMM yyyy' }}</span></td>
@@ -303,11 +301,13 @@
                   </div>
                 </td>
                 <td><span class="u-email">{{ user.email }}</span></td>
-                <!-- ✅ FIX: getRoleLabel() retourne "Conducteur" ou le vrai rôle -->
+
+                <!-- ✅ FIX: Conducteur affiché comme "Conducteur", pas TECHNICIEN -->
                 <td>
                   <span *ngIf="isConducteur(user)" class="chip chip-conducteur">Conducteur</span>
                   <span *ngIf="!isConducteur(user)" class="chip chip-role">{{ user.role }}</span>
                 </td>
+
                 <td>
                   <span class="chip" [ngClass]="getStatutClass(user.statutCompte)">
                     <span class="chip-dot"></span>
@@ -322,7 +322,7 @@
                 </td>
                 <td>
                   <div class="row-actions">
-                    <button type="button" class="btn-act btn-edit" (click)="openEditModal(user)" title="Modifier les zones">
+                    <button type="button" class="btn-act btn-edit" (click)="openEditModal(user)" title="Modifier">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -356,12 +356,9 @@
   </main>
 </div>
 
-<!-- ════════════════════════════════════════════════════════════════════════
-     MODALS — Placés EN DEHORS de .app-shell
-     ✅ CORRECTION PRINCIPALE : position:fixed sur body via ng-container
-     ════════════════════════════════════════════════════════════════════════ -->
-
-<!-- ════════════════ MODAL VALIDATION ════════════════ -->
+<!-- ════════════════════════════════════════════════════════════════════
+     MODAL VALIDATION
+════════════════════════════════════════════════════════════════════ -->
 <ng-container *ngIf="showValidationModal">
   <div class="modal-backdrop" (click)="closeValidationModal()">
     <div class="modal" (click)="$event.stopPropagation()">
@@ -389,13 +386,11 @@
 
       <div class="modal-body">
 
-        <!-- Chargement zones -->
         <div *ngIf="zonesLoading" style="display:flex;align-items:center;gap:10px;padding:12px 0;color:#94a3b8;font-size:13px;">
           <div class="loader-ring" style="width:20px;height:20px;border-width:2px;"></div>
           Chargement des zones…
         </div>
 
-        <!-- Info conducteur -->
         <div *ngIf="selectedUser && isConducteur(selectedUser)" class="conducteur-info-box">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -408,7 +403,6 @@
         <div class="modal-info-row">
           <div class="info-tag">
             <span class="info-tag-label">Rôle / Type</span>
-            <!-- ✅ FIX: Affiche "Conducteur" pour les conducteurs importés -->
             <span *ngIf="selectedUser && isConducteur(selectedUser)" class="chip chip-conducteur">Conducteur</span>
             <span *ngIf="selectedUser && !isConducteur(selectedUser)" class="chip chip-role">{{ selectedUser.role }}</span>
           </div>
@@ -418,7 +412,6 @@
           </div>
         </div>
 
-        <!-- Sélection des zones -->
         <div class="zone-picker-header">
           <p class="zone-picker-label">
             Sélectionnez les zones à affecter
@@ -427,7 +420,6 @@
           <span class="zone-selected-count">{{ selectedZoneIds.length }} sélectionnée(s)</span>
         </div>
 
-        <!-- Aucune zone disponible -->
         <div *ngIf="!zonesLoading && toutesZones.length === 0"
              style="padding:16px;text-align:center;color:#f59e0b;font-size:13px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:8px;">
           ⚠️ Aucune zone disponible. Créez d'abord des zones dans le menu <strong>Zones</strong>.
@@ -450,7 +442,6 @@
           </div>
         </div>
 
-        <!-- Avertissement si aucune zone sélectionnée (pas bloquant) -->
         <div *ngIf="!zonesLoading && toutesZones.length > 0 && selectedZoneIds.length === 0"
              style="display:flex;align-items:center;gap:6px;font-size:12px;color:#f59e0b;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -478,10 +469,14 @@
   </div>
 </ng-container>
 
-<!-- ════════════════ MODAL MODIFICATION ════════════════ -->
+<!-- ════════════════════════════════════════════════════════════════════
+     MODAL MODIFICATION — avec édition email / type / spécialité
+════════════════════════════════════════════════════════════════════ -->
 <ng-container *ngIf="showEditModal">
   <div class="modal-overlay" (mousedown)="closeEditModal()">
     <div class="modal-content" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
+
+      <!-- Header -->
       <div class="modal-header">
         <h3>
           ✏️ Modifier
@@ -490,28 +485,90 @@
         </h3>
         <button type="button" class="btn-close" (click)="closeEditModal()">✕</button>
       </div>
+
       <div class="modal-body">
-        <div class="user-info-box">
-          <p><strong>Email :</strong> {{ selectedUser?.email }}</p>
-          <!-- ✅ FIX: Affiche le bon type -->
-          <p>
-            <strong>Type :</strong>
-            <span *ngIf="selectedUser && isConducteur(selectedUser)">🚗 Conducteur</span>
-            <span *ngIf="selectedUser && !isConducteur(selectedUser)">{{ selectedUser.role }}</span>
-          </p>
-          <p *ngIf="selectedUser?.specialite && !isConducteur(selectedUser!)">
-            <strong>Spécialité :</strong> {{ selectedUser?.specialite }}
-          </p>
-          <p>
-            <strong>Statut :</strong>
-            <span class="badge" [ngClass]="getStatutClass(selectedUser!.statutCompte)">
-              {{ getStatutLabel(selectedUser!.statutCompte) }}
-            </span>
-          </p>
+
+        <!-- ── SECTION : Informations du compte ── -->
+        <div class="edit-section">
+          <div class="edit-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            Informations du compte
+          </div>
+
+          <div class="edit-fields-grid">
+
+            <!-- Email -->
+            <div class="edit-field-group">
+              <label class="edit-field-label">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+                Adresse email
+              </label>
+              <input
+                type="email"
+                class="edit-input"
+                [(ngModel)]="editEmail"
+                placeholder="exemple@domaine.com"
+              />
+            </div>
+
+            <!-- Type / Rôle -->
+            <div class="edit-field-group">
+              <label class="edit-field-label">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                Type / Rôle
+              </label>
+              <select class="edit-select" [(ngModel)]="editType">
+                <option *ngFor="let opt of typeOptions" [value]="opt.value">{{ opt.label }}</option>
+              </select>
+            </div>
+
+            <!-- Spécialité — cachée si type = Conducteur (géré automatiquement) -->
+            <div class="edit-field-group" *ngIf="!editTypeIsConducteur">
+              <label class="edit-field-label">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                </svg>
+                Spécialité
+                <span class="edit-label-opt">(optionnel)</span>
+              </label>
+              <input
+                type="text"
+                class="edit-input"
+                [(ngModel)]="editSpecialite"
+                placeholder="Ex : Maintenance réseau, Terrain…"
+              />
+            </div>
+
+            <!-- Hint quand type = Conducteur -->
+            <div class="edit-conducteur-hint" *ngIf="editTypeIsConducteur">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              La spécialité sera automatiquement définie sur <strong>Conducteur</strong>.
+            </div>
+
+          </div>
         </div>
-        <div class="zone-selection">
-          <h4>Modifier les zones affectées</h4>
+
+        <!-- ── SECTION : Zones affectées ── -->
+        <div class="edit-section">
+          <div class="edit-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+            </svg>
+            Zones affectées
+            <span class="zone-selected-count" style="margin-left:auto;">{{ selectedZoneIds.length }} sélectionnée(s)</span>
+          </div>
           <p class="help-text">Cochez/décochez les zones pour cet utilisateur.</p>
+
           <div class="zones-grid">
             <div *ngFor="let zone of toutesZones"
                  class="zone-item"
@@ -526,14 +583,26 @@
               </div>
             </div>
           </div>
+
+          <div *ngIf="toutesZones.length === 0"
+               style="padding:12px;text-align:center;color:#f59e0b;font-size:12px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:8px;margin-top:8px;">
+            ⚠️ Aucune zone disponible.
+          </div>
         </div>
-      </div>
+
+      </div><!-- /modal-body -->
+
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="closeEditModal()" [disabled]="submitting">Annuler</button>
         <button type="button" class="btn btn-primary" (click)="modifierUtilisateur()" [disabled]="submitting">
-          {{ submitting ? 'Modification...' : 'Enregistrer les zones' }}
+          <svg *ngIf="!submitting" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span *ngIf="submitting" class="loader-ring" style="width:13px;height:13px;border-width:2px;display:inline-block;margin-right:4px;"></span>
+          {{ submitting ? 'Enregistrement…' : 'Enregistrer les modifications' }}
         </button>
       </div>
+
     </div>
   </div>
 </ng-container>

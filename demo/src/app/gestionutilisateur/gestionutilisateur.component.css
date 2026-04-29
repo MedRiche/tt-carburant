@@ -943,3 +943,140 @@
   .modal-header, .modal-body, .modal-footer { padding: 15px; }
   .modal-head, .modal-body, .modal-foot { padding: 15px; }
 }
+/* ===== AMÉLIORATIONS DES CHAMPS EMAIL & SPÉCIALITÉ (modal modification) ===== */
+
+/* Conteneur des champs en grille */
+.edit-fields-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.edit-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Label commun avec icône */
+.edit-field-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.edit-field-label svg {
+  width: 14px;
+  height: 14px;
+  stroke: #00d4aa;
+  stroke-width: 1.8;
+}
+
+/* Inputs & select */
+.edit-input,
+.edit-select {
+  background: #131f35;
+  border: 1px solid #1e2d47;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: #e2e8f0;
+  transition: all 0.2s ease;
+  width: 100%;
+  outline: none;
+}
+
+.edit-input:focus,
+.edit-select:focus {
+  border-color: #00d4aa;
+  box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.2);
+  background: #172340;
+}
+
+.edit-input::placeholder {
+  color: #475569;
+  font-size: 13px;
+}
+
+/* Indication optionnel */
+.edit-label-opt {
+  font-size: 10px;
+  font-weight: 400;
+  color: #475569;
+  margin-left: 4px;
+}
+
+/* Message d'aide pour le passage en type Conducteur */
+.edit-conducteur-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(245, 158, 11, 0.08);
+  border-left: 3px solid #f59e0b;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 6px;
+}
+
+.edit-conducteur-hint svg {
+  stroke: #f59e0b;
+  flex-shrink: 0;
+}
+
+.edit-conducteur-hint strong {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+/* Amélioration de la section "Informations du compte" */
+.edit-section {
+  margin-bottom: 24px;
+  background: #0a0f1c;
+  border-radius: 12px;
+  padding: 18px;
+  border: 1px solid #1e2d47;
+}
+
+.edit-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #1e2d47;
+}
+
+.edit-section-title svg {
+  stroke: #00d4aa;
+  width: 16px;
+  height: 16px;
+}
+
+/* Effet de survol sur les champs */
+.edit-input:hover,
+.edit-select:hover {
+  border-color: #2c405c;
+}
+
+/* Responsive : ajustement pour petits écrans */
+@media (max-width: 600px) {
+  .edit-input,
+  .edit-select {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  .edit-section {
+    padding: 12px;
+  }
+}

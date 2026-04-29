@@ -1,6 +1,7 @@
 package com.example.ttcarburant.controller;
 
 import com.example.ttcarburant.dto.UtilisateurDto;
+import com.example.ttcarburant.dto.ModifierUtilisateurRequest;
 import com.example.ttcarburant.dto.ValiderCompteRequest;
 import com.example.ttcarburant.services.UtilisateurService;
 import jakarta.validation.Valid;
@@ -70,6 +71,28 @@ public class AdminUtilisateurController {
             return ResponseEntity.ok(new SuccessResponse("Compte refusé", utilisateur));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
+
+    @PutMapping("/{id}/modifier-info")
+    public ResponseEntity<?> modifierInfo(
+            @PathVariable("id") Long id,
+            @RequestBody ModifierUtilisateurRequest request) {
+
+        try {
+            UtilisateurDto utilisateur = utilisateurService.modifierInfo(id, request);
+
+            return ResponseEntity.ok(
+                    new SuccessResponse(
+                            "Informations utilisateur modifiées avec succès",
+                            utilisateur
+                    )
+            );
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(new ErrorResponse(e.getMessage()));
         }
     }
 

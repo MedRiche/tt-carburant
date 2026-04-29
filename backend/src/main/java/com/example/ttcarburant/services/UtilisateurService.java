@@ -3,6 +3,7 @@ package com.example.ttcarburant.services;
 import com.example.ttcarburant.dto.UtilisateurDto;
 import com.example.ttcarburant.dto.ValiderCompteRequest;
 import com.example.ttcarburant.dto.ZoneDto;
+import com.example.ttcarburant.dto.ModifierUtilisateurRequest;
 import com.example.ttcarburant.model.entity.AffectationUtilisateurZone;
 import com.example.ttcarburant.model.entity.Utilisateur;
 import com.example.ttcarburant.model.entity.Zone;
@@ -175,6 +176,27 @@ public class UtilisateurService {
         Zone zone = zoneRepository.findById(zoneId)
                 .orElseThrow(() -> new RuntimeException("Zone non trouvée"));
         affectationRepository.deleteByUtilisateurAndZone(utilisateur, zone);
+        return convertToDto(utilisateur);
+    }
+
+    @Transactional
+    public UtilisateurDto modifierInfo(Long id, ModifierUtilisateurRequest request) {
+
+        Utilisateur utilisateur = utilisateurRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+        // Vérifier email déjà utilisé
+        if (!utilisateur.getEmail().equals(request.getEmail())
+                && utilisateurRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Cet email est déjà utilisé");
+        }
+
+        utilisateur.setEmail(request.getEmail());
+        utilisateur.setRole(request.getRole());
+        utilisateur.setSpecialite(request.getSpecialite());
+
+        utilisateurRepository.save(utilisateur);
+
         return convertToDto(utilisateur);
     }
 

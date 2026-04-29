@@ -55,4 +55,12 @@ export class UtilisateurService {
   retirerZone(utilisateurId: number, zoneId: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${utilisateurId}/zones/${zoneId}`, { headers: this.getHeaders() });
   }
+
+  modifierInfo(id: number, data: any): Observable<any> {
+  return this.http.put(
+    `${this.apiUrl}/${id}/modifier-info`,
+    data,
+    { headers: this.getHeaders() }
+  );
+}
 }
