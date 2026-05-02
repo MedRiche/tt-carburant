@@ -1,0 +1,643 @@
+<!-- src/app/technicien/technicien-equipements/technicien-equipements.component.html -->
+<div class="tech-shell">
+
+  <!-- ══════════════ SIDEBAR ══════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark">
+        <div class="brand-sq bq1"></div>
+        <div class="brand-sq bq2"></div>
+        <div class="brand-bar"></div>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">TT Carburant</span>
+        <span class="brand-sub">Espace Technicien</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Navigation</div>
+
+      <a class="nav-item" (click)="navigateTo('/technicien/dashboard')">
+        <span class="nav-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+          </svg>
+        </span>
+        <span>Tableau de bord</span>
+      </a>
+
+      <a class="nav-item" (click)="navigateTo('/technicien/zones')">
+        <span class="nav-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+          </svg>
+        </span>
+        <span>Mes Zones</span>
+        <span class="nav-badge" *ngIf="zones.length > 0">{{ zones.length }}</span>
+      </a>
+
+      <a class="nav-item active">
+        <span class="nav-icon nav-icon--active">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="1" y="3" width="15" height="13" rx="2"/>
+            <path d="M16 8h4l3 5v3h-7V8z"/>
+            <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+          </svg>
+        </span>
+        <span>Mes Équipements</span>
+        <span class="nav-badge">{{ totalVehicules + totalGroupes }}</span>
+      </a>
+
+      <div class="nav-section-label" style="margin-top:16px">Prochainement</div>
+
+      <a class="nav-item nav-item--disabled">
+        <span class="nav-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/>
+          </svg>
+        </span>
+        <span>Carburant</span>
+        <span class="nav-soon">Bientôt</span>
+      </a>
+
+      <a class="nav-item nav-item--disabled">
+        <span class="nav-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+        </span>
+        <span>Maintenance</span>
+        <span class="nav-soon">Bientôt</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sf-avatar">{{ getInitials(nomAffiche) }}</div>
+      <div class="sf-meta">
+        <span class="sf-name">{{ nomAffiche }}</span>
+        <span class="sf-role">🔧 Technicien</span>
+      </div>
+      <button class="sf-logout" (click)="logout()" title="Déconnexion">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ══════════════ MAIN ══════════════ -->
+  <main class="main-content">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="back-btn" (click)="navigateTo('/technicien/dashboard')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Retour
+        </button>
+        <div>
+          <h1 class="page-title">Mes Équipements</h1>
+          <p class="page-sub">Véhicules et groupes électrogènes de vos zones</p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <!-- Zone filter -->
+        <div class="zone-selector">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+          </svg>
+          <select (change)="onZoneChange($any($event.target).value ? +$any($event.target).value : null)">
+            <option value="">Toutes les zones</option>
+            <option *ngFor="let z of zones" [value]="z.id">{{ z.nom }}</option>
+          </select>
+        </div>
+        <!-- View mode -->
+        <div class="view-toggle">
+          <button [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'" title="Vue grille">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+              <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+            </svg>
+          </button>
+          <button [class.active]="viewMode === 'list'" (click)="viewMode = 'list'" title="Vue liste">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+              <line x1="8" y1="18" x2="21" y2="18"/>
+              <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/>
+              <line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="content-area">
+
+      <!-- Loading -->
+      <div *ngIf="loading" class="loading-screen">
+        <div class="loading-ring"></div>
+        <p class="loading-text">Chargement des équipements…</p>
+      </div>
+
+      <ng-container *ngIf="!loading">
+
+        <!-- ── STATS ROW ── -->
+        <div class="stats-row">
+          <!-- Véhicules stat -->
+          <div class="stat-mini stat-mini--red">
+            <div class="sm-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="1" y="3" width="15" height="13" rx="2"/>
+                <path d="M16 8h4l3 5v3h-7V8z"/>
+                <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+              </svg>
+            </div>
+            <div class="sm-body">
+              <span class="sm-number">{{ vehiculeStats?.totalVehicules ?? vehicules.length }}</span>
+              <span class="sm-label">Véhicules</span>
+            </div>
+          </div>
+
+          <!-- GE stat -->
+          <div class="stat-mini stat-mini--blue">
+            <div class="sm-icon sm-icon--blue">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+              </svg>
+            </div>
+            <div class="sm-body">
+              <span class="sm-number">{{ geStats?.totalGroupes ?? groupes.length }}</span>
+              <span class="sm-label">Groupes Électrogènes</span>
+            </div>
+          </div>
+
+          <!-- Visites dépassées -->
+          <div class="stat-mini" [class.stat-mini--warn]="(vehiculeStats?.visitesDepassees ?? 0) > 0">
+            <div class="sm-icon sm-icon--warn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </div>
+            <div class="sm-body">
+              <span class="sm-number">{{ vehiculeStats?.visitesDepassees ?? 0 }}</span>
+              <span class="sm-label">Visites dépassées</span>
+            </div>
+          </div>
+
+          <!-- Cartes expirées -->
+          <div class="stat-mini" [class.stat-mini--warn]="(geStats?.cartesExpirees ?? 0) > 0">
+            <div class="sm-icon sm-icon--warn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="1" y="4" width="22" height="16" rx="2"/>
+                <line x1="1" y1="10" x2="23" y2="10"/>
+              </svg>
+            </div>
+            <div class="sm-body">
+              <span class="sm-number">{{ geStats?.cartesExpirees ?? 0 }}</span>
+              <span class="sm-label">Cartes expirées</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── TABS + SEARCH ── -->
+        <div class="tab-search-row">
+          <div class="tabs">
+            <button class="tab-btn" [class.active]="activeTab === 'vehicules'"
+                    (click)="activeTab = 'vehicules'">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="1" y="3" width="15" height="13" rx="2"/>
+                <path d="M16 8h4l3 5v3h-7V8z"/>
+                <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+              </svg>
+              Véhicules
+              <span class="tab-count">{{ vehiculesFiltres.length }}</span>
+            </button>
+            <button class="tab-btn" [class.active]="activeTab === 'groupes'"
+                    (click)="activeTab = 'groupes'">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+              </svg>
+              Groupes Électrogènes
+              <span class="tab-count">{{ groupesFiltres.length }}</span>
+            </button>
+          </div>
+
+          <div class="search-filter-row">
+            <div class="search-box">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input type="text" [placeholder]="activeTab === 'vehicules' ? 'Matricule, marque, conducteur…' : 'Site, zone…'"
+                     [value]="searchQuery"
+                     (input)="onSearch($any($event.target).value)">
+              <button *ngIf="searchQuery" class="clear-btn" (click)="clearSearch()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+            <select class="filter-select" (change)="onFilterType($any($event.target).value)">
+              <option value="">Tout carburant</option>
+              <option value="ESSENCE">Essence</option>
+              <option value="GASOIL_ORDINAIRE">Gasoil Ordinaire</option>
+              <option value="GASOIL_SANS_SOUFRE">Gasoil Sans Soufre</option>
+              <option value="GASOIL_50">Gasoil 50</option>
+              <option value="SUPER_SANS_PLOMB">Super Sans Plomb</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ══════════ TAB: VÉHICULES ══════════ -->
+        <div *ngIf="activeTab === 'vehicules'" class="tab-content" [@fadeIn]>
+
+          <!-- Empty -->
+          <div *ngIf="vehiculesFiltres.length === 0" class="empty-state">
+            <div class="empty-icon-wrap">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3">
+                <rect x="1" y="3" width="15" height="13" rx="2"/>
+                <path d="M16 8h4l3 5v3h-7V8z"/>
+                <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+              </svg>
+            </div>
+            <p class="empty-title">Aucun véhicule trouvé</p>
+            <p class="empty-sub">{{ searchQuery ? 'Aucun résultat pour votre recherche.' : 'Aucun véhicule dans vos zones.' }}</p>
+          </div>
+
+          <!-- GRID VIEW -->
+          <div *ngIf="vehiculesFiltres.length > 0 && viewMode === 'grid'" class="vehicules-grid">
+            <div *ngFor="let v of vehiculesFiltres; let i = index"
+                 class="vehicule-card"
+                 [style.animation-delay]="(i * 60) + 'ms'"
+                 (click)="openVehiculeDetail(v)">
+
+              <div class="vc-accent" [style.background]="getZoneColorGradient(getZoneIndex(v.zoneNom))"></div>
+
+              <div class="vc-header">
+                <div class="vc-avatar" [style.background]="getZoneColorGradient(getZoneIndex(v.zoneNom))">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="1" y="3" width="15" height="13" rx="2"/>
+                    <path d="M16 8h4l3 5v3h-7V8z"/>
+                    <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+                  </svg>
+                </div>
+                <div class="vc-head-info">
+                  <span class="vc-matricule">{{ v.matricule }}</span>
+                  <span class="vc-marque">{{ v.marqueModele }}</span>
+                </div>
+                <div class="vc-status-wrap">
+                  <span class="vc-badge vc-badge--warn" *ngIf="isVisiteDepassee(v.visiteTechnique?.toString())">⚠</span>
+                  <div class="vc-arrow">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div class="vc-body">
+                <div class="vc-info-row">
+                  <div class="vc-info-item">
+                    <span class="vc-info-label">Type</span>
+                    <span class="vc-info-value">{{ v.typeVehicule || '—' }}</span>
+                  </div>
+                  <div class="vc-info-item">
+                    <span class="vc-info-label">Carburant</span>
+                    <span class="vc-info-value">{{ getCarburantLabel(v.typeCarburant) }}</span>
+                  </div>
+                </div>
+                <div class="vc-info-row">
+                  <div class="vc-info-item">
+                    <span class="vc-info-label">Conducteur</span>
+                    <span class="vc-info-value">
+                      {{ (v.prenomConducteur || '') + ' ' + (v.nomConducteur || '') | titlecase }}
+                      <ng-container *ngIf="!v.prenomConducteur && !v.nomConducteur">—</ng-container>
+                    </span>
+                  </div>
+                  <div class="vc-info-item">
+                    <span class="vc-info-label">Km Total</span>
+                    <span class="vc-info-value mono">{{ v.kilometrageTotal | number:'1.0-0' }} km</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="vc-footer">
+                <div class="vc-zone-chip" [style.background]="getZoneColor(getZoneIndex(v.zoneNom)) + '22'"
+                     [style.color]="getZoneColor(getZoneIndex(v.zoneNom))"
+                     [style.border-color]="getZoneColor(getZoneIndex(v.zoneNom)) + '44'">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+                  </svg>
+                  {{ v.zoneNom || 'Sans zone' }}
+                </div>
+                <span class="vc-visite" [class.vc-visite--warn]="isVisiteDepassee(v.visiteTechnique?.toString())"
+                      *ngIf="v.visiteTechnique">
+                  VT : {{ formatDate(v.visiteTechnique?.toString()) }}
+                </span>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- LIST VIEW -->
+          <div *ngIf="vehiculesFiltres.length > 0 && viewMode === 'list'" class="list-table-wrap">
+            <table class="list-table">
+              <thead>
+                <tr>
+                  <th>Matricule</th>
+                  <th>Marque / Modèle</th>
+                  <th>Type</th>
+                  <th>Conducteur</th>
+                  <th>Carburant</th>
+                  <th>Km Total</th>
+                  <th>Visite Tech.</th>
+                  <th>Zone</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let v of vehiculesFiltres" (click)="openVehiculeDetail(v)" class="list-row">
+                  <td><span class="mono bold">{{ v.matricule }}</span></td>
+                  <td>{{ v.marqueModele }}</td>
+                  <td>{{ v.typeVehicule || '—' }}</td>
+                  <td>{{ (v.prenomConducteur || '') + ' ' + (v.nomConducteur || '') | titlecase }}</td>
+                  <td><span class="carburant-tag">{{ getCarburantLabel(v.typeCarburant) }}</span></td>
+                  <td class="mono">{{ v.kilometrageTotal | number:'1.0-0' }}</td>
+                  <td>
+                    <span [class.text-warn]="isVisiteDepassee(v.visiteTechnique?.toString())">
+                      {{ formatDate(v.visiteTechnique?.toString()) }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="zone-tag" [style.background]="getZoneColor(getZoneIndex(v.zoneNom)) + '22'"
+                          [style.color]="getZoneColor(getZoneIndex(v.zoneNom))">
+                      {{ v.zoneNom || '—' }}
+                    </span>
+                  </td>
+                  <td>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--text-500)">
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ══════════ TAB: GROUPES ÉLECTROGÈNES ══════════ -->
+        <div *ngIf="activeTab === 'groupes'" class="tab-content">
+
+          <!-- Empty -->
+          <div *ngIf="groupesFiltres.length === 0" class="empty-state">
+            <div class="empty-icon-wrap">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+              </svg>
+            </div>
+            <p class="empty-title">Aucun groupe électrogène trouvé</p>
+            <p class="empty-sub">{{ searchQuery ? 'Aucun résultat pour votre recherche.' : 'Aucun GE dans vos zones.' }}</p>
+          </div>
+
+          <!-- GRID VIEW -->
+          <div *ngIf="groupesFiltres.length > 0 && viewMode === 'grid'" class="groupes-grid">
+            <div *ngFor="let g of groupesFiltres; let i = index"
+                 class="groupe-card"
+                 [style.animation-delay]="(i * 60) + 'ms'"
+                 (click)="openGroupeDetail(g)">
+
+              <div class="gc-accent" [style.background]="getZoneColorGradient(getZoneIndex(g.zoneNom))"></div>
+
+              <div class="gc-header">
+                <div class="gc-avatar" [style.background]="getZoneColorGradient(getZoneIndex(g.zoneNom))">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                  </svg>
+                </div>
+                <div class="gc-head-info">
+                  <span class="gc-site">{{ g.site }}</span>
+                  <span class="gc-zone">{{ g.zoneNom || 'Sans zone' }}</span>
+                </div>
+                <div class="gc-status-wrap">
+                  <span class="vc-badge vc-badge--warn" *ngIf="isCarteExpiree(g.dateExpiration)">⚠</span>
+                  <div class="vc-arrow">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div class="gc-body">
+                <div class="vc-info-row">
+                  <div class="vc-info-item">
+                    <span class="vc-info-label">Carburant</span>
+                    <span class="vc-info-value">{{ getCarburantLabel(g.typeCarburant) }}</span>
+                  </div>
+                  <div class="vc-info-item">
+                    <span class="vc-info-label">Puissance</span>
+                    <span class="vc-info-value mono">{{ g.puissanceKVA ?? '—' }} KVA</span>
+                  </div>
+                </div>
+                <div class="vc-info-row">
+                  <div class="vc-info-item">
+                    <span class="vc-info-label">Taux conso.</span>
+                    <span class="vc-info-value mono">{{ g.tauxConsommationParHeure ?? '—' }} L/h</span>
+                  </div>
+                  <div class="vc-info-item">
+                    <span class="vc-info-label">Prix (DT/L)</span>
+                    <span class="vc-info-value mono">{{ g.prixCarburant ?? '—' }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="vc-footer">
+                <div class="vc-zone-chip" [style.background]="getZoneColor(getZoneIndex(g.zoneNom)) + '22'"
+                     [style.color]="getZoneColor(getZoneIndex(g.zoneNom))"
+                     [style.border-color]="getZoneColor(getZoneIndex(g.zoneNom)) + '44'">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+                  </svg>
+                  {{ g.zoneNom || 'Sans zone' }}
+                </div>
+                <span class="vc-visite" [class.vc-visite--warn]="isCarteExpiree(g.dateExpiration)" *ngIf="g.dateExpiration">
+                  Carte : {{ g.dateExpiration }}
+                </span>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- LIST VIEW GE -->
+          <div *ngIf="groupesFiltres.length > 0 && viewMode === 'list'" class="list-table-wrap">
+            <table class="list-table">
+              <thead>
+                <tr>
+                  <th>Site</th>
+                  <th>Carburant</th>
+                  <th>Puissance (KVA)</th>
+                  <th>Taux conso. (L/h)</th>
+                  <th>Conso. max sem.</th>
+                  <th>Prix (DT/L)</th>
+                  <th>Carte</th>
+                  <th>Expiration</th>
+                  <th>Zone</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let g of groupesFiltres" (click)="openGroupeDetail(g)" class="list-row">
+                  <td><span class="bold">{{ g.site }}</span></td>
+                  <td><span class="carburant-tag">{{ getCarburantLabel(g.typeCarburant) }}</span></td>
+                  <td class="mono">{{ g.puissanceKVA ?? '—' }}</td>
+                  <td class="mono">{{ g.tauxConsommationParHeure ?? '—' }}</td>
+                  <td class="mono">{{ g.consommationTotaleMaxParSemestre ?? '—' }}</td>
+                  <td class="mono">{{ g.prixCarburant ?? '—' }}</td>
+                  <td>{{ g.typeCarte || '—' }}</td>
+                  <td><span [class.text-warn]="isCarteExpiree(g.dateExpiration)">{{ g.dateExpiration || '—' }}</span></td>
+                  <td>
+                    <span class="zone-tag" [style.background]="getZoneColor(getZoneIndex(g.zoneNom)) + '22'"
+                          [style.color]="getZoneColor(getZoneIndex(g.zoneNom))">
+                      {{ g.zoneNom || '—' }}
+                    </span>
+                  </td>
+                  <td>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--text-500)">
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </ng-container>
+    </div>
+  </main>
+</div>
+
+<!-- ══════════════ MODAL VÉHICULE ══════════════ -->
+<div class="modal-overlay" *ngIf="showDetailModal && selectedVehicule" (click)="closeModal()">
+  <div class="detail-modal" (click)="$event.stopPropagation()">
+    <div class="dm-header">
+      <div class="dm-avatar" [style.background]="getZoneColorGradient(getZoneIndex(selectedVehicule.zoneNom))">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="1" y="3" width="15" height="13" rx="2"/>
+          <path d="M16 8h4l3 5v3h-7V8z"/>
+          <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+        </svg>
+      </div>
+      <div class="dm-head-text">
+        <h2 class="dm-title">{{ selectedVehicule.matricule }}</h2>
+        <p class="dm-sub">{{ selectedVehicule.marqueModele }}</p>
+      </div>
+      <button class="dm-close" (click)="closeModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="dm-body">
+      <div class="dm-section-title">Informations générales</div>
+      <div class="dm-grid">
+        <div class="dm-field"><span class="dm-label">Type véhicule</span><span class="dm-value">{{ selectedVehicule.typeVehicule || '—' }}</span></div>
+        <div class="dm-field"><span class="dm-label">Carburant</span><span class="dm-value">{{ getCarburantLabel(selectedVehicule.typeCarburant) }}</span></div>
+        <div class="dm-field"><span class="dm-label">Prix carburant</span><span class="dm-value mono">{{ selectedVehicule.prixCarburant }} DT/L</span></div>
+        <div class="dm-field"><span class="dm-label">Zone</span><span class="dm-value">{{ selectedVehicule.zoneNom || '—' }}</span></div>
+        <div class="dm-field"><span class="dm-label">Subdivision</span><span class="dm-value">{{ selectedVehicule.subdivision || '—' }}</span></div>
+        <div class="dm-field"><span class="dm-label">Centre</span><span class="dm-value">{{ selectedVehicule.centre || '—' }}</span></div>
+        <div class="dm-field"><span class="dm-label">Résidence service</span><span class="dm-value">{{ selectedVehicule.residenceService || '—' }}</span></div>
+        <div class="dm-field"><span class="dm-label">Mise en service</span><span class="dm-value">{{ formatDate(selectedVehicule.dateMiseService?.toString()) }}</span></div>
+      </div>
+
+      <div class="dm-section-title">Conducteur</div>
+      <div class="dm-grid">
+        <div class="dm-field"><span class="dm-label">Nom</span><span class="dm-value">{{ selectedVehicule.nomConducteur || '—' }}</span></div>
+        <div class="dm-field"><span class="dm-label">Prénom</span><span class="dm-value">{{ selectedVehicule.prenomConducteur || '—' }}</span></div>
+      </div>
+
+      <div class="dm-section-title">Données techniques</div>
+      <div class="dm-grid">
+        <div class="dm-field"><span class="dm-label">Kilométrage total</span><span class="dm-value mono">{{ selectedVehicule.kilometrageTotal | number:'1.0-0' }} km</span></div>
+        <div class="dm-field"><span class="dm-label">Conso. litres cumul</span><span class="dm-value mono">{{ selectedVehicule.consommationLitresCumul | number:'1.0-2' }} L</span></div>
+        <div class="dm-field"><span class="dm-label">Conso. dinars cumul</span><span class="dm-value mono">{{ selectedVehicule.consommationDinarsCumul | number:'1.0-3' }} DT</span></div>
+        <div class="dm-field"><span class="dm-label">Coût du mois</span><span class="dm-value mono">{{ selectedVehicule.coutDuMois | number:'1.0-3' }} DT</span></div>
+        <div class="dm-field">
+          <span class="dm-label">Visite technique</span>
+          <span class="dm-value" [class.text-warn]="isVisiteDepassee(selectedVehicule.visiteTechnique?.toString())">
+            {{ formatDate(selectedVehicule.visiteTechnique?.toString()) }}
+            <span *ngIf="isVisiteDepassee(selectedVehicule.visiteTechnique?.toString())"> ⚠ Dépassée</span>
+          </span>
+        </div>
+        <div class="dm-field"><span class="dm-label">Index vidange</span><span class="dm-value mono">{{ selectedVehicule.indexVidange | number:'1.0-0' }} km</span></div>
+        <div class="dm-field"><span class="dm-label">Index pneumatique</span><span class="dm-value mono">{{ selectedVehicule.indexPneumatique | number:'1.0-0' }} km</span></div>
+        <div class="dm-field"><span class="dm-label">Index batterie</span><span class="dm-value mono">{{ selectedVehicule.indexBatterie | number:'1.0-0' }}</span></div>
+      </div>
+    </div>
+
+    <div class="dm-footer">
+      <button class="dm-close-btn" (click)="closeModal()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL GE ══════════════ -->
+<div class="modal-overlay" *ngIf="showDetailModal && selectedGroupe" (click)="closeModal()">
+  <div class="detail-modal" (click)="$event.stopPropagation()">
+    <div class="dm-header">
+      <div class="dm-avatar" [style.background]="getZoneColorGradient(getZoneIndex(selectedGroupe.zoneNom))">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+        </svg>
+      </div>
+      <div class="dm-head-text">
+        <h2 class="dm-title">{{ selectedGroupe.site }}</h2>
+        <p class="dm-sub">Groupe Électrogène · {{ selectedGroupe.zoneNom || 'Sans zone' }}</p>
+      </div>
+      <button class="dm-close" (click)="closeModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="dm-body">
+      <div class="dm-section-title">Caractéristiques techniques</div>
+      <div class="dm-grid">
+        <div class="dm-field"><span class="dm-label">Carburant</span><span class="dm-value">{{ getCarburantLabel(selectedGroupe.typeCarburant) }}</span></div>
+        <div class="dm-field"><span class="dm-label">Puissance</span><span class="dm-value mono">{{ selectedGroupe.puissanceKVA ?? '—' }} KVA</span></div>
+        <div class="dm-field"><span class="dm-label">Taux conso.</span><span class="dm-value mono">{{ selectedGroupe.tauxConsommationParHeure ?? '—' }} L/h</span></div>
+        <div class="dm-field"><span class="dm-label">Conso. max sem.</span><span class="dm-value mono">{{ selectedGroupe.consommationTotaleMaxParSemestre ?? '—' }} L</span></div>
+        <div class="dm-field"><span class="dm-label">Prix carburant</span><span class="dm-value mono">{{ selectedGroupe.prixCarburant ?? '—' }} DT/L</span></div>
+        <div class="dm-field"><span class="dm-label">Zone</span><span class="dm-value">{{ selectedGroupe.zoneNom || '—' }}</span></div>
+      </div>
+
+      <div class="dm-section-title">Carte Agilis</div>
+      <div class="dm-grid">
+        <div class="dm-field"><span class="dm-label">Type carte</span><span class="dm-value">{{ selectedGroupe.typeCarte || '—' }}</span></div>
+        <div class="dm-field"><span class="dm-label">N° carte</span><span class="dm-value mono">{{ selectedGroupe.numeroCarte || '—' }}</span></div>
+        <div class="dm-field">
+          <span class="dm-label">Expiration</span>
+          <span class="dm-value" [class.text-warn]="isCarteExpiree(selectedGroupe.dateExpiration)">
+            {{ selectedGroupe.dateExpiration || '—' }}
+            <span *ngIf="isCarteExpiree(selectedGroupe.dateExpiration)"> ⚠ Expirée</span>
+          </span>
+        </div>
+        <div class="dm-field"><span class="dm-label">Utilisateur ROC</span><span class="dm-value">{{ selectedGroupe.utilisateurRoc || '—' }}</span></div>
+      </div>
+    </div>
+
+    <div class="dm-footer">
+      <button class="dm-close-btn" (click)="closeModal()">Fermer</button>
+    </div>
+  </div>
+</div>

@@ -30,6 +30,8 @@ import { MaintenanceService } from './services/maintenance.service';
 import { GroupeElectrogeneService } from './services/groupe-electrogene.service';
 import { CarburantGeService } from './services/carburant-ge.service';
 import { ConducteurService } from './services/conducteur.service';
+import { TechnicienEquipementService } from './services/technicien-equipement.service';
+import { TechnicienService } from './services/technicien.service';
 
 // Guards
 import { AuthGuard, AdminGuard, TechnicienGuard } from './guards/auth.guard';
@@ -53,6 +55,7 @@ import { GroupeElectrogeneFormComponent } from './groupe-electrogene/groupe-elec
 import { SaisieCarburantModalComponent } from './groupe-electrogene/saisie-modal/saisie-modal.component';
 import { TechnicienDashboardComponent } from './technicien/technicien-dashboard/technicien-dashboard.component';
 import { TechnicienZonesComponent } from './technicien/technicien-zones/technicien-zones.component';
+import { TechnicienEquipementsComponent } from './technicien/technicien-equipements/technicien-equipements.component';
 
 @NgModule({
   declarations: [
@@ -80,6 +83,7 @@ import { TechnicienZonesComponent } from './technicien/technicien-zones/technici
     SaisieCarburantModalComponent,
     TechnicienDashboardComponent,
     TechnicienZonesComponent,
+    TechnicienEquipementsComponent,
   ],
   imports: [
     BrowserModule,
@@ -104,7 +108,8 @@ import { TechnicienZonesComponent } from './technicien/technicien-zones/technici
     GroupeElectrogeneService,
     CarburantGeService,
     ConducteurService,
-
+    TechnicienEquipementService,
+    TechnicienService,
     // Guards
     AuthGuard,
     AdminGuard,

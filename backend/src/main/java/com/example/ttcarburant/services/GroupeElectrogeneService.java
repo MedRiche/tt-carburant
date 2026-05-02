@@ -149,7 +149,7 @@ public class GroupeElectrogeneService {
      * - dateExpiration null → pas de formatage (évite NPE)
      * - zone null → zoneId et zoneNom laissés null
      */
-    GroupeElectrogeneDto toDto(GroupeElectrogene ge) {
+    public GroupeElectrogeneDto toDto(GroupeElectrogene ge) {
         if (ge == null) {
             throw new IllegalArgumentException("GroupeElectrogene ne peut pas être null");
         }
