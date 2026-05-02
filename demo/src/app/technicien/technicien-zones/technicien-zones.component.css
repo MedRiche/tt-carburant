@@ -1,4 +1,5 @@
 /* src/app/technicien/technicien-zones/technicien-zones.component.css */
+/* ✅ ÉTAPE 3 — Active feature styles added for modal and zone card chips */
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -215,11 +216,10 @@
   box-shadow: 0 16px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(226,0,26,0.12);
 }
 
-/* Accent bar (colorée en haut) */
+/* Accent bar */
 .zc-accent-bar {
   height: 4px; width: 100%;
-  opacity: 0.85;
-  transition: height 0.2s;
+  opacity: 0.85; transition: height 0.2s;
 }
 .zone-card:hover .zc-accent-bar { height: 5px; opacity: 1; }
 
@@ -248,7 +248,7 @@
 .zc-meta-row  { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 .zc-meta-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-500); font-family: var(--mono); }
 
-/* Card footer */
+/* Card footer chips */
 .zc-footer {
   display: flex; align-items: center; gap: 6px;
   padding: 10px 20px; border-top: 1px solid var(--border);
@@ -257,7 +257,19 @@
 .zc-chip {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 3px 9px; border-radius: 20px; font-size: 10px; font-weight: 600;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.2px; transition: all 0.2s;
+}
+/* ✅ NEW: Active chip for véhicules (étape 3) */
+.zc-chip--available {
+  background: rgba(0,212,170,0.1);
+  color: var(--cyan);
+  border: 1px solid rgba(0,212,170,0.25);
+  cursor: pointer;
+}
+.zc-chip--available:hover {
+  background: rgba(0,212,170,0.18);
+  border-color: rgba(0,212,170,0.4);
+  transform: scale(1.03);
 }
 .zc-chip--vehicles { background: rgba(100,116,139,0.1); color: var(--text-500); border: 1px solid rgba(100,116,139,0.15); }
 .zc-chip--fuel     { background: rgba(100,116,139,0.1); color: var(--text-500); border: 1px solid rgba(100,116,139,0.15); }
@@ -318,16 +330,59 @@
 .dm-value       { font-size: 14px; color: var(--text-300); line-height: 1.6; }
 .dm-value--empty { color: var(--text-500); font-style: italic; }
 
-/* Coming soon block */
-.dm-coming-soon { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px; }
+/* Coming soon / feature block */
+.dm-coming-soon { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px; overflow: hidden; }
 .dm-cs-title    { font-size: 12px; font-weight: 700; color: var(--text-300); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
 .dm-cs-list     { display: flex; flex-direction: column; gap: 8px; }
-.dm-cs-item     { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--r); border: 1px solid var(--border); }
-.dm-cs-item--coming { background: rgba(255,255,255,0.02); }
-.dm-cs-item svg { color: var(--text-500); flex-shrink: 0; }
+
+/* ✅ NEW: Active feature item (étape 3) */
+.dm-cs-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; border-radius: var(--r); border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+.dm-cs-item--active {
+  background: rgba(0,212,170,0.06);
+  border-color: rgba(0,212,170,0.2);
+  cursor: pointer;
+}
+.dm-cs-item--active:hover {
+  background: rgba(0,212,170,0.12);
+  border-color: rgba(0,212,170,0.35);
+  transform: translateX(3px);
+}
+.dm-cs-item--coming {
+  background: rgba(255,255,255,0.02);
+  opacity: 0.7;
+}
+
+.dm-cs-icon {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-500); flex-shrink: 0;
+}
+/* ✅ NEW: Active icon style */
+.dm-cs-icon--active {
+  background: rgba(0,212,170,0.1);
+  border-color: rgba(0,212,170,0.25);
+  color: var(--cyan);
+}
+
 .dm-cs-item div { flex: 1; }
-.dm-cs-item strong { display: block; font-size: 13px; color: var(--text-300); font-weight: 600; margin-bottom: 2px; }
-.dm-cs-item span  { font-size: 11px; color: var(--text-500); }
+.dm-cs-item div strong { display: block; font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.dm-cs-item--active div strong { color: var(--text-100); }
+.dm-cs-item--coming div strong { color: var(--text-300); }
+.dm-cs-item div span  { font-size: 11px; color: var(--text-500); }
+
+/* ✅ NEW: Available badge */
+.dm-active-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 20px;
+  background: rgba(0,212,170,0.12); color: var(--cyan);
+  border: 1px solid rgba(0,212,170,0.3); white-space: nowrap;
+}
+
 .dm-soon-tag {
   font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px;
   background: rgba(255,255,255,0.04); color: var(--text-500);

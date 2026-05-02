@@ -1,4 +1,5 @@
-<!-- src/app/technicien/zones/technicien-zones.component.html -->
+<!-- src/app/technicien/technicien-zones/technicien-zones.component.html -->
+<!-- ✅ ÉTAPE 3 COMPLETE — Zone cards navigate to /technicien/equipements, modal buttons active -->
 <div class="tech-shell">
 
   <!-- ══════════════ SIDEBAR ══════════════ -->
@@ -29,6 +30,8 @@
         <span>Tableau de bord</span>
       </a>
 
+      
+
       <a class="nav-item active">
         <span class="nav-icon nav-icon--active">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -39,9 +42,8 @@
         <span class="nav-badge">{{ zones.length }}</span>
       </a>
 
-      <div class="nav-section-label" style="margin-top:16px">Prochainement</div>
-
-      <a class="nav-item nav-item--disabled">
+      <!-- ✅ ÉTAPE 3 — Véhicules actif -->
+      <a class="nav-item" (click)="navigateTo('/technicien/equipements')">
         <span class="nav-icon">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="1" y="3" width="15" height="13" rx="2"/>
@@ -50,8 +52,9 @@
           </svg>
         </span>
         <span>Mes Véhicules</span>
-        <span class="nav-soon">Bientôt</span>
       </a>
+
+      <div class="nav-section-label" style="margin-top:16px">Prochainement</div>
 
       <a class="nav-item nav-item--disabled">
         <span class="nav-icon">
@@ -220,15 +223,15 @@
               </div>
             </div>
 
-            <!-- Card footer chips -->
+            <!-- ✅ Card footer chips — now show "Disponible" for Étape 3 -->
             <div class="zc-footer">
-              <div class="zc-chip zc-chip--vehicles">
+              <div class="zc-chip zc-chip--available" (click)="$event.stopPropagation(); navigateTo('/technicien/equipements')">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="1" y="3" width="15" height="13" rx="2"/>
                   <path d="M16 8h4l3 5v3h-7V8z"/>
                   <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
                 </svg>
-                Véhicules (bientôt)
+                Véhicules
               </div>
               <div class="zc-chip zc-chip--fuel">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -290,18 +293,6 @@
           <p class="dm-value dm-value--empty" *ngIf="!selectedZone.description">Aucune description renseignée</p>
         </div>
 
-        <!-- Responsable -->
-        <div class="dm-section" *ngIf="selectedZone.responsable">
-          <label class="dm-label">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
-            Responsable
-          </label>
-          <p class="dm-value">{{ selectedZone.responsable }}</p>
-        </div>
-
         <!-- Date -->
         <div class="dm-section" *ngIf="selectedZone.dateCreation">
           <label class="dm-label">
@@ -316,42 +307,61 @@
           <p class="dm-value">{{ selectedZone.dateCreation | date:'d MMMM yyyy' }}</p>
         </div>
 
-        <!-- Fonctionnalités à venir -->
+        <!-- ✅ ÉTAPE 3 COMPLETE — Fonctionnalités disponibles avec navigation active -->
         <div class="dm-coming-soon">
           <h3 class="dm-cs-title">Fonctionnalités disponibles dans cette zone</h3>
           <div class="dm-cs-list">
-            <div class="dm-cs-item dm-cs-item--coming">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="1" y="3" width="15" height="13" rx="2"/>
-                <path d="M16 8h4l3 5v3h-7V8z"/>
-                <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
-              </svg>
+
+            <!-- ✅ Étape 3 — ACTIVE, cliquable -->
+            <div class="dm-cs-item dm-cs-item--active"
+                 (click)="closeDetail(); navigateTo('/technicien/equipements')">
+              <div class="dm-cs-icon dm-cs-icon--active">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="1" y="3" width="15" height="13" rx="2"/>
+                  <path d="M16 8h4l3 5v3h-7V8z"/>
+                  <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+                </svg>
+              </div>
               <div>
                 <strong>Véhicules</strong>
                 <span>Consulter les véhicules de la zone</span>
               </div>
-              <span class="dm-soon-tag">Étape 3</span>
+              <span class="dm-active-tag">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Disponible
+              </span>
             </div>
+
+            <!-- Étape 4 — coming soon -->
             <div class="dm-cs-item dm-cs-item--coming">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/>
-              </svg>
+              <div class="dm-cs-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/>
+                </svg>
+              </div>
               <div>
                 <strong>Carburant</strong>
                 <span>Enregistrer les ravitaillements</span>
               </div>
               <span class="dm-soon-tag">Étape 4</span>
             </div>
+
+            <!-- Étape 5 — coming soon -->
             <div class="dm-cs-item dm-cs-item--coming">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-              </svg>
+              <div class="dm-cs-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                </svg>
+              </div>
               <div>
                 <strong>Maintenance</strong>
                 <span>Gérer les opérations de maintenance</span>
               </div>
               <span class="dm-soon-tag">Étape 5</span>
             </div>
+
           </div>
         </div>
 

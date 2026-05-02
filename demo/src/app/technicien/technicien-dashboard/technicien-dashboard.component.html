@@ -1,5 +1,5 @@
 <!-- src/app/technicien/technicien-dashboard/technicien-dashboard.component.html -->
-<!-- ✅ FIX: Removed :'fr' locale argument from date pipes — locale is now registered globally in app.module.ts -->
+<!-- ✅ ÉTAPE 3 COMPLETE: Véhicules nav items now navigate to /technicien/equipements -->
 <div class="tech-shell">
 
   <!-- ══════════════════════════════════════════════════
@@ -44,9 +44,8 @@
         <span class="nav-badge" *ngIf="nbZones > 0">{{ nbZones }}</span>
       </a>
 
-      <div class="nav-section-label" style="margin-top:16px">Prochainement</div>
-
-      <a class="nav-item nav-item--disabled">
+      <!-- ✅ ÉTAPE 3 — Mes Véhicules maintenant actif -->
+      <a class="nav-item" (click)="navigateTo('/technicien/equipements')">
         <span class="nav-icon">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="1" y="3" width="15" height="13" rx="2"/>
@@ -55,8 +54,9 @@
           </svg>
         </span>
         <span>Mes Véhicules</span>
-        <span class="nav-soon">Bientôt</span>
       </a>
+
+      <div class="nav-section-label" style="margin-top:16px">Prochainement</div>
 
       <a class="nav-item nav-item--disabled">
         <span class="nav-icon">
@@ -109,7 +109,6 @@
           <span class="greeting-text">{{ getGreeting() }},</span>
           <span class="greeting-name">{{ nomAffiche.split(' ')[0] }}</span>
         </div>
-        <!-- ✅ FIX: Removed :'':fr locale arg — locale is now global via LOCALE_ID provider -->
         <div class="topbar-date">
           {{ currentTime | date:'EEEE d MMMM yyyy' }} · {{ currentTime | date:'HH:mm' }}
         </div>
@@ -201,8 +200,9 @@
             </div>
           </div>
 
-          <div class="stat-card stat-card--muted">
-            <div class="stat-icon">
+          <!-- ✅ ÉTAPE 3 — Véhicules cliquable -->
+          <div class="stat-card stat-card--clickable" (click)="navigateTo('/technicien/equipements')" style="cursor:pointer">
+            <div class="stat-icon stat-icon--blue">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                 <rect x="1" y="3" width="15" height="13" rx="2"/>
                 <path d="M16 8h4l3 5v3h-7V8z"/>
@@ -210,10 +210,14 @@
               </svg>
             </div>
             <div class="stat-body">
-              <span class="stat-number stat-number--muted">—</span>
+              <span class="stat-number stat-number--sm">Mes</span>
               <span class="stat-label">Véhicules</span>
             </div>
-            <span class="stat-soon-badge">Bientôt</span>
+            <div class="stat-arrow stat-arrow--blue">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </div>
           </div>
 
           <div class="stat-card stat-card--muted">
@@ -327,8 +331,9 @@
               <div class="qa-badge qa-badge--available">Disponible</div>
             </button>
 
-            <button class="qa-card qa-card--locked" disabled>
-              <div class="qa-icon qa-icon--gray">
+            <!-- ✅ ÉTAPE 3 — Véhicules maintenant actif et cliquable -->
+            <button class="qa-card qa-card--active" (click)="navigateTo('/technicien/equipements')">
+              <div class="qa-icon qa-icon--cyan">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="1" y="3" width="15" height="13" rx="2"/>
                   <path d="M16 8h4l3 5v3h-7V8z"/>
@@ -337,7 +342,7 @@
               </div>
               <span class="qa-label">Véhicules</span>
               <span class="qa-sub">Vos véhicules affectés</span>
-              <div class="qa-badge qa-badge--soon">Étape 3</div>
+              <div class="qa-badge qa-badge--available">Disponible</div>
             </button>
 
             <button class="qa-card qa-card--locked" disabled>

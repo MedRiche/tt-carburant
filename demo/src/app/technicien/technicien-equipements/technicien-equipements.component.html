@@ -30,7 +30,7 @@
       </a>
 
       <!-- Zones : visible uniquement pour les techniciens -->
-      <a class="nav-item" (click)="navigateTo('/technicien/zones')" *ngIf="!estConducteur">
+      <a class="nav-item" (click)="navigateTo('/technicien/zones')">
         <span class="nav-icon">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
@@ -395,9 +395,9 @@
                   {{ v.zoneNom || 'Sans zone' }}
                 </div>
                 <span class="vc-visite"
-                      [class.vc-visite--warn]="isVisiteDepassee(v.visiteTechnique?.toString())"
+                      [class.vc-visite--warn]="isVisiteDepassee(v.visiteTechnique.toString())"
                       *ngIf="v.visiteTechnique">
-                  VT : {{ formatDate(v.visiteTechnique?.toString()) }}
+                  VT : {{ formatDate(v.visiteTechnique.toString()) }}
                 </span>
               </div>
 

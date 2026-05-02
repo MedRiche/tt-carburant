@@ -55,6 +55,7 @@ const routes: Routes = [
       { path: 'zones',         component: TechnicienZonesComponent },
       // ▶ ÉTAPE 3 — véhicules + groupes électrogènes
       { path: 'equipements',   component: TechnicienEquipementsComponent },
+      { path: 'vehicules',   redirectTo: 'equipements', pathMatch: 'full' },
     ]
   },
 

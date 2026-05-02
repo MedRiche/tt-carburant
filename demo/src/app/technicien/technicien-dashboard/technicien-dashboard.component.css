@@ -1,4 +1,5 @@
 /* src/app/technicien/technicien-dashboard/technicien-dashboard.component.css */
+/* ✅ ÉTAPE 3 COMPLETE — Véhicules stat card clickable styles added */
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -17,6 +18,9 @@
 
   --cyan:     #00d4aa;
   --cyan-dim: rgba(0,212,170,0.1);
+
+  --blue:     #3b82f6;
+  --blue-dim: rgba(59,130,246,0.12);
 
   --text-100: #f1f5f9;
   --text-300: #94a3b8;
@@ -234,25 +238,12 @@
 .hero-meta-item { display: flex; align-items: center; gap: 5px; }
 .hero-meta-sep  { color: var(--border-light); }
 
-/* ── Chips zones dans le hero ── */
-.hero-zones-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 4px;
-}
+.hero-zones-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
 .hero-zone-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 600;
-  background: rgba(0,212,170,0.1);
-  border: 1px solid rgba(0,212,170,0.25);
-  color: var(--cyan);
-  letter-spacing: 0.2px;
-  white-space: nowrap;
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.25);
+  color: var(--cyan); letter-spacing: 0.2px; white-space: nowrap;
 }
 
 /* ══ QUICK STATS ════════════════════════════════════════ */
@@ -266,8 +257,26 @@
   display: flex; align-items: center; gap: 14px;
   transition: all 0.25s; position: relative; overflow: hidden;
 }
-.stat-card--zones { border-color: rgba(226,0,26,0.2); background: linear-gradient(135deg, var(--navy-900), rgba(226,0,26,0.05)); }
-.stat-card--zones:hover { border-color: rgba(226,0,26,0.35); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(226,0,26,0.12); }
+.stat-card--zones {
+  border-color: rgba(226,0,26,0.2);
+  background: linear-gradient(135deg, var(--navy-900), rgba(226,0,26,0.05));
+}
+.stat-card--zones:hover {
+  border-color: rgba(226,0,26,0.35); transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(226,0,26,0.12);
+}
+
+/* ✅ NEW: Véhicules card (clickable, blue theme) */
+.stat-card--clickable {
+  border-color: rgba(59,130,246,0.2);
+  background: linear-gradient(135deg, var(--navy-900), rgba(59,130,246,0.04));
+  cursor: pointer;
+}
+.stat-card--clickable:hover {
+  border-color: rgba(59,130,246,0.4); transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(59,130,246,0.12);
+}
+
 .stat-card--muted { opacity: 0.6; }
 
 .stat-icon {
@@ -275,9 +284,16 @@
   background: rgba(226,0,26,0.1); border: 1px solid rgba(226,0,26,0.2);
   color: #ff6b7a; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
+/* ✅ NEW: Blue icon for véhicules */
+.stat-icon--blue {
+  background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.25);
+  color: #7aa6ff;
+}
 .stat-card--muted .stat-icon { background: rgba(255,255,255,0.04); border-color: var(--border); color: var(--text-500); }
 .stat-body { flex: 1; min-width: 0; }
 .stat-number { display: block; font-size: 28px; font-weight: 800; color: var(--text-100); font-family: var(--mono); line-height: 1; margin-bottom: 4px; }
+/* ✅ NEW: smaller text for "Mes" label */
+.stat-number--sm { display: block; font-size: 18px; font-weight: 700; color: #7aa6ff; font-family: var(--font); line-height: 1; margin-bottom: 4px; }
 .stat-number--muted { color: var(--text-500); font-size: 20px; }
 .stat-label { font-size: 11px; font-weight: 600; color: var(--text-300); text-transform: uppercase; letter-spacing: 0.5px; }
 .stat-arrow {
@@ -286,6 +302,11 @@
   color: #ff6b7a; cursor: pointer; transition: all 0.2s;
 }
 .stat-arrow:hover { background: rgba(226,0,26,0.2); transform: translateX(2px); }
+/* ✅ NEW: Blue arrow for véhicules */
+.stat-arrow--blue {
+  background: rgba(59,130,246,0.1); color: #7aa6ff;
+}
+.stat-arrow--blue:hover { background: rgba(59,130,246,0.2); transform: translateX(2px); }
 .stat-soon-badge {
   position: absolute; top: 10px; right: 10px; font-size: 9px; font-weight: 700;
   color: var(--text-500); background: rgba(255,255,255,0.04); padding: 2px 6px;

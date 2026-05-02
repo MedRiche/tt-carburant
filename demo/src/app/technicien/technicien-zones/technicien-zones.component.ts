@@ -1,4 +1,4 @@
-// src/app/technicien/zones/technicien-zones.component.ts
+// src/app/technicien/technicien-zones/technicien-zones.component.ts
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -57,6 +57,7 @@ export class TechnicienZonesComponent implements OnInit {
     this.authService.logout();
   }
 
+  // ✅ navigateTo needed for zone cards and modal buttons
   navigateTo(route: string): void {
     this.router.navigate([route]);
   }
