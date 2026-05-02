@@ -239,3 +239,57 @@
   .dm-grid { grid-template-columns: 1fr; }
   .detail-modal { max-width: 95%; }
 }
+
+/* ══ AJOUTS CSS pour le mode conducteur ══
+   À ajouter à la fin de technicien-equipements.component.css
+   ═════════════════════════════════════════════════════════ */
+
+/* Badge "Vos véhicules uniquement" dans la topbar */
+.conducteur-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  background: rgba(0,212,170,0.08);
+  border: 1px solid rgba(0,212,170,0.2);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cyan);
+}
+
+/* Bannière d'info en haut du contenu pour le conducteur */
+.info-banner-conducteur {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  background: rgba(0,212,170,0.06);
+  border: 1px solid rgba(0,212,170,0.18);
+  border-left: 3px solid var(--cyan);
+  border-radius: var(--r);
+  font-size: 13px;
+  color: var(--text-300);
+  line-height: 1.5;
+  animation: fadeUp 0.4s ease both;
+}
+.info-banner-conducteur svg { color: var(--cyan); flex-shrink: 0; }
+.info-banner-conducteur strong { color: var(--text-100); }
+
+/* Bloc d'aide dans l'empty state conducteur */
+.empty-help {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(226,0,26,0.06);
+  border: 1px solid rgba(226,0,26,0.15);
+  border-radius: var(--r);
+  font-size: 12px;
+  color: var(--text-300);
+  max-width: 360px;
+  text-align: left;
+  line-height: 1.6;
+  margin-top: 8px;
+}
+.empty-help svg { color: #ff6b7a; flex-shrink: 0; margin-top: 2px; }

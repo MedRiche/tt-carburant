@@ -21,6 +21,7 @@ public class AuthResponse {
     private Role role;
     private StatutCompte statutCompte;
     private String message;
+    private String specialite;
 
     public AuthResponse() {}
 
@@ -87,6 +88,9 @@ public class AuthResponse {
     public void setMessage(String message) {
         this.message = message;
     }
+
+    public String getSpecialite() { return specialite; }
+    public void setSpecialite(String specialite) { this.specialite = specialite; }
 }
 
 

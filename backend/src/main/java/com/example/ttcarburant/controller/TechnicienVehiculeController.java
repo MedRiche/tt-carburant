@@ -20,6 +20,12 @@ import java.util.stream.Collectors;
 
 /**
  * Étape 3 — Technicien : Consulter les véhicules des zones affectées.
+ *
+ * MISE À JOUR :
+ *   - Si l'utilisateur est un CONDUCTEUR (specialite = "Conducteur"),
+ *     on délègue automatiquement au ConducteurVehiculeController
+ *     via la logique de matching nom/email.
+ *   - Si c'est un TECHNICIEN normal, il voit tous les véhicules de ses zones.
  */
 @RestController
 @RequestMapping("/api/technicien/vehicules")
@@ -42,14 +48,23 @@ public class TechnicienVehiculeController {
 
     /**
      * GET /api/technicien/vehicules
-     * Retourne tous les véhicules des zones affectées au technicien connecté.
+     * - Conducteur : liste des véhicules à son nom
+     * - Technicien : tous les véhicules de ses zones
      */
     @GetMapping
     public ResponseEntity<?> getMesVehicules() {
         try {
-            Utilisateur technicien = getTechnicienConnecte();
-            List<VehiculeDto> vehicules = getVehiculesDeZonesDuTechnicien(technicien);
-            return ResponseEntity.ok(vehicules);
+            Utilisateur utilisateur = getConnecte();
+
+            if (isConducteur(utilisateur)) {
+                // Conducteur → véhicules assignés à son nom
+                List<VehiculeDto> vehicules = findVehiculesParConducteur(utilisateur);
+                return ResponseEntity.ok(vehicules);
+            } else {
+                // Technicien → tous les véhicules de ses zones
+                List<VehiculeDto> vehicules = getVehiculesDeZonesDuTechnicien(utilisateur);
+                return ResponseEntity.ok(vehicules);
+            }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ErrorResponse(e.getMessage()));
@@ -58,15 +73,20 @@ public class TechnicienVehiculeController {
 
     /**
      * GET /api/technicien/vehicules/zone/{zoneId}
-     * Retourne les véhicules d'une zone spécifique (si le technicien y est affecté).
+     * Retourne les véhicules d'une zone spécifique (technicien affecté uniquement).
+     * Les conducteurs n'ont pas accès à cette route (403).
      */
     @GetMapping("/zone/{zoneId}")
     public ResponseEntity<?> getVehiculesByZone(@PathVariable("zoneId") Long zoneId) {
         try {
-            Utilisateur technicien = getTechnicienConnecte();
+            Utilisateur utilisateur = getConnecte();
 
-            // Vérifier que le technicien est bien affecté à cette zone
-            boolean estAffecte = affectationRepository.findByUtilisateur(technicien)
+            if (isConducteur(utilisateur)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(new ErrorResponse("Les conducteurs n'ont pas accès par zone."));
+            }
+
+            boolean estAffecte = affectationRepository.findByUtilisateur(utilisateur)
                     .stream()
                     .anyMatch(a -> a.getZone().getId().equals(zoneId));
 
@@ -89,30 +109,36 @@ public class TechnicienVehiculeController {
 
     /**
      * GET /api/technicien/vehicules/{matricule}
-     * Retourne le détail d'un véhicule (si le technicien est affecté à sa zone).
+     * Détail d'un véhicule.
+     * - Conducteur : seulement si c'est son véhicule
+     * - Technicien : seulement si le véhicule est dans ses zones
      */
     @GetMapping("/{matricule:.+}")
     public ResponseEntity<?> getVehiculeDetail(@PathVariable("matricule") String matricule) {
         try {
-            Utilisateur technicien = getTechnicienConnecte();
+            Utilisateur utilisateur = getConnecte();
 
             Vehicule vehicule = vehiculeRepository.findById(matricule)
                     .orElseThrow(() -> new RuntimeException("Véhicule non trouvé : " + matricule));
 
-            if (vehicule.getZone() == null) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(new ErrorResponse("Ce véhicule n'est rattaché à aucune zone."));
-            }
-
-            // Vérifier l'accès
-            Long zoneId = vehicule.getZone().getId();
-            boolean estAffecte = affectationRepository.findByUtilisateur(technicien)
-                    .stream()
-                    .anyMatch(a -> a.getZone().getId().equals(zoneId));
-
-            if (!estAffecte) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(new ErrorResponse("Vous n'avez pas accès à ce véhicule."));
+            if (isConducteur(utilisateur)) {
+                if (!isConducteurDuVehicule(utilisateur, vehicule)) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                            .body(new ErrorResponse("Vous n'êtes pas le conducteur de ce véhicule."));
+                }
+            } else {
+                if (vehicule.getZone() == null) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                            .body(new ErrorResponse("Ce véhicule n'est rattaché à aucune zone."));
+                }
+                Long zoneId = vehicule.getZone().getId();
+                boolean estAffecte = affectationRepository.findByUtilisateur(utilisateur)
+                        .stream()
+                        .anyMatch(a -> a.getZone().getId().equals(zoneId));
+                if (!estAffecte) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                            .body(new ErrorResponse("Vous n'avez pas accès à ce véhicule."));
+                }
             }
 
             return ResponseEntity.ok(toDto(vehicule));
@@ -124,44 +150,46 @@ public class TechnicienVehiculeController {
 
     /**
      * GET /api/technicien/vehicules/stats
-     * Statistiques rapides sur les véhicules du technicien.
+     * Statistiques adaptées au rôle.
      */
     @GetMapping("/stats")
     public ResponseEntity<?> getStats() {
         try {
-            Utilisateur technicien = getTechnicienConnecte();
-            List<VehiculeDto> vehicules = getVehiculesDeZonesDuTechnicien(technicien);
+            Utilisateur utilisateur = getConnecte();
+            List<VehiculeDto> vehicules;
+
+            if (isConducteur(utilisateur)) {
+                vehicules = findVehiculesParConducteur(utilisateur);
+            } else {
+                vehicules = getVehiculesDeZonesDuTechnicien(utilisateur);
+            }
 
             Map<String, Object> stats = new LinkedHashMap<>();
             stats.put("totalVehicules", vehicules.size());
+            stats.put("estConducteur", isConducteur(utilisateur));
 
-            // Par type carburant
             Map<String, Long> parType = vehicules.stream()
                     .collect(Collectors.groupingBy(
                             v -> v.getTypeCarburant() != null ? v.getTypeCarburant().name() : "INCONNU",
                             Collectors.counting()));
             stats.put("parTypeCarburant", parType);
 
-            // Par type de véhicule
             Map<String, Long> parTypeVehicule = vehicules.stream()
                     .filter(v -> v.getTypeVehicule() != null)
                     .collect(Collectors.groupingBy(VehiculeDto::getTypeVehicule, Collectors.counting()));
             stats.put("parTypeVehicule", parTypeVehicule);
 
-            // Visites techniques dépassées (date passée)
             long visitesDepassees = vehicules.stream()
                     .filter(v -> v.getVisiteTechnique() != null
                             && v.getVisiteTechnique().isBefore(LocalDate.now()))
                     .count();
             stats.put("visitesDepassees", visitesDepassees);
 
-            // Kilométrage total
             double kmTotal = vehicules.stream()
                     .mapToDouble(VehiculeDto::getKilometrageTotal)
                     .sum();
             stats.put("kilometrageTotalCumul", Math.round(kmTotal * 10.0) / 10.0);
 
-            // Coût total du mois
             double coutMois = vehicules.stream()
                     .mapToDouble(VehiculeDto::getCoutDuMois)
                     .sum();
@@ -176,15 +204,21 @@ public class TechnicienVehiculeController {
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
-    private Utilisateur getTechnicienConnecte() {
+    private Utilisateur getConnecte() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
             throw new RuntimeException("Non authentifié");
         }
         return utilisateurRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new RuntimeException("Technicien non trouvé"));
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
     }
 
+    /** Vérifie si l'utilisateur est un conducteur */
+    private boolean isConducteur(Utilisateur u) {
+        return "Conducteur".equalsIgnoreCase(u.getSpecialite());
+    }
+
+    /** Technicien classique → véhicules de toutes ses zones */
     private List<VehiculeDto> getVehiculesDeZonesDuTechnicien(Utilisateur technicien) {
         List<AffectationUtilisateurZone> affectations =
                 affectationRepository.findByUtilisateur(technicien);
@@ -195,6 +229,70 @@ public class TechnicienVehiculeController {
                 .map(this::toDto)
                 .sorted(Comparator.comparing(VehiculeDto::getMatricule))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Conducteur → véhicules dont il est le conducteur assigné.
+     * Matching basé sur email (prenom.nom@...) vs nomConducteur/prenomConducteur.
+     */
+    private List<VehiculeDto> findVehiculesParConducteur(Utilisateur conducteur) {
+        return vehiculeRepository.findAll()
+                .stream()
+                .filter(v -> isConducteurDuVehicule(conducteur, v))
+                .map(this::toDto)
+                .sorted(Comparator.comparing(VehiculeDto::getMatricule))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Multi-stratégie de matching conducteur ↔ véhicule.
+     */
+    boolean isConducteurDuVehicule(Utilisateur conducteur, Vehicule vehicule) {
+        String nomV    = normaliser(vehicule.getNomConducteur());
+        String prenomV = normaliser(vehicule.getPrenomConducteur());
+
+        if (nomV.isEmpty() && prenomV.isEmpty()) return false;
+
+        String email = conducteur.getEmail() != null ? conducteur.getEmail().toLowerCase() : "";
+        String[] parts = extractPrenomNomFromEmail(email);
+        String prenomEmail = parts[0]; // ex: "taoufik"
+        String nomEmail    = parts[1]; // ex: "jebri"
+
+        // Matching 1 : email strict (prenom.nom exact)
+        boolean matchStrict = !nomEmail.isEmpty() && !prenomEmail.isEmpty()
+                && nomV.equals(nomEmail) && prenomV.equals(prenomEmail);
+
+        // Matching 2 : email partiel (un des deux champs)
+        boolean matchPartiel = (!nomEmail.isEmpty() && nomV.equals(nomEmail))
+                || (!prenomEmail.isEmpty() && prenomV.equals(prenomEmail));
+
+        // Matching 3 : nom complet du profil vs (prenom + nom) du véhicule
+        String nomProfil = normaliser(conducteur.getNom() != null ? conducteur.getNom() : "");
+        String fullV = (prenomV + " " + nomV).trim();
+        boolean matchProfil = !nomProfil.isEmpty() && (
+                fullV.equals(nomProfil) ||
+                        nomProfil.contains(nomV) && nomProfil.contains(prenomV)
+        );
+
+        return matchStrict || matchPartiel || matchProfil;
+    }
+
+    private String[] extractPrenomNomFromEmail(String email) {
+        String local = email.contains("@") ? email.split("@")[0] : email;
+        local = local.replaceAll("\\d+$", ""); // remove trailing digits
+        if (local.contains(".")) {
+            String[] p = local.split("\\.", 2);
+            return new String[]{ normaliser(p[0]), normaliser(p[1]) };
+        }
+        return new String[]{ normaliser(local), "" };
+    }
+
+    private String normaliser(String s) {
+        if (s == null || s.isEmpty()) return "";
+        return java.text.Normalizer.normalize(s, java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toLowerCase()
+                .trim();
     }
 
     private VehiculeDto toDto(Vehicule v) {

@@ -12,6 +12,7 @@ export interface VehiculeStats {
   visitesDepassees: number;
   kilometrageTotalCumul: number;
   coutTotalMois: number;
+  estConducteur?: boolean;
 }
 
 export interface GEStats {
@@ -35,7 +36,15 @@ export class TechnicienEquipementService {
     });
   }
 
+  /** Retourne true si l'utilisateur connecté est un conducteur */
+  get estConducteur(): boolean {
+    const specialite = localStorage.getItem('specialite') || '';
+    return specialite.toLowerCase() === 'conducteur';
+  }
+
   // ── Véhicules ────────────────────────────────────────────────
+  // L'API /api/technicien/vehicules gère automatiquement le filtre
+  // côté backend selon le rôle (conducteur vs technicien).
 
   getMesVehicules(): Observable<Vehicule[]> {
     return this.http.get<Vehicule[]>(`${this.baseUrl}/vehicules`, { headers: this.h() });

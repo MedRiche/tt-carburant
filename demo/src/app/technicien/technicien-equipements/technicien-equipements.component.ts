@@ -39,7 +39,6 @@ export class TechnicienEquipementsComponent implements OnInit {
   geStats: GEStats | null = null;
 
   loading = true;
-  loadingEquipements = false;
   error: string | null = null;
 
   searchQuery = '';
@@ -51,6 +50,9 @@ export class TechnicienEquipementsComponent implements OnInit {
 
   nomAffiche = localStorage.getItem('nom') || 'Technicien';
 
+  // ← NOUVEAU : détecter si conducteur
+  estConducteur = false;
+
   constructor(
     private authService: AuthService,
     private technicienService: TechnicienService,
@@ -59,6 +61,8 @@ export class TechnicienEquipementsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Détecter le rôle depuis localStorage (mis à jour au login)
+    this.estConducteur = this.authService.isConducteur();
     this.loadData();
   }
 
@@ -66,29 +70,42 @@ export class TechnicienEquipementsComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    // Load zones first
-    this.technicienService.getMesZones().subscribe({
-      next: (zones) => {
-        this.zones = zones || [];
-        this.loadVehicules();
-        this.loadGroupes();
-        this.loadStats();
-      },
-      error: () => {
-        this.error = 'Impossible de charger vos zones.';
-        this.loading = false;
-      }
-    });
+    if (this.estConducteur) {
+      // Conducteur : pas besoin des zones, on charge directement ses véhicules
+      this.loadVehicules();
+      // Les conducteurs ne voient pas les GE
+    } else {
+      // Technicien classique : charger zones + véhicules + GE
+      this.technicienService.getMesZones().subscribe({
+        next: (zones) => {
+          this.zones = zones || [];
+          this.loadVehicules();
+          this.loadGroupes();
+          this.loadStats();
+        },
+        error: () => {
+          this.error = 'Impossible de charger vos zones.';
+          this.loading = false;
+        }
+      });
+    }
   }
 
   loadVehicules(): void {
+    // Le backend gère le filtre automatiquement (conducteur vs technicien)
     this.equipementService.getMesVehicules().subscribe({
       next: (data) => {
         this.vehicules = data || [];
         this.applyFiltersVehicules();
         this.loading = false;
+
+        // Pour les conducteurs, charger aussi les stats véhicule
+        if (this.estConducteur) {
+          this.loadStats();
+        }
       },
-      error: () => {
+      error: (err) => {
+        console.error('Erreur chargement véhicules:', err);
         this.vehicules = [];
         this.loading = false;
       }
@@ -96,6 +113,7 @@ export class TechnicienEquipementsComponent implements OnInit {
   }
 
   loadGroupes(): void {
+    if (this.estConducteur) return; // Les conducteurs ne voient pas les GE
     this.equipementService.getMesGroupes().subscribe({
       next: (data) => {
         this.groupes = data || [];
@@ -110,16 +128,19 @@ export class TechnicienEquipementsComponent implements OnInit {
       next: (s) => { this.vehiculeStats = s; },
       error: () => {}
     });
-    this.equipementService.getGEStats().subscribe({
-      next: (s) => { this.geStats = s; },
-      error: () => {}
-    });
+    if (!this.estConducteur) {
+      this.equipementService.getGEStats().subscribe({
+        next: (s) => { this.geStats = s; },
+        error: () => {}
+      });
+    }
   }
 
-  // ── Zone filter ──────────────────────────────────────────────
+  // ── Zone filter (technicien uniquement) ──────────────────────
 
   onZoneChange(zoneId: number | null): void {
     this.selectedZoneId = zoneId;
+    if (this.estConducteur) return;
     this.loadEquipementsParZone();
   }
 
@@ -129,12 +150,11 @@ export class TechnicienEquipementsComponent implements OnInit {
       this.loadGroupes();
       return;
     }
-    this.loadingEquipements = true;
     const zid = this.selectedZoneId;
 
     this.equipementService.getVehiculesByZone(zid).subscribe({
-      next: (d) => { this.vehicules = d || []; this.applyFiltersVehicules(); this.loadingEquipements = false; },
-      error: () => { this.loadingEquipements = false; }
+      next: (d) => { this.vehicules = d || []; this.applyFiltersVehicules(); },
+      error: () => {}
     });
 
     this.equipementService.getGroupesByZone(zid).subscribe({
@@ -229,9 +249,7 @@ export class TechnicienEquipementsComponent implements OnInit {
   }
 
   getZoneColor(index: number): string {
-    const colors = [
-      '#E2001A', '#1e3a70', '#00d4aa', '#7c3aed', '#ea580c', '#0891b2'
-    ];
+    const colors = ['#E2001A', '#1e3a70', '#00d4aa', '#7c3aed', '#ea580c', '#0891b2'];
     return colors[index % colors.length];
   }
 
@@ -255,11 +273,11 @@ export class TechnicienEquipementsComponent implements OnInit {
 
   getCarburantLabel(type: string | undefined): string {
     const labels: Record<string, string> = {
-      ESSENCE:           'Essence',
-      GASOIL_ORDINAIRE:  'Gasoil Ordinaire',
-      GASOIL_SANS_SOUFRE:'Gasoil Sans Soufre',
-      GASOIL_50:         'Gasoil 50',
-      SUPER_SANS_PLOMB:  'Super Sans Plomb',
+      ESSENCE:            'Essence',
+      GASOIL_ORDINAIRE:   'Gasoil Ordinaire',
+      GASOIL_SANS_SOUFRE: 'Gasoil Sans Soufre',
+      GASOIL_50:          'Gasoil 50',
+      SUPER_SANS_PLOMB:   'Super Sans Plomb',
     };
     return labels[type || ''] || type || '—';
   }
@@ -285,6 +303,32 @@ export class TechnicienEquipementsComponent implements OnInit {
     return date.toLocaleDateString('fr-TN', { day: '2-digit', month: '2-digit', year: 'numeric' });
   }
 
+  /** Nom complet conducteur du véhicule sélectionné */
+  getNomConducteur(v: Vehicule | null): string {
+    if (!v) return '—';
+    const p = v.prenomConducteur || '';
+    const n = v.nomConducteur || '';
+    return (p + ' ' + n).trim() || '—';
+  }
+
   get totalVehicules(): number { return this.vehiculesFiltres.length; }
   get totalGroupes(): number { return this.groupesFiltres.length; }
+
+  /** Message contextuel selon le type d'utilisateur */
+  get titreEquipements(): string {
+    return this.estConducteur ? 'Mes Véhicules' : 'Mes Équipements';
+  }
+
+  get sousTitreEquipements(): string {
+    return this.estConducteur
+      ? 'Véhicules assignés à votre nom'
+      : 'Véhicules et groupes électrogènes de vos zones';
+  }
+
+  get emptyVehiculeMessage(): string {
+    if (this.searchQuery) return 'Aucun résultat pour votre recherche.';
+    return this.estConducteur
+      ? 'Aucun véhicule n\'est enregistré à votre nom.'
+      : 'Aucun véhicule dans vos zones.';
+  }
 }

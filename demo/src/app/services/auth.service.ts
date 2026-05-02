@@ -1,3 +1,6 @@
+// src/app/services/auth.service.ts
+// MISE À JOUR : stockage de `specialite` dans localStorage pour détecter côté frontend
+// si l'utilisateur est un conducteur ou un technicien.
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -25,6 +28,7 @@ export interface AuthResponse {
   email: string;
   role: string;
   statutCompte: string;
+  specialite?: string;   // ← NOUVEAU : retourné par le backend au login
   message: string;
 }
 
@@ -40,115 +44,71 @@ export class AuthService {
     private http: HttpClient,
     private router: Router
   ) {
-    // Charger l'utilisateur depuis le localStorage au démarrage
     this.loadUserFromStorage();
   }
 
-  /**
-   * Inscription d'un nouvel utilisateur
-   */
   register(request: RegisterRequest): Observable<any> {
     return this.http.post(`${this.apiUrl}/register`, request);
   }
 
-  /**
-   * Connexion
-   */
   login(request: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, request).pipe(
       tap(response => {
         if (response.token) {
-          // Sauvegarder les informations dans localStorage
-          localStorage.setItem('token', response.token);
-          localStorage.setItem('userId', response.userId.toString());
-          localStorage.setItem('nom', response.nom);
-          localStorage.setItem('email', response.email);
-          localStorage.setItem('role', response.role);
+          localStorage.setItem('token',        response.token);
+          localStorage.setItem('userId',       response.userId.toString());
+          localStorage.setItem('nom',          response.nom);
+          localStorage.setItem('email',        response.email);
+          localStorage.setItem('role',         response.role);
           localStorage.setItem('statutCompte', response.statutCompte);
+          // ← NOUVEAU : stocker la spécialité pour détecter conducteur côté frontend
+          localStorage.setItem('specialite',   response.specialite || '');
 
-          // Mettre à jour le BehaviorSubject
           this.currentUserSubject.next(response);
         }
       })
     );
   }
 
-  /**
-   * Déconnexion
-   */
   logout(): void {
-    // Supprimer toutes les données du localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
     localStorage.removeItem('nom');
     localStorage.removeItem('email');
     localStorage.removeItem('role');
     localStorage.removeItem('statutCompte');
+    localStorage.removeItem('specialite'); // ← NOUVEAU
 
-    // Réinitialiser le BehaviorSubject
     this.currentUserSubject.next(null);
-
-    // Rediriger vers la page de login
     this.router.navigate(['/login']);
   }
 
-  /**
-   * Charger l'utilisateur depuis le localStorage
-   */
   private loadUserFromStorage(): void {
     const token = localStorage.getItem('token');
     if (token) {
       const user = {
         token,
-        userId: localStorage.getItem('userId'),
-        nom: localStorage.getItem('nom'),
-        email: localStorage.getItem('email'),
-        role: localStorage.getItem('role'),
-        statutCompte: localStorage.getItem('statutCompte')
+        userId:       localStorage.getItem('userId'),
+        nom:          localStorage.getItem('nom'),
+        email:        localStorage.getItem('email'),
+        role:         localStorage.getItem('role'),
+        statutCompte: localStorage.getItem('statutCompte'),
+        specialite:   localStorage.getItem('specialite'), // ← NOUVEAU
       };
       this.currentUserSubject.next(user);
     }
   }
 
-  /**
-   * Vérifier si l'utilisateur est connecté
-   */
-  isLoggedIn(): boolean {
-    return !!localStorage.getItem('token');
+  isLoggedIn(): boolean { return !!localStorage.getItem('token'); }
+  getToken(): string | null { return localStorage.getItem('token'); }
+  getUserRole(): string | null { return localStorage.getItem('role'); }
+  isAdmin(): boolean { return this.getUserRole() === 'ADMIN'; }
+  isTechnicien(): boolean { return this.getUserRole() === 'TECHNICIEN'; }
+
+  /** Retourne true si l'utilisateur connecté est un conducteur de véhicule */
+  isConducteur(): boolean {
+    return (localStorage.getItem('specialite') || '').toLowerCase() === 'conducteur';
   }
 
-  /**
-   * Obtenir le token
-   */
-  getToken(): string | null {
-    return localStorage.getItem('token');
-  }
-
-  /**
-   * Obtenir le rôle de l'utilisateur
-   */
-  getUserRole(): string | null {
-    return localStorage.getItem('role');
-  }
-
-  /**
-   * Vérifier si l'utilisateur est admin
-   */
-  isAdmin(): boolean {
-    return this.getUserRole() === 'ADMIN';
-  }
-
-  /**
-   * Vérifier si l'utilisateur est technicien
-   */
-  isTechnicien(): boolean {
-    return this.getUserRole() === 'TECHNICIEN';
-  }
-
-  /**
-   * Obtenir les informations de l'utilisateur connecté
-   */
-  getCurrentUser() {
-    return this.currentUserSubject.value;
-  }
+  getCurrentUser() { return this.currentUserSubject.value; }
 }

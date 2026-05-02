@@ -39,7 +39,6 @@ public class AuthService {
         }
 
         Utilisateur utilisateur = new Utilisateur();
-
         utilisateur.setNom(request.getNom());
         utilisateur.setEmail(request.getEmail());
         utilisateur.setMotDePasse(passwordEncoder.encode(request.getMotDePasse()));
@@ -55,7 +54,8 @@ public class AuthService {
         response.setEmail(utilisateur.getEmail());
         response.setRole(utilisateur.getRole());
         response.setStatutCompte(utilisateur.getStatutCompte());
-        response.setMessage("Inscription réussie ! Votre compte est en attente de validation par un administrateur.");
+        response.setSpecialite(utilisateur.getSpecialite()); // ← NOUVEAU
+        response.setMessage("Inscription réussie ! Votre compte est en attente de validation.");
 
         return response;
     }
@@ -95,6 +95,7 @@ public class AuthService {
         response.setEmail(utilisateur.getEmail());
         response.setRole(utilisateur.getRole());
         response.setStatutCompte(utilisateur.getStatutCompte());
+        response.setSpecialite(utilisateur.getSpecialite()); // ← NOUVEAU
         response.setMessage("Connexion réussie");
 
         return response;
