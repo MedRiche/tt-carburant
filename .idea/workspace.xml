@@ -4,17 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="777fc5d2-3bb5-4db8-8545-4efa7fe5d991" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/demo/src/app/services/technicien-carburant.service.spec.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/app/services/technicien-carburant.service.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/app/technicien/technicien-carburant/technicien-carburant.component.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/app/technicien/technicien-carburant/technicien-carburant.component.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/app/technicien/technicien-carburant/technicien-carburant.component.spec.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/demo/src/app/technicien/technicien-carburant/technicien-carburant.component.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/app/app-routing.module.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/app-routing.module.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/app/app.module.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/app.module.ts" afterDir="false" />
-    </list>
+    <list default="true" id="777fc5d2-3bb5-4db8-8545-4efa7fe5d991" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -160,7 +150,7 @@
       <workItem from="1777467119806" duration="3230000" />
       <workItem from="1777493998065" duration="2958000" />
       <workItem from="1777718974967" duration="4377000" />
-      <workItem from="1777812543727" duration="642000" />
+      <workItem from="1777812543727" duration="1103000" />
     </task>
     <servers />
   </component>
