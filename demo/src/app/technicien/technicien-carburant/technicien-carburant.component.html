@@ -17,7 +17,6 @@
 
     <nav class="sidebar-nav">
       <div class="nav-section-label">Navigation</div>
-
       <a class="nav-item" (click)="nav('/technicien/dashboard')">
         <span class="nav-icon">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -27,7 +26,6 @@
         </span>
         Tableau de bord
       </a>
-
       <a class="nav-item" (click)="nav('/technicien/zones')">
         <span class="nav-icon">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -36,7 +34,6 @@
         </span>
         Mes Zones
       </a>
-
       <a class="nav-item" (click)="nav('/technicien/equipements')">
         <span class="nav-icon">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -47,7 +44,6 @@
         </span>
         Mes Véhicules
       </a>
-
       <a class="nav-item active">
         <span class="nav-icon nav-icon--active">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -56,7 +52,6 @@
         </span>
         Carburant
       </a>
-
       <a class="nav-item nav-item--disabled">
         <span class="nav-icon">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -102,6 +97,15 @@
         </div>
       </div>
       <div class="topbar-right">
+        <!-- Export période -->
+        <button class="btn-export-period" (click)="exporterPeriode()" [disabled]="exportLoading" title="Exporter mois courant (tous véhicules)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          {{ exportLoading ? '…' : 'Export mois' }}
+        </button>
         <div class="fuel-badge">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/>
@@ -113,7 +117,6 @@
 
     <div class="content-area">
 
-      <!-- Loading -->
       <div *ngIf="loading" class="loading-screen">
         <div class="loading-ring"></div>
         <p class="loading-text">Chargement…</p>
@@ -135,13 +138,12 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
-              Nouvelle saisie
+              {{ editMode ? 'Modifier saisie' : 'Nouvelle saisie' }}
             </button>
             <button class="tab-btn" [class.active]="view === 'historique'" (click)="view = 'historique'">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
                 <polyline points="3 3 3 8 8 8"/>
-                <line x1="12" y1="7" x2="12" y2="12"/><line x1="12" y1="12" x2="15" y2="15"/>
               </svg>
               Historique
             </button>
@@ -154,56 +156,35 @@
           </div>
         </div>
 
-        <!-- ══════════════════════════════════════════
-             TAB: DASHBOARD
-        ══════════════════════════════════════════ -->
+        <!-- ═══════════════════════════════════════
+             TAB — DASHBOARD
+        ═══════════════════════════════════════ -->
         <div *ngIf="view === 'dashboard'" class="tab-content">
 
-          <!-- KPI row -->
           <div class="kpi-row" *ngIf="dashboard">
             <div class="kpi-card kpi-blue">
-              <div class="kpi-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                </svg>
-              </div>
+              <div class="kpi-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
               <div class="kpi-body">
                 <span class="kpi-val">{{ fmt0(dashboard.totalKmAnnee) }} <small>km</small></span>
                 <span class="kpi-label">Km parcourus {{ dashboard.annee }}</span>
               </div>
             </div>
-
             <div class="kpi-card kpi-cyan">
-              <div class="kpi-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M2 20h20M5 20V8l7-5 7 5v12"/>
-                </svg>
-              </div>
+              <div class="kpi-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20M5 20V8l7-5 7 5v12"/></svg></div>
               <div class="kpi-body">
                 <span class="kpi-val">{{ fmt3(dashboard.totalLitresAnnee) }} <small>L</small></span>
                 <span class="kpi-label">Total ravitaillement</span>
               </div>
             </div>
-
             <div class="kpi-card kpi-amber">
-              <div class="kpi-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                </svg>
-              </div>
+              <div class="kpi-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
               <div class="kpi-body">
                 <span class="kpi-val">{{ fmt3(dashboard.totalCoutAnnee) }} <small>DT</small></span>
                 <span class="kpi-label">Coût total {{ dashboard.annee }}</span>
               </div>
             </div>
-
             <div class="kpi-card" [class.kpi-red]="dashboard.nbBudgetsDepasses > 0" [class.kpi-green]="dashboard.nbBudgetsDepasses === 0">
-              <div class="kpi-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                  <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-                </svg>
-              </div>
+              <div class="kpi-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
               <div class="kpi-body">
                 <span class="kpi-val">{{ dashboard.nbBudgetsDepasses }}</span>
                 <span class="kpi-label">Budgets dépassés</span>
@@ -211,7 +192,6 @@
             </div>
           </div>
 
-          <!-- Véhicules cards -->
           <div class="section-title-row">
             <h2 class="section-h2">Mes Véhicules — Mois courant</h2>
             <span class="month-badge">{{ moisCourantLabel }}</span>
@@ -260,35 +240,30 @@
               </div>
 
               <div class="vfc-footer">
-                <span class="carb-tag" [style.background]="getCarburantColor(v.typeCarburant)+'22'"
+                <span class="carb-tag"
+                      [style.background]="getCarburantColor(v.typeCarburant)+'22'"
                       [style.color]="getCarburantColor(v.typeCarburant)">
                   {{ getCarburantLabel(v.typeCarburant) }}
                 </span>
                 <span class="price-info">{{ v.prixCarburant }} DT/L · Budget {{ fmt3(v.coutDuMois) }} DT</span>
                 <div class="vfc-actions">
                   <button class="btn-saisir" (click)="ouvrirSaisie(v)" *ngIf="!v.saisieExistante">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                    </svg>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     Saisir
                   </button>
                   <button class="btn-histo" (click)="ouvrirHistorique(v)">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                    </svg>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/></svg>
                     Historique
                   </button>
-                  <button class="btn-analytics" (click)="ouvrirAnalytics(v)">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                    </svg>
+                  <button class="btn-analytics" (click)="ouvrirAnalytics(v)" title="Analytique">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                   </button>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Evolution chart (mini bars) -->
+          <!-- Evolution mini chart -->
           <div class="evolution-section" *ngIf="dashboard && dashboard.evolutionMensuelle.length > 0">
             <div class="section-title-row">
               <h2 class="section-h2">Évolution mensuelle — km parcourus</h2>
@@ -306,41 +281,33 @@
               </div>
             </div>
           </div>
-
         </div>
 
-        <!-- ══════════════════════════════════════════
-             TAB: NOUVELLE SAISIE
-        ══════════════════════════════════════════ -->
+        <!-- ═══════════════════════════════════════
+             TAB — NOUVELLE SAISIE / MODIFICATION
+        ═══════════════════════════════════════ -->
         <div *ngIf="view === 'saisie'" class="tab-content">
           <div class="form-card">
             <div class="form-card-header">
-              <div class="form-icon">⛽</div>
+              <div class="form-icon">{{ editMode ? '✏️' : '⛽' }}</div>
               <div>
                 <h3 class="form-title">{{ editMode ? 'Modifier la saisie' : 'Nouvelle saisie mensuelle' }}</h3>
                 <p class="form-sub">Formules DAF 2026 — calculs automatiques</p>
               </div>
+              <!-- Badge modification -->
+              <div class="edit-badge" *ngIf="editMode">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Modification — {{ getMoisLabel(form.mois) }} {{ form.annee }}
+              </div>
             </div>
 
-            <!-- Alerte succès -->
-            <div *ngIf="successMsg" class="alert-success">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              {{ successMsg }}
-            </div>
-            <div *ngIf="budgetAlertMsg" class="alert-budget">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/>
-              </svg>
-              {{ budgetAlertMsg }}
-            </div>
-            <div *ngIf="errorMsg" class="alert-error">❌ {{ errorMsg }}</div>
+            <div *ngIf="successMsg"     class="alert-success">✓ {{ successMsg }}</div>
+            <div *ngIf="budgetAlertMsg" class="alert-budget">⚠️ {{ budgetAlertMsg }}</div>
+            <div *ngIf="errorMsg"       class="alert-error">❌ {{ errorMsg }}</div>
 
             <div class="form-body">
 
-              <!-- Section Véhicule & Période -->
+              <!-- Véhicule & Période -->
               <div class="form-section">
                 <h4 class="section-label">🚗 Véhicule &amp; Période</h4>
                 <div class="form-row-3">
@@ -353,19 +320,17 @@
                   </div>
                   <div class="fg">
                     <label class="fl">Mois *</label>
-                    <select class="fi" [(ngModel)]="form.mois" (ngModelChange)="onPeriodeChange()">
+                    <select class="fi" [(ngModel)]="form.mois" (ngModelChange)="onPeriodeChange()" [disabled]="editMode">
                       <option *ngFor="let m of moisOptions" [value]="m">{{ moisLabels[m] }}</option>
                     </select>
                   </div>
                   <div class="fg">
                     <label class="fl">Année *</label>
-                    <select class="fi" [(ngModel)]="form.annee" (ngModelChange)="onPeriodeChange()">
+                    <select class="fi" [(ngModel)]="form.annee" (ngModelChange)="onPeriodeChange()" [disabled]="editMode">
                       <option *ngFor="let a of annees" [value]="a">{{ a }}</option>
                     </select>
                   </div>
                 </div>
-
-                <!-- Info véhicule sélectionné -->
                 <div class="vehicule-info-bar" *ngIf="vehiculeSelectionne">
                   <span>⛽ {{ getCarburantLabel(vehiculeSelectionne.typeCarburant) }}</span>
                   <span class="sep">|</span>
@@ -373,43 +338,41 @@
                   <span class="sep">|</span>
                   <span>📋 Budget : <strong>{{ vehiculeSelectionne.coutDuMois }} DT</strong></span>
                 </div>
-
-                <!-- Prefill loading -->
                 <div *ngIf="prefillLoading" class="prefill-bar">
                   <div class="prefill-spinner"></div>
                   Chargement données mois précédent…
                 </div>
               </div>
 
-              <!-- Section Mois Précédent -->
+              <!-- Mois précédent -->
               <div class="form-section">
                 <h4 class="section-label">📅 Données mois précédent <span class="badge-auto">Auto-rempli</span></h4>
                 <div class="form-row-3">
                   <div class="fg">
                     <label class="fl">Index démarrage<br><small>= index fin mois préc.</small></label>
-                    <input class="fi" [class.fi-prefilled]="form.indexDemarrageMois > 0"
-                           type="number" [(ngModel)]="form.indexDemarrageMois" min="0" placeholder="Ex: 356814"/>
+                    <input class="fi" [class.fi-prefilled]="form.indexDemarrageMois > 0" type="number"
+                           [(ngModel)]="form.indexDemarrageMois" min="0" placeholder="Ex: 2000"/>
                   </div>
                   <div class="fg">
                     <label class="fl">Montant restant réservoir préc. (DT)<br><small>= restant fin mois préc.</small></label>
-                    <input class="fi" [class.fi-prefilled]="form.montantRestantMoisPrecedent > 0"
-                           type="number" step="0.001" [(ngModel)]="form.montantRestantMoisPrecedent" min="0"/>
+                    <input class="fi" [class.fi-prefilled]="form.montantRestantMoisPrecedent > 0" type="number" step="0.001"
+                           [(ngModel)]="form.montantRestantMoisPrecedent" min="0"/>
                   </div>
                   <div class="fg">
                     <label class="fl">Ravitaillement mois précédent (DT)</label>
-                    <input class="fi" [class.fi-prefilled]="form.ravitaillementMoisPrecedent > 0"
-                           type="number" step="0.001" [(ngModel)]="form.ravitaillementMoisPrecedent" min="0"/>
+                    <input class="fi" [class.fi-prefilled]="form.ravitaillementMoisPrecedent > 0" type="number" step="0.001"
+                           [(ngModel)]="form.ravitaillementMoisPrecedent" min="0"/>
                   </div>
                 </div>
               </div>
 
-              <!-- Section Mois Courant -->
+              <!-- Mois courant -->
               <div class="form-section">
                 <h4 class="section-label">✏️ Données mois en cours <span class="badge-required">À saisir</span></h4>
                 <div class="form-row-2">
                   <div class="fg">
                     <label class="fl">Index fin du mois</label>
-                    <input class="fi" type="number" [(ngModel)]="form.indexFinMois" min="0" placeholder="Ex: 357500"/>
+                    <input class="fi" type="number" [(ngModel)]="form.indexFinMois" min="0" placeholder="Ex: 9000"/>
                   </div>
                   <div class="fg">
                     <label class="fl">Ravitaillement mois courant (DT)</label>
@@ -418,7 +381,7 @@
                 </div>
               </div>
 
-              <!-- Preview calculs -->
+              <!-- Calculs temps réel -->
               <div class="calc-section" *ngIf="vehiculeSelectionne">
                 <h4 class="section-label">⚡ Calculs automatiques — temps réel</h4>
                 <div class="calc-grid">
@@ -464,7 +427,6 @@
                   </div>
                 </div>
 
-                <!-- Alerte budget temps réel -->
                 <div *ngIf="budgetDepasseReel" class="budget-alert-inline">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
@@ -477,29 +439,24 @@
                   </div>
                 </div>
               </div>
-
             </div>
 
-            <!-- Footer -->
             <div class="form-footer">
-              <button class="btn-cancel" (click)="resetForm()">Annuler</button>
-              <button class="btn-submit" (click)="soumettre()"
-                      [disabled]="!form.vehiculeMatricule || submitting">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
+              <button class="btn-cancel" (click)="resetForm(); view = 'dashboard'">Annuler</button>
+              <button class="btn-submit" (click)="soumettre()" [disabled]="!form.vehiculeMatricule || submitting">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                 {{ submitting ? 'Enregistrement…' : (editMode ? 'Modifier' : 'Enregistrer') }}
               </button>
             </div>
           </div>
         </div>
 
-        <!-- ══════════════════════════════════════════
-             TAB: HISTORIQUE
-        ══════════════════════════════════════════ -->
+        <!-- ═══════════════════════════════════════
+             TAB — HISTORIQUE
+        ═══════════════════════════════════════ -->
         <div *ngIf="view === 'historique'" class="tab-content">
 
-          <!-- Sélecteur véhicule -->
+          <!-- Sélecteurs + Export -->
           <div class="histo-controls">
             <select class="ctrl-select" [(ngModel)]="historiqueMatricule" (ngModelChange)="chargerHistorique()">
               <option value="">— Sélectionner un véhicule —</option>
@@ -508,21 +465,40 @@
             <select class="ctrl-select" [(ngModel)]="historiqueAnnee" (ngModelChange)="chargerHistorique()">
               <option *ngFor="let a of annees" [value]="a">{{ a }}</option>
             </select>
+
+            <!-- Menu export -->
+            <div class="export-wrapper" *ngIf="historiqueMatricule">
+              <button class="btn-export" (click)="toggleExportMenu()" [disabled]="exportLoading">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                {{ exportLoading ? 'Export…' : 'Exporter Excel' }}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              <div class="export-dropdown" *ngIf="showExportMenu">
+                <button class="export-opt" (click)="exporterVehicule()">
+                  📋 Toute l'année {{ historiqueAnnee }}
+                </button>
+                <div class="export-divider"></div>
+                <div class="export-opt-label">Par mois :</div>
+                <button class="export-opt export-opt-month" *ngFor="let m of moisOptions" (click)="exporterVehicule(m)">
+                  {{ moisLabels[m] }}
+                </button>
+              </div>
+            </div>
           </div>
 
-          <!-- Loading historique -->
-          <div *ngIf="historiqueLoading" class="loading-screen">
-            <div class="loading-ring"></div>
-          </div>
+          <div *ngIf="historiqueLoading" class="loading-screen"><div class="loading-ring"></div></div>
 
-          <!-- Empty -->
           <div *ngIf="!historiqueLoading && historique.length === 0 && historiqueMatricule" class="empty-histo">
-            <div class="empty-icon">📭</div>
-            <p>Aucune saisie pour ce véhicule</p>
+            <div class="empty-icon">📭</div><p>Aucune saisie pour ce véhicule</p>
           </div>
           <div *ngIf="!historiqueLoading && !historiqueMatricule" class="empty-histo">
-            <div class="empty-icon">🚗</div>
-            <p>Sélectionnez un véhicule pour voir son historique</p>
+            <div class="empty-icon">🚗</div><p>Sélectionnez un véhicule pour voir son historique</p>
           </div>
 
           <!-- Tableau historique -->
@@ -552,13 +528,12 @@
                     <th>Budget</th>
                     <th>Taux %</th>
                     <th>Statut</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr *ngFor="let h of historique" [class.row-alert]="h.budgetDepasse">
-                    <td class="period-cell">
-                      <span class="period-badge">{{ h.periodeLabel }}</span>
-                    </td>
+                    <td class="period-cell"><span class="period-badge">{{ h.periodeLabel }}</span></td>
                     <td class="mono">{{ fmt0(h.indexDemarrageMois) }}</td>
                     <td class="mono">{{ fmt0(h.indexFinMois) }}</td>
                     <td class="mono cyan-val">{{ fmt0(h.distanceParcourue) }}</td>
@@ -587,6 +562,32 @@
                       <span *ngIf="!h.budgetDepasse" class="status-ok-badge">✓ OK</span>
                       <span *ngIf="h.budgetDepasse" class="status-alert-badge">⚠ +{{ fmt3(h.depassementMontant) }} DT</span>
                     </td>
+                    <!-- Actions CRUD -->
+                    <td>
+                      <div class="action-btns">
+                        <button class="btn-action btn-edit" (click)="ouvrirModification(h)" title="Modifier cette saisie">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                          </svg>
+                        </button>
+                        <button class="btn-action btn-delete" (click)="demanderSuppression(h)" title="Supprimer cette saisie">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6l-1 14H6L5 6"/>
+                            <path d="M10 11v6M14 11v6"/>
+                            <path d="M9 6V4h6v2"/>
+                          </svg>
+                        </button>
+                        <button class="btn-action btn-excel" (click)="exporterVehicule(h.mois)" title="Exporter ce mois en Excel">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -594,11 +595,10 @@
           </div>
         </div>
 
-        <!-- ══════════════════════════════════════════
-             TAB: ANALYTIQUE
-        ══════════════════════════════════════════ -->
+        <!-- ═══════════════════════════════════════
+             TAB — ANALYTIQUE
+        ═══════════════════════════════════════ -->
         <div *ngIf="view === 'analytics'" class="tab-content">
-
           <div class="analytics-controls">
             <select class="ctrl-select" [(ngModel)]="analyticsMatricule" (ngModelChange)="chargerAnalytics()">
               <option value="">— Sélectionner un véhicule —</option>
@@ -609,96 +609,63 @@
             </select>
           </div>
 
-          <div *ngIf="analyticsLoading" class="loading-screen">
-            <div class="loading-ring"></div>
-          </div>
+          <div *ngIf="analyticsLoading" class="loading-screen"><div class="loading-ring"></div></div>
 
-          <div *ngIf="!analyticsLoading && !stats && !analyticsMatricule" class="empty-histo">
-            <div class="empty-icon">📊</div>
-            <p>Sélectionnez un véhicule pour voir ses analytiques</p>
+          <div *ngIf="!analyticsLoading && !analyticsMatricule" class="empty-histo">
+            <div class="empty-icon">📊</div><p>Sélectionnez un véhicule pour voir ses analytiques</p>
           </div>
 
           <ng-container *ngIf="!analyticsLoading && stats">
-
-            <!-- KPIs stats -->
             <div class="stats-kpi-row">
-              <div class="stats-kpi">
-                <span class="sk-val">{{ fmt0(stats.totalKm) }} km</span>
-                <span class="sk-lbl">Km parcourus</span>
-              </div>
-              <div class="stats-kpi">
-                <span class="sk-val">{{ fmt3(stats.totalLitres) }} L</span>
-                <span class="sk-lbl">Total consommé</span>
-              </div>
-              <div class="stats-kpi">
-                <span class="sk-val">{{ fmt3(stats.totalCout) }} DT</span>
-                <span class="sk-lbl">Coût réel</span>
-              </div>
-              <div class="stats-kpi" [class.sk-warn]="stats.tauxBudget > 100">
-                <span class="sk-val">{{ stats.tauxBudget }}%</span>
-                <span class="sk-lbl">Taux budget</span>
-              </div>
-              <div class="stats-kpi">
-                <span class="sk-val">{{ fmt3(stats.rendementMoyen) }} L/100</span>
-                <span class="sk-lbl">Rendement moy.</span>
-              </div>
-              <div class="stats-kpi" [class.sk-warn]="stats.nbBudgetsDepasses > 0">
-                <span class="sk-val">{{ stats.nbBudgetsDepasses }}</span>
-                <span class="sk-lbl">Mois dépassés</span>
-              </div>
+              <div class="stats-kpi"><span class="sk-val">{{ fmt0(stats.totalKm) }} km</span><span class="sk-lbl">Km parcourus</span></div>
+              <div class="stats-kpi"><span class="sk-val">{{ fmt3(stats.totalLitres) }} L</span><span class="sk-lbl">Total consommé</span></div>
+              <div class="stats-kpi"><span class="sk-val">{{ fmt3(stats.totalCout) }} DT</span><span class="sk-lbl">Coût réel</span></div>
+              <div class="stats-kpi" [class.sk-warn]="stats.tauxBudget > 100"><span class="sk-val">{{ stats.tauxBudget }}%</span><span class="sk-lbl">Taux budget</span></div>
+              <div class="stats-kpi"><span class="sk-val">{{ fmt3(stats.rendementMoyen) }} L/100</span><span class="sk-lbl">Rendement moy.</span></div>
+              <div class="stats-kpi" [class.sk-warn]="stats.nbBudgetsDepasses > 0"><span class="sk-val">{{ stats.nbBudgetsDepasses }}</span><span class="sk-lbl">Mois dépassés</span></div>
             </div>
 
-            <!-- Graphique km par mois -->
             <div class="chart-card">
               <h3 class="chart-title">📏 Km parcourus par mois — {{ stats.annee }}</h3>
               <div class="bar-chart">
                 <div *ngFor="let m of stats.evolution" class="bar-col2">
                   <div class="bar-val2" *ngIf="m.km > 0">{{ fmt0(m.km) }}</div>
                   <div class="bar-wrap2">
-                    <div class="bar2"
-                         [class.bar2-alert]="m.budgetDepasse"
-                         [style.height.%]="getBarHeight(m.km, stats.evolution)">
-                    </div>
+                    <div class="bar2" [class.bar2-alert]="m.budgetDepasse"
+                         [style.height.%]="getBarHeight(m.km, stats.evolution)"></div>
                   </div>
                   <div class="bar-lbl2">{{ m.label }}</div>
                 </div>
               </div>
             </div>
 
-            <!-- Graphique litres par mois -->
             <div class="chart-card">
               <h3 class="chart-title">⛽ Consommation (L) par mois — {{ stats.annee }}</h3>
               <div class="bar-chart">
                 <div *ngFor="let m of stats.evolution" class="bar-col2">
                   <div class="bar-val2" *ngIf="m.litres > 0">{{ fmt3(m.litres) }}L</div>
                   <div class="bar-wrap2">
-                    <div class="bar2 bar2-cyan"
-                         [style.height.%]="getBarHeight(m.litres, stats.evolution, 'litres')">
-                    </div>
+                    <div class="bar2 bar2-cyan" [style.height.%]="getBarHeight(m.litres, stats.evolution, 'litres')"></div>
                   </div>
                   <div class="bar-lbl2">{{ m.label }}</div>
                 </div>
               </div>
             </div>
 
-            <!-- Tableau mensuel -->
+            <!-- Tableau mensuel avec actions inline -->
             <div class="chart-card">
               <h3 class="chart-title">📋 Détail mensuel</h3>
               <div class="monthly-table-wrap">
                 <table class="monthly-table">
                   <thead>
                     <tr>
-                      <th>Mois</th>
-                      <th>Km</th>
-                      <th>Litres</th>
-                      <th>Coût DT</th>
-                      <th>L/100km</th>
-                      <th>Budget</th>
-                      <th>Statut</th>
+                      <th>Mois</th><th>Km</th><th>Litres</th><th>Coût DT</th>
+                      <th>L/100km</th><th>Budget</th><th>Statut</th><th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr *ngFor="let m of stats.evolution" [class.row-data]="m.km > 0" [class.row-empty]="m.km === 0">
+                    <tr *ngFor="let m of stats.evolution"
+                        [class.row-data]="m.km > 0" [class.row-empty]="m.km === 0">
                       <td>{{ m.label }}</td>
                       <td class="mono">{{ m.km > 0 ? fmt0(m.km) : '—' }}</td>
                       <td class="mono">{{ m.litres > 0 ? fmt3(m.litres) : '—' }}</td>
@@ -710,16 +677,51 @@
                         <span *ngIf="m.km > 0 && !m.budgetDepasse" class="badge-ok">✓ OK</span>
                         <span *ngIf="m.budgetDepasse" class="badge-alert">⚠ Dépassé</span>
                       </td>
+                      <td>
+                        <div class="action-btns" *ngIf="m.km > 0 && m.id">
+                          <button class="btn-action btn-excel"
+                                  (click)="exporterVehicule(m.mois)" title="Export Excel ce mois">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                              <polyline points="7 10 12 15 17 10"/>
+                              <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                          </button>
+                        </div>
+                        <span *ngIf="m.km === 0" class="badge-na">—</span>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             </div>
-
           </ng-container>
         </div>
 
       </ng-container>
     </div>
   </main>
+</div>
+
+<!-- ══════════════ MODAL CONFIRMATION SUPPRESSION ══════════════ -->
+<div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="annulerSuppression()">
+  <div class="confirm-modal" (click)="$event.stopPropagation()">
+    <div class="confirm-icon">🗑️</div>
+    <h3 class="confirm-title">Supprimer la saisie</h3>
+    <p class="confirm-desc">
+      Voulez-vous vraiment supprimer la saisie de <strong>{{ deleteTargetLabel }}</strong> ?<br>
+      Cette action est irréversible.
+    </p>
+    <div *ngIf="errorMsg" class="alert-error" style="margin: 0 0 12px;">❌ {{ errorMsg }}</div>
+    <div class="confirm-footer">
+      <button class="btn-cancel" (click)="annulerSuppression()">Annuler</button>
+      <button class="btn-danger" (click)="confirmerSuppression()" [disabled]="deleteLoading">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+        </svg>
+        {{ deleteLoading ? 'Suppression…' : 'Supprimer' }}
+      </button>
+    </div>
+  </div>
 </div>

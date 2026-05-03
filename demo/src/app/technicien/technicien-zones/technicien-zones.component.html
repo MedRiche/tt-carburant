@@ -54,17 +54,19 @@
         <span>Mes Véhicules</span>
       </a>
 
-      <div class="nav-section-label" style="margin-top:16px">Prochainement</div>
+      
 
-      <a class="nav-item nav-item--disabled">
-        <span class="nav-icon">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/>
-          </svg>
-        </span>
-        <span>Carburant</span>
-        <span class="nav-soon">Bientôt</span>
-      </a>
+      <!-- APRÈS -->
+<a class="nav-item" (click)="navigateTo('/technicien/carburant')">
+  <span class="nav-icon">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/>
+    </svg>
+  </span>
+  <span>Carburant</span>
+</a>
+
+      <div class="nav-section-label" style="margin-top:16px">Prochainement</div>
 
       <a class="nav-item nav-item--disabled">
         <span class="nav-icon">
@@ -233,12 +235,14 @@
                 </svg>
                 Véhicules
               </div>
-              <div class="zc-chip zc-chip--fuel">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M2 20h20M5 20V8l7-5 7 5v12"/>
-                </svg>
-                Carburant (bientôt)
-              </div>
+<!-- APRÈS -->
+<div class="zc-chip zc-chip--available" 
+     (click)="$event.stopPropagation(); navigateTo('/technicien/carburant')">
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/>
+  </svg>
+  Carburant
+</div>
             </div>
 
           </div>
@@ -334,19 +338,25 @@
               </span>
             </div>
 
-            <!-- Étape 4 — coming soon -->
-            <div class="dm-cs-item dm-cs-item--coming">
-              <div class="dm-cs-icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/>
-                </svg>
-              </div>
-              <div>
-                <strong>Carburant</strong>
-                <span>Enregistrer les ravitaillements</span>
-              </div>
-              <span class="dm-soon-tag">Étape 4</span>
-            </div>
+<!-- APRÈS -->
+<div class="dm-cs-item dm-cs-item--active"
+     (click)="closeDetail(); navigateTo('/technicien/carburant')">
+  <div class="dm-cs-icon dm-cs-icon--active">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/>
+    </svg>
+  </div>
+  <div>
+    <strong>Carburant</strong>
+    <span>Enregistrer les ravitaillements</span>
+  </div>
+  <span class="dm-active-tag">
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+    Disponible
+  </span>
+</div>
 
             <!-- Étape 5 — coming soon -->
             <div class="dm-cs-item dm-cs-item--coming">

@@ -52,18 +52,19 @@
         <span class="nav-badge">{{ totalVehicules + (estConducteur ? 0 : totalGroupes) }}</span>
       </a>
 
-      <div class="nav-section-label" style="margin-top:16px">Prochainement</div>
+      
 
-      <a class="nav-item nav-item--disabled">
-        <span class="nav-icon">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/>
-          </svg>
-        </span>
-        <span>Carburant</span>
-        <span class="nav-soon">Bientôt</span>
-      </a>
+<a class="nav-item" (click)="navigateTo('/technicien/carburant')">
+  <span class="nav-icon">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/>
+    </svg>
+  </span>
+  <span>Carburant</span>
+</a>
 
+
+<div class="nav-section-label" style="margin-top:16px">Prochainement</div>
       <a class="nav-item nav-item--disabled">
         <span class="nav-icon">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

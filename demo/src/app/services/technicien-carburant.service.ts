@@ -73,6 +73,7 @@ export interface EvolutionMois {
   rendement: number;
   budgetDepasse: boolean;
   budget: number;
+  id?: number | null; // id de la saisie (null si pas de saisie ce mois)
 }
 
 export interface DashboardTechnicien {
@@ -122,6 +123,14 @@ export class TechnicienCarburantService {
     });
   }
 
+  private hBlob(): HttpHeaders {
+    return new HttpHeaders({
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    });
+  }
+
+  // ── Lecture ──────────────────────────────────────────────────
+
   getMesVehicules(): Observable<VehiculeCarburantResume[]> {
     return this.http.get<VehiculeCarburantResume[]>(`${this.api}/mes-vehicules`, { headers: this.h() });
   }
@@ -137,14 +146,6 @@ export class TechnicienCarburantService {
     return this.http.get<PrefillData>(`${this.api}/prefill/${matricule}`, { headers: this.h(), params });
   }
 
-  saisir(req: SaisieCarburantRequest): Observable<any> {
-    return this.http.post(`${this.api}/saisir`, req, { headers: this.h() });
-  }
-
-  modifier(id: number, req: SaisieCarburantRequest): Observable<any> {
-    return this.http.put(`${this.api}/modifier/${id}`, req, { headers: this.h() });
-  }
-
   getStats(matricule: string, annee?: number): Observable<CarburantStats> {
     let params = new HttpParams();
     if (annee) params = params.set('annee', annee);
@@ -153,5 +154,52 @@ export class TechnicienCarburantService {
 
   getDashboard(): Observable<DashboardTechnicien> {
     return this.http.get<DashboardTechnicien>(`${this.api}/dashboard`, { headers: this.h() });
+  }
+
+  // ── CRUD ─────────────────────────────────────────────────────
+
+  saisir(req: SaisieCarburantRequest): Observable<any> {
+    return this.http.post(`${this.api}/saisir`, req, { headers: this.h() });
+  }
+
+  modifier(id: number, req: SaisieCarburantRequest): Observable<any> {
+    return this.http.put(`${this.api}/modifier/${id}`, req, { headers: this.h() });
+  }
+
+  supprimer(id: number): Observable<any> {
+    return this.http.delete(`${this.api}/supprimer/${id}`, { headers: this.h() });
+  }
+
+  // ── Export Excel ─────────────────────────────────────────────
+
+  /** Export Excel pour un véhicule (toute l'année ou un mois) */
+  exportExcelVehicule(matricule: string, annee: number, mois?: number): Observable<Blob> {
+    let params = new HttpParams().set('annee', annee);
+    if (mois) params = params.set('mois', mois);
+    return this.http.get(`${this.api}/export/excel/${matricule}`, {
+      headers: this.hBlob(),
+      params,
+      responseType: 'blob'
+    });
+  }
+
+  /** Export Excel tous les véhicules — un mois */
+  exportExcelPeriode(annee: number, mois: number): Observable<Blob> {
+    const params = new HttpParams().set('annee', annee).set('mois', mois);
+    return this.http.get(`${this.api}/export/excel/periode`, {
+      headers: this.hBlob(),
+      params,
+      responseType: 'blob'
+    });
+  }
+
+  /** Déclenche le téléchargement navigateur */
+  downloadBlob(blob: Blob, filename: string): void {
+    const url = window.URL.createObjectURL(blob);
+    const a   = document.createElement('a');
+    a.href    = url;
+    a.download = filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
   }
 }
