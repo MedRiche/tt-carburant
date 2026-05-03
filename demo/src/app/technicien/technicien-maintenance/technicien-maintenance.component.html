@@ -1,0 +1,667 @@
+<!-- src/app/technicien/technicien-maintenance/technicien-maintenance.component.html -->
+<div class="tech-shell">
+
+  <!-- ══════════════ SIDEBAR ══════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark">
+        <div class="brand-sq bq1"></div>
+        <div class="brand-sq bq2"></div>
+        <div class="brand-bar"></div>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">TT Maintenance</span>
+        <span class="brand-sub">Espace Technicien</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Navigation</div>
+      <a class="nav-item" (click)="nav('/technicien/dashboard')">
+        <span class="nav-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+          </svg>
+        </span>
+        Tableau de bord
+      </a>
+      <a class="nav-item" (click)="nav('/technicien/zones')">
+        <span class="nav-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+          </svg>
+        </span>
+        Mes Zones
+      </a>
+      <a class="nav-item" (click)="nav('/technicien/equipements')">
+        <span class="nav-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="1" y="3" width="15" height="13" rx="2"/>
+            <path d="M16 8h4l3 5v3h-7V8z"/>
+            <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+          </svg>
+        </span>
+        Mes Véhicules
+      </a>
+      <a class="nav-item" (click)="nav('/technicien/carburant')">
+        <span class="nav-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/>
+          </svg>
+        </span>
+        Carburant
+      </a>
+      <a class="nav-item active">
+        <span class="nav-icon nav-icon--active">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+        </span>
+        Maintenance
+        <span class="nav-badge" *ngIf="maintenances.length > 0">{{ maintenances.length }}</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sf-avatar">{{ initiales }}</div>
+      <div class="sf-meta">
+        <span class="sf-name">{{ nomAffiche }}</span>
+        <span class="sf-role">🔧 Technicien</span>
+      </div>
+      <button class="sf-logout" (click)="logout()" title="Déconnexion">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ══════════════ MAIN ══════════════ -->
+  <main class="main-content">
+
+    <!-- ── TOPBAR ── -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="back-btn" (click)="nav('/technicien/dashboard')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Retour
+        </button>
+        <div>
+          <h1 class="page-title">Gestion Maintenance</h1>
+          <p class="page-sub">Opérations de maintenance de vos zones</p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <!-- Export global Excel -->
+        <button class="btn-export-global" (click)="exporterTout()" [disabled]="exportLoading">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          {{ exportLoading ? 'Export…' : 'Export Excel' }}
+        </button>
+        <!-- Nouveau dossier -->
+        <button class="btn-new" (click)="ouvrirCreation()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Nouveau dossier
+        </button>
+        <div class="maint-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+          {{ maintenances.length }} dossier{{ maintenances.length > 1 ? 's' : '' }}
+        </div>
+      </div>
+    </header>
+
+    <div class="content-area">
+
+      <!-- Loading -->
+      <div *ngIf="loading" class="loading-screen">
+        <div class="loading-ring"></div>
+        <p class="loading-text">Chargement…</p>
+      </div>
+
+      <ng-container *ngIf="!loading">
+
+        <!-- ══ TABS ══ -->
+        <div class="tabs-row">
+          <div class="tabs">
+            <button class="tab-btn" [class.active]="view==='dashboard'" (click)="view='dashboard'">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+              </svg>
+              Tableau de bord
+            </button>
+            <button class="tab-btn" [class.active]="view==='liste'" (click)="view='liste'">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+                <line x1="8" y1="18" x2="21" y2="18"/>
+              </svg>
+              Liste des dossiers
+              <span class="tab-badge">{{ filtres.length }}</span>
+            </button>
+            <button class="tab-btn" [class.active]="view==='form'" (click)="ouvrirCreation()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              {{ editMode ? 'Modifier' : 'Nouveau' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- ═══════════════ TAB: DASHBOARD ═══════════════ -->
+        <div *ngIf="view==='dashboard'" class="tab-content">
+
+          <!-- KPI Row -->
+          <div class="kpi-row" *ngIf="dashboard">
+            <div class="kpi-card kpi-orange">
+              <div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+              <div class="kpi-body">
+                <span class="kpi-val">{{ dashboard.nbDossiers }}</span>
+                <span class="kpi-label">Total dossiers</span>
+              </div>
+            </div>
+            <div class="kpi-card kpi-amber">
+              <div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+              <div class="kpi-body">
+                <span class="kpi-val" style="font-size:18px">{{ fmt3(dashboard.totalHtva) }} <small>DT</small></span>
+                <span class="kpi-label">Total HTVA</span>
+              </div>
+            </div>
+            <div class="kpi-card kpi-red">
+              <div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+              <div class="kpi-body">
+                <span class="kpi-val">{{ dashboard.nbEnCours }}</span>
+                <span class="kpi-label">En cours</span>
+              </div>
+            </div>
+            <div class="kpi-card kpi-green">
+              <div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+              <div class="kpi-body">
+                <span class="kpi-val">{{ dashboard.nbTermines }}</span>
+                <span class="kpi-label">Terminés</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section title -->
+          <div class="section-title-row">
+            <h2 class="section-h2">Derniers dossiers</h2>
+          </div>
+
+          <div class="derniers-table-wrap" *ngIf="dashboard && dashboard.derniersDossiers.length > 0">
+            <table class="derniers-table">
+              <thead>
+                <tr>
+                  <th>N° Dossier</th>
+                  <th>Véhicule</th>
+                  <th>Type</th>
+                  <th>Statut</th>
+                  <th style="text-align:right">HTVA (DT)</th>
+                  <th>Date</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let d of dashboard.derniersDossiers" class="derniers-row" (click)="voirDossierById(d.id)">
+                  <td><span class="doss-num">{{ d.numeroDossier }}</span></td>
+                  <td><span class="mat-tag">{{ d.vehicule }}</span></td>
+                  <td><span class="chip" [ngClass]="getTypeClass(d.type)">{{ getTypeLabel(d.type) }}</span></td>
+                  <td><span class="chip" [ngClass]="getStatutClass(d.statut)">{{ getStatutLabel(d.statut) }}</span></td>
+                  <td style="text-align:right"><span class="htva-val">{{ fmt3(d.htva) }}</span></td>
+                  <td class="mono-val">{{ d.date | date:'dd/MM/yyyy' }}</td>
+                  <td>
+                    <button class="btn-goto" (click)="voirDossierById(d.id); $event.stopPropagation()">→</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Top véhicules -->
+          <div class="section-title-row" style="margin-top:16px" *ngIf="dashboard && topVehiculesArray.length > 0">
+            <h2 class="section-h2">Top véhicules par coût HTVA</h2>
+          </div>
+          <div class="top-veh-list" *ngIf="dashboard && topVehiculesArray.length > 0">
+            <div *ngFor="let item of topVehiculesArray; let i = index" class="top-veh-item">
+              <span class="tv-rank">{{ i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1) }}</span>
+              <span class="mat-tag">{{ item.matricule }}</span>
+              <div class="tv-bar-wrap">
+                <div class="tv-bar" [style.width.%]="barPct(item.htva, topVehiculesArray[0].htva)"></div>
+              </div>
+              <span class="htva-val">{{ fmt3(item.htva) }} DT</span>
+            </div>
+          </div>
+
+          <!-- Par type -->
+          <div class="section-title-row" style="margin-top:16px" *ngIf="dashboard">
+            <h2 class="section-h2">Par type d'intervention</h2>
+          </div>
+          <div class="type-grid" *ngIf="dashboard">
+            <div class="type-card" *ngFor="let entry of getParTypeArray()">
+              <span class="chip" [ngClass]="getTypeClass(entry.type)">{{ getTypeLabel(entry.type) }}</span>
+              <span class="type-count">{{ entry.count }} dossier{{ entry.count > 1 ? 's' : '' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════ TAB: LISTE ═══════════════ -->
+        <div *ngIf="view==='liste'" class="tab-content">
+
+          <!-- Filtres -->
+          <div class="filter-bar">
+            <div class="search-box">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input type="text" placeholder="N° dossier, véhicule, description…"
+                     [(ngModel)]="searchQ" (ngModelChange)="filtrer()">
+              <button *ngIf="searchQ" class="clear-btn" (click)="searchQ=''; filtrer()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+            <select class="filter-select" [(ngModel)]="filtreStatut" (ngModelChange)="filtrer()">
+              <option value="">Tous statuts</option>
+              <option value="EN_COURS">En cours</option>
+              <option value="TERMINEE">Terminée</option>
+              <option value="ANNULEE">Annulée</option>
+            </select>
+            <select class="filter-select" [(ngModel)]="filtreType" (ngModelChange)="filtrer()">
+              <option value="">Tous types</option>
+              <option value="PREVENTIVE">Préventive</option>
+              <option value="CORRECTIVE">Corrective</option>
+              <option value="VISITE_TECHNIQUE">Visite technique</option>
+              <option value="ACCIDENT">Accident</option>
+            </select>
+            <!-- Export filtré -->
+            <button class="btn-export-sm" (click)="exporterTout()" [disabled]="exportLoading" title="Exporter en Excel">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              {{ exportLoading ? '…' : 'Excel' }}
+            </button>
+          </div>
+
+          <!-- Tableau -->
+          <div *ngIf="loadingListe" class="loading-screen"><div class="loading-ring"></div></div>
+
+          <div *ngIf="!loadingListe && filtres.length === 0" class="empty-state">
+            <div class="empty-icon">🔧</div>
+            <p class="empty-title">Aucun dossier</p>
+            <p class="empty-sub">Aucun dossier de maintenance dans vos zones.</p>
+            <button class="btn-new" (click)="ouvrirCreation()">+ Créer un dossier</button>
+          </div>
+
+          <div *ngIf="!loadingListe && filtres.length > 0" class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>N° Dossier</th>
+                  <th>Véhicule</th>
+                  <th>Zone</th>
+                  <th>Type</th>
+                  <th>Statut</th>
+                  <th>Date</th>
+                  <th style="text-align:right">HTVA (DT)</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let m of filtres" class="table-row">
+                  <td><span class="doss-num">{{ m.numeroDossier }}</span></td>
+                  <td><span class="mat-tag">{{ m.vehiculeMatricule }}</span><br><small class="text-muted">{{ m.vehiculeMarqueModele }}</small></td>
+                  <td><span *ngIf="m.vehiculeZoneNom" class="zone-chip">{{ m.vehiculeZoneNom }}</span></td>
+                  <td><span class="chip" [ngClass]="getTypeClass(m.typeIntervention)">{{ getTypeLabel(m.typeIntervention) }}</span></td>
+                  <td><span class="chip" [ngClass]="getStatutClass(m.statut)">{{ getStatutLabel(m.statut) }}</span></td>
+                  <td class="mono-val">{{ m.dateIntervention | date:'dd/MM/yyyy' }}</td>
+                  <td style="text-align:right"><span class="htva-val">{{ fmt3(m.coutTotalHtva) }}</span></td>
+                  <td>
+                    <div class="row-actions">
+                      <button class="btn-act btn-view" (click)="voirDossier(m)" title="Voir">👁</button>
+                      <button class="btn-act btn-edit" (click)="editerDossier(m)" title="Modifier">✏️</button>
+                      <button class="btn-act btn-excel" (click)="exporterDossier(m)" title="Exporter Excel">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                          <polyline points="7 10 12 15 17 10"/>
+                          <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                      </button>
+                      <button class="btn-act btn-delete" (click)="demanderSuppression(m)" title="Supprimer">🗑</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="total-row">
+                  <td colspan="6"><strong>TOTAL</strong></td>
+                  <td style="text-align:right"><strong class="htva-val">{{ fmt3(totalHtva) }}</strong></td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- ═══════════════ TAB: FORMULAIRE ═══════════════ -->
+        <div *ngIf="view==='form'" class="tab-content">
+          <div class="form-card">
+
+            <div class="form-card-header">
+              <div class="form-icon">{{ editMode ? '✏️' : '🔧' }}</div>
+              <div>
+                <h3 class="form-title">{{ editMode ? 'Modifier le dossier' : 'Nouveau dossier de maintenance' }}</h3>
+                <p class="form-sub">Véhicule · Intervention · Détails (Main d'œuvre + Pièces)</p>
+              </div>
+              <div class="edit-badge" *ngIf="editMode">
+                ✏️ Modification — {{ form.numeroDossier }}
+              </div>
+            </div>
+
+            <!-- Alerts -->
+            <div *ngIf="successMsg" class="alert-success">✓ {{ successMsg }}</div>
+            <div *ngIf="errorMsg"   class="alert-error">❌ {{ errorMsg }}</div>
+
+            <div class="form-body">
+
+              <!-- Identification -->
+              <div class="form-section">
+                <h4 class="section-label">🗂️ Identification</h4>
+                <div class="form-row-3">
+                  <div class="fg">
+                    <label class="fl">N° Dossier *</label>
+                    <input class="fi mono" [(ngModel)]="form.numeroDossier" placeholder="Ex: 44" [disabled]="editMode">
+                  </div>
+                  <div class="fg">
+                    <label class="fl">Véhicule (matricule) *</label>
+                    <select class="fi" [(ngModel)]="form.vehiculeMatricule" [disabled]="editMode">
+                      <option value="">— Sélectionner —</option>
+                      <option *ngFor="let v of vehicules" [value]="v.matricule">{{ v.matricule }} — {{ v.marqueModele }}</option>
+                    </select>
+                  </div>
+                  <div class="fg">
+                    <label class="fl">Date d'intervention</label>
+                    <input class="fi" type="date" [(ngModel)]="form.dateIntervention">
+                  </div>
+                </div>
+                <div class="form-row-3">
+                  <div class="fg">
+                    <label class="fl">Type d'intervention *</label>
+                    <select class="fi" [(ngModel)]="form.typeIntervention">
+                      <option *ngFor="let t of typesIntervention" [value]="t">{{ getTypeLabel(t) }}</option>
+                    </select>
+                  </div>
+                  <div class="fg">
+                    <label class="fl">Statut</label>
+                    <select class="fi" [(ngModel)]="form.statut">
+                      <option *ngFor="let s of statuts" [value]="s">{{ getStatutLabel(s) }}</option>
+                    </select>
+                  </div>
+                  <div class="fg">
+                    <label class="fl">Description</label>
+                    <input class="fi" [(ngModel)]="form.description" placeholder="Description de l'intervention…">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Récapitulatif détails existants -->
+              <div class="form-section recap-section" *ngIf="(form.details?.length || 0) > 0">
+                <h4 class="section-label">
+                  Récapitulatif
+                  <span class="detail-count">{{ form.details?.length }} ligne(s)</span>
+                  <span class="edit-hint">✏️ Cliquez pour modifier</span>
+                </h4>
+
+                <!-- Main d'œuvre -->
+                <div *ngIf="mainDoeuvreDetails.length > 0">
+                  <div class="sub-section-label mo-label">Main d'œuvre</div>
+                  <div class="recap-scroll">
+                    <table class="recap-table">
+                      <thead><tr><th>Marque</th><th>N°</th><th>Désignation</th><th>Qté</th><th>Montant</th><th>Total HT</th><th></th></tr></thead>
+                      <tbody>
+                        <tr *ngFor="let d of mainDoeuvreDetails" class="detail-editable-row">
+                          <td><select class="inline-select" [(ngModel)]="d.marque"><option value="">—</option><option value="TAS">TAS</option><option value="Peugeot">Peugeot</option><option value="Citroen">Citroën</option><option value="mitshi">Mitshi</option><option value="ranger">Ranger</option><option value="fiat">Fiat</option></select></td>
+                          <td><input class="inline-input mono" [(ngModel)]="d.numero" placeholder="N°"></td>
+                          <td><input class="inline-input wide" [(ngModel)]="d.designation" placeholder="Désignation"></td>
+                          <td><input class="inline-input num" type="number" min="0.5" step="0.5" [(ngModel)]="d.quantite" (ngModelChange)="recalcDetail(d)"></td>
+                          <td><input class="inline-input num" type="number" step="0.001" min="0" [(ngModel)]="d.montantUnitaire" (ngModelChange)="recalcDetail(d)"></td>
+                          <td class="mono-val htva-cell">{{ fmt3((d.quantite||0)*(d.montantUnitaire||0)) }}</td>
+                          <td><button class="btn-remove" (click)="supprimerDetail(getGlobalIndex(d))">✕</button></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- Pièces -->
+                <div *ngIf="piecesDetails.length > 0" style="margin-top:8px">
+                  <div class="sub-section-label piece-label">Pièces</div>
+                  <div class="recap-scroll">
+                    <table class="recap-table">
+                      <thead><tr><th>Marque</th><th>N° Pièce</th><th>Désignation</th><th>Qté</th><th>Montant</th><th>Total HT</th><th></th></tr></thead>
+                      <tbody>
+                        <tr *ngFor="let d of piecesDetails" class="detail-editable-row">
+                          <td><select class="inline-select" [(ngModel)]="d.marque"><option value="">—</option><option value="TAS">TAS</option><option value="Peugeot">Peugeot</option><option value="Citroen">Citroën</option><option value="mitshi">Mitshi</option><option value="ranger">Ranger</option><option value="fiat">Fiat</option></select></td>
+                          <td><input class="inline-input mono" [(ngModel)]="d.numeroPiece" placeholder="Réf."></td>
+                          <td><input class="inline-input wide" [(ngModel)]="d.designation" placeholder="Désignation"></td>
+                          <td><input class="inline-input num" type="number" min="0.5" step="0.5" [(ngModel)]="d.quantite" (ngModelChange)="recalcDetail(d)"></td>
+                          <td><input class="inline-input num" type="number" step="0.001" min="0" [(ngModel)]="d.montantUnitaire" (ngModelChange)="recalcDetail(d)"></td>
+                          <td class="mono-val htva-cell">{{ fmt3((d.quantite||0)*(d.montantUnitaire||0)) }}</td>
+                          <td><button class="btn-remove" (click)="supprimerDetail(getGlobalIndex(d))">✕</button></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- Total -->
+                <div class="grand-total">
+                  <span>Total HTVA dossier :</span>
+                  <strong class="grand-total-val">{{ fmt3(totalHtvaForm) }} DT</strong>
+                </div>
+              </div>
+
+              <!-- Ajouter un détail -->
+              <div class="form-section">
+                <h4 class="section-label">➕ Ajouter un détail</h4>
+                <div class="detail-type-toggle">
+                  <button type="button" [class.active]="newDetail.type===TypeDetailMaintenance.MAIN_D_OEUVRE" (click)="newDetail.type=TypeDetailMaintenance.MAIN_D_OEUVRE">🔧 Main d'œuvre</button>
+<button type="button" [class.active]="newDetail.type===TypeDetailMaintenance.PIECE" (click)="newDetail.type=TypeDetailMaintenance.PIECE">🔩 Pièce</button>
+                </div>
+                <div class="form-row-3">
+                  <div class="fg">
+                    <label class="fl">Marque / Prestataire</label>
+                    <select class="fi" [(ngModel)]="newDetail.marque">
+                      <option value="">— —</option>
+                      <option value="TAS">TAS</option>
+                      <option value="Peugeot">Peugeot</option>
+                      <option value="Citroen">Citroën</option>
+                      <option value="mitshi">Mitshi</option>
+                      <option value="ranger">Ranger</option>
+                      <option value="fiat">Fiat</option>
+                    </select>
+                  </div>
+                  <div class="fg" *ngIf="newDetail.type==='MAIN_D_OEUVRE'">
+                    <label class="fl">N° Prestation</label>
+                    <input class="fi mono" [(ngModel)]="newDetail.numero" placeholder="Ex: 201">
+                  </div>
+                  <div class="fg" *ngIf="newDetail.type==='PIECE'">
+                    <label class="fl">N° Pièce / Référence</label>
+                    <input class="fi mono" [(ngModel)]="newDetail.numeroPiece" placeholder="Référence">
+                  </div>
+                </div>
+                <div class="form-row-3">
+                  <div class="fg" style="grid-column:span 2">
+                    <label class="fl">Désignation *</label>
+                    <input class="fi" [(ngModel)]="newDetail.designation" placeholder="Ex: Réparation serrure de porte">
+                  </div>
+                  <div class="fg">
+                    <label class="fl">Quantité</label>
+                    <input class="fi mono" type="number" min="0.5" step="0.5" [(ngModel)]="newDetail.quantite">
+                  </div>
+                  <div class="fg">
+                    <label class="fl">Montant HT (DT)</label>
+                    <input class="fi mono" type="number" step="0.001" min="0" [(ngModel)]="newDetail.montantUnitaire">
+                  </div>
+                </div>
+                <div class="add-detail-row">
+                  <span class="total-preview">Total HT : <strong class="htva-preview">{{ fmt3(newDetailTotal) }} DT</strong></span>
+                  <button type="button" class="btn-add-detail" (click)="ajouterDetail()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Ajouter
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="form-footer">
+              <button class="btn-cancel" (click)="annuler()">Annuler</button>
+              <button class="btn-submit" (click)="soumettre()" [disabled]="!form.vehiculeMatricule || !form.numeroDossier || submitting">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                {{ submitting ? 'Enregistrement…' : (editMode ? 'Modifier' : 'Créer le dossier') }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </ng-container>
+    </div>
+  </main>
+</div>
+
+<!-- ══ PANEL DÉTAIL DOSSIER ══ -->
+<div *ngIf="selectedMaintenance" class="detail-overlay" (click)="fermerDetail()">
+  <div class="detail-panel" (click)="$event.stopPropagation()">
+
+    <div class="detail-header">
+      <div>
+        <span class="doss-num large">Dossier #{{ selectedMaintenance.numeroDossier }}</span>
+        <div class="detail-meta" style="margin-top:6px; display:flex; gap:8px; flex-wrap:wrap">
+          <span class="mat-tag">{{ selectedMaintenance.vehiculeMatricule }}</span>
+          <span *ngIf="selectedMaintenance.vehiculeZoneNom" class="zone-chip">{{ selectedMaintenance.vehiculeZoneNom }}</span>
+          <span class="chip" [ngClass]="getTypeClass(selectedMaintenance.typeIntervention)">{{ getTypeLabel(selectedMaintenance.typeIntervention) }}</span>
+          <span class="chip" [ngClass]="getStatutClass(selectedMaintenance.statut)">{{ getStatutLabel(selectedMaintenance.statut) }}</span>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; align-items:center; flex-shrink:0">
+        <span class="htva-total">{{ fmt3(selectedMaintenance.coutTotalHtva) }} DT</span>
+        <button class="btn-act btn-edit" (click)="editerDossier(selectedMaintenance)" title="Modifier">✏️</button>
+        <button class="btn-export-sm" (click)="exporterDossier(selectedMaintenance)" title="Exporter Excel">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Excel
+        </button>
+        <button class="btn-close-panel" (click)="fermerDetail()">✕</button>
+      </div>
+    </div>
+
+    <div class="back-bar">
+      <button class="back-btn-panel" (click)="fermerDetail()">← Retour</button>
+      <span class="detail-subtitle">{{ selectedMaintenance.dateIntervention | date:'dd/MM/yyyy' }}</span>
+    </div>
+
+    <div class="detail-body">
+
+      <!-- Description -->
+      <div *ngIf="selectedMaintenance.description" class="detail-desc">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        {{ selectedMaintenance.description }}
+      </div>
+
+      <!-- Main d'œuvre -->
+      <div *ngIf="getMainDoeuvre(selectedMaintenance).length > 0" class="dossier-block">
+        <div class="section-label mo-label">🔧 Main d'œuvre</div>
+        <div class="detail-table-scroll">
+          <table class="detail-table">
+            <thead><tr><th>Marque</th><th>N°</th><th>Désignation</th><th>Qté</th><th>Montant HT</th><th>Total HTVA</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let d of getMainDoeuvre(selectedMaintenance)" [class.missing-row]="!d.totalHtva || d.totalHtva===0">
+                <td>{{ d.marque || '—' }}</td>
+                <td class="mono-val">{{ d.numero || '—' }}</td>
+                <td>{{ d.designation }}</td>
+                <td class="mono-val center">{{ d.quantite }}</td>
+                <td class="mono-val">{{ fmt3(d.montantUnitaire) }}</td>
+                <td class="mono-val htva-val" [class.htva-missing]="!d.totalHtva || d.totalHtva===0">
+                  {{ fmt3(d.totalHtva || 0) }}
+                  <span *ngIf="!d.totalHtva || d.totalHtva===0" class="missing-badge">MISSING</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Pièces -->
+      <div *ngIf="getPieces(selectedMaintenance).length > 0" class="dossier-block">
+        <div class="section-label piece-label">🔩 Pièces</div>
+        <div class="detail-table-scroll">
+          <table class="detail-table">
+            <thead><tr><th>Marque</th><th>N° Pièce</th><th>Désignation</th><th>Qté</th><th>Montant HT</th><th>Total HTVA</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let d of getPieces(selectedMaintenance)" [class.missing-row]="!d.totalHtva || d.totalHtva===0">
+                <td>{{ d.marque || '—' }}</td>
+                <td class="mono-val">{{ d.numeroPiece || '—' }}</td>
+                <td>{{ d.designation }}</td>
+                <td class="mono-val center">{{ d.quantite }}</td>
+                <td class="mono-val">{{ fmt3(d.montantUnitaire) }}</td>
+                <td class="mono-val htva-val" [class.htva-missing]="!d.totalHtva || d.totalHtva===0">
+                  {{ fmt3(d.totalHtva || 0) }}
+                  <span *ngIf="!d.totalHtva || d.totalHtva===0" class="missing-badge">MISSING</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div *ngIf="getMainDoeuvre(selectedMaintenance).length === 0 && getPieces(selectedMaintenance).length === 0" class="empty-state" style="padding:30px">
+        <div class="empty-icon">📋</div>
+        <p class="empty-title">Aucun détail</p>
+      </div>
+
+      <div class="dossier-subtotal">Total HTVA: <strong>{{ fmt3(selectedMaintenance.coutTotalHtva) }} DT</strong></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL CONFIRMATION SUPPRESSION ══ -->
+<div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="annulerSuppression()">
+  <div class="confirm-modal" (click)="$event.stopPropagation()">
+    <div class="confirm-icon">🗑️</div>
+    <h3 class="confirm-title">Supprimer le dossier</h3>
+    <p class="confirm-desc">
+      Voulez-vous vraiment supprimer le dossier <strong>{{ deleteTargetLabel }}</strong> ?<br>
+      Cette action est irréversible.
+    </p>
+    <div *ngIf="errorMsg" class="alert-error" style="margin:0 0 12px">❌ {{ errorMsg }}</div>
+    <div class="confirm-footer">
+      <button class="btn-cancel" (click)="annulerSuppression()">Annuler</button>
+      <button class="btn-danger" (click)="confirmerSuppression()" [disabled]="deleteLoading">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+        </svg>
+        {{ deleteLoading ? 'Suppression…' : 'Supprimer' }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -19,6 +19,8 @@ import { TechnicienZonesComponent } from './technicien/technicien-zones/technici
 // ▶ ÉTAPE 3 — nouveau composant
 import { TechnicienEquipementsComponent } from './technicien/technicien-equipements/technicien-equipements.component';
 import { TechnicienCarburantComponent } from './technicien/technicien-carburant/technicien-carburant.component';
+import { TechnicienMaintenanceComponent } from './technicien/technicien-maintenance/technicien-maintenance.component';
+
 const routes: Routes = [
   // Route par défaut
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -57,6 +59,7 @@ const routes: Routes = [
       { path: 'equipements',   component: TechnicienEquipementsComponent },
       { path: 'vehicules',   redirectTo: 'equipements', pathMatch: 'full' },
       { path: 'carburant',     component: TechnicienCarburantComponent },
+      { path: 'maintenances', component: TechnicienMaintenanceComponent },
     ]
   },
 

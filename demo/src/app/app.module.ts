@@ -33,6 +33,7 @@ import { ConducteurService } from './services/conducteur.service';
 import { TechnicienEquipementService } from './services/technicien-equipement.service';
 import { TechnicienService } from './services/technicien.service';
 import { TechnicienCarburantService } from './services/technicien-carburant.service';
+import { TechnicienMaintenanceService } from './services/technicien-maintenance.service';
 
 // Guards
 import { AuthGuard, AdminGuard, TechnicienGuard } from './guards/auth.guard';
@@ -58,6 +59,7 @@ import { TechnicienDashboardComponent } from './technicien/technicien-dashboard/
 import { TechnicienZonesComponent } from './technicien/technicien-zones/technicien-zones.component';
 import { TechnicienEquipementsComponent } from './technicien/technicien-equipements/technicien-equipements.component';
 import { TechnicienCarburantComponent } from './technicien/technicien-carburant/technicien-carburant.component';
+import { TechnicienMaintenanceComponent } from './technicien/technicien-maintenance/technicien-maintenance.component';
 
 @NgModule({
   declarations: [
@@ -87,6 +89,7 @@ import { TechnicienCarburantComponent } from './technicien/technicien-carburant/
     TechnicienZonesComponent,
     TechnicienEquipementsComponent,
     TechnicienCarburantComponent,
+    TechnicienMaintenanceComponent,
   ],
   imports: [
     BrowserModule,
@@ -114,6 +117,7 @@ import { TechnicienCarburantComponent } from './technicien/technicien-carburant/
     TechnicienEquipementService,
     TechnicienService,
     TechnicienCarburantService,
+    TechnicienMaintenanceService,
     // Guards
     AuthGuard,
     AdminGuard,
