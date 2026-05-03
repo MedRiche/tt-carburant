@@ -32,6 +32,7 @@ import { CarburantGeService } from './services/carburant-ge.service';
 import { ConducteurService } from './services/conducteur.service';
 import { TechnicienEquipementService } from './services/technicien-equipement.service';
 import { TechnicienService } from './services/technicien.service';
+import { TechnicienCarburantService } from './services/technicien-carburant.service';
 
 // Guards
 import { AuthGuard, AdminGuard, TechnicienGuard } from './guards/auth.guard';
@@ -56,6 +57,7 @@ import { SaisieCarburantModalComponent } from './groupe-electrogene/saisie-modal
 import { TechnicienDashboardComponent } from './technicien/technicien-dashboard/technicien-dashboard.component';
 import { TechnicienZonesComponent } from './technicien/technicien-zones/technicien-zones.component';
 import { TechnicienEquipementsComponent } from './technicien/technicien-equipements/technicien-equipements.component';
+import { TechnicienCarburantComponent } from './technicien/technicien-carburant/technicien-carburant.component';
 
 @NgModule({
   declarations: [
@@ -84,6 +86,7 @@ import { TechnicienEquipementsComponent } from './technicien/technicien-equipeme
     TechnicienDashboardComponent,
     TechnicienZonesComponent,
     TechnicienEquipementsComponent,
+    TechnicienCarburantComponent,
   ],
   imports: [
     BrowserModule,
@@ -110,6 +113,7 @@ import { TechnicienEquipementsComponent } from './technicien/technicien-equipeme
     ConducteurService,
     TechnicienEquipementService,
     TechnicienService,
+    TechnicienCarburantService,
     // Guards
     AuthGuard,
     AdminGuard,
