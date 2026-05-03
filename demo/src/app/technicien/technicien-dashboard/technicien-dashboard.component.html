@@ -68,16 +68,15 @@
   <span>Carburant</span>
 </a>
 
-<div class="nav-section-label" style="margin-top:16px">Prochainement</div>
-      <a class="nav-item nav-item--disabled">
-        <span class="nav-icon">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-          </svg>
-        </span>
-        <span>Maintenance</span>
-        <span class="nav-soon">Bientôt</span>
-      </a>
+<!-- APRÈS -->
+<a class="nav-item" (click)="navigateTo('/technicien/maintenances')">
+  <span class="nav-icon">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/>
+    </svg>
+  </span>
+  <span>Maintenance</span>
+</a>
     </nav>
 
     <!-- User footer -->
@@ -241,18 +240,25 @@
   </div>
 </div>
 
-          <div class="stat-card stat-card--muted">
-            <div class="stat-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-              </svg>
-            </div>
-            <div class="stat-body">
-              <span class="stat-number stat-number--muted">—</span>
-              <span class="stat-label">Maintenance</span>
-            </div>
-            <span class="stat-soon-badge">Bientôt</span>
-          </div>
+<!-- APRÈS -->
+<div class="stat-card stat-card--clickable" 
+     (click)="navigateTo('/technicien/maintenances')" style="cursor:pointer"
+     style="border-color:rgba(245,158,11,0.2); background:linear-gradient(135deg,var(--navy-900),rgba(245,158,11,0.04))">
+  <div class="stat-icon" style="background:rgba(245,158,11,0.1); border-color:rgba(245,158,11,0.25); color:#f59e0b">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/>
+    </svg>
+  </div>
+  <div class="stat-body">
+    <span class="stat-number--sm" style="color:#f59e0b">Mes</span>
+    <span class="stat-label">Maintenance</span>
+  </div>
+  <div class="stat-arrow" style="background:rgba(245,158,11,0.1); color:#f59e0b">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <polyline points="9 18 15 12 9 6"/>
+    </svg>
+  </div>
+</div>
 
         </div>
 
@@ -366,16 +372,17 @@
   <div class="qa-badge qa-badge--available">Disponible</div>
 </button>
 
-            <button class="qa-card qa-card--locked" disabled>
-              <div class="qa-icon qa-icon--gray">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-                </svg>
-              </div>
-              <span class="qa-label">Maintenance</span>
-              <span class="qa-sub">Suivi des interventions</span>
-              <div class="qa-badge qa-badge--soon">Étape 5</div>
-            </button>
+           <!-- APRÈS -->
+<button class="qa-card qa-card--active" (click)="navigateTo('/technicien/maintenances')">
+  <div class="qa-icon qa-icon--cyan">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M2 20h20M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/>
+    </svg>
+  </div>
+  <span class="qa-label">Maintenance</span>
+  <span class="qa-sub">Suivi des interventions</span>
+  <div class="qa-badge qa-badge--available">Disponible</div>
+</button>
 
           </div>
         </div>
