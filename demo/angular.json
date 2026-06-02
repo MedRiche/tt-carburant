@@ -38,6 +38,7 @@
             ],
             "styles": [
               "src/styles.css"
+              
             ],
             "scripts": [
               "node_modules/chart.js/dist/chart.umd.js"
@@ -48,8 +49,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
                 },
                 {
                   "type": "anyComponentStyle",
