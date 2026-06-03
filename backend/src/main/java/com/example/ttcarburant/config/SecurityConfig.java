@@ -56,6 +56,8 @@ public class SecurityConfig {
                         // Routes admin uniquement
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/technicien/**").hasRole("TECHNICIEN")
+                        .requestMatchers("/actuator/health").permitAll()   // ← AJOUTER
+                        .requestMatchers("/favicon.ico").permitAll()       // ← AJOUTER
                         // Toutes les autres routes nécessitent une authentification
                         .anyRequest().authenticated()
                 )

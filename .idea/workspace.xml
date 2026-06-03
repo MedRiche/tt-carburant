@@ -8,7 +8,11 @@
       <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/app/auth/login/login.component.html" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/auth/login/login.component.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/config/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/app/guards/auth.guard.spec.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/guards/auth.guard.spec.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/app/services/groupe-electrogene.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/services/groupe-electrogene.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/app/technicien/technicien-equipements/technicien-equipements.component.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/technicien/technicien-equipements/technicien-equipements.component.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -160,7 +164,11 @@
       <workItem from="1777882055422" duration="652000" />
       <workItem from="1780227349942" duration="196000" />
       <workItem from="1780401513541" duration="547000" />
-      <workItem from="1780406931457" duration="369000" />
+      <workItem from="1780406931457" duration="2600000" />
+      <workItem from="1780413616563" duration="173000" />
+      <workItem from="1780487367009" duration="1485000" />
+      <workItem from="1780491281593" duration="205000" />
+      <workItem from="1780524634406" duration="156000" />
     </task>
     <servers />
   </component>

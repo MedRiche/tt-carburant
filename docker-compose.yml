@@ -1,0 +1,88 @@
+
+
+# ════════════════════════════════════════════════════
+#  TTCarburant — Full Stack Docker Compose
+#  Services : mysql | backend | frontend
+# ════════════════════════════════════════════════════
+
+services:
+
+  # ──────────────────────────────────────────────────
+  #  DATABASE — MySQL 8
+  # ──────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: tt_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: MySQL2026!
+      MYSQL_DATABASE: plateforme_tt
+    ports:
+      - "3307:3306"          # 3307 on host → avoids conflict with local MySQL
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - tt_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pMySQL2026!"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ──────────────────────────────────────────────────
+  #  BACKEND — Spring Boot
+  # ──────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tt_backend
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/plateforme_tt?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: MySQL2026!
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SERVER_PORT: 8081
+      JWT_SECRET: MySecretKeyMySecretKeyMySecretKeyMySecretKey
+      JWT_EXPIRATION: 86400000
+    ports:
+      - "8081:8081"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - tt_network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/ | grep -q 'OK' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ──────────────────────────────────────────────────
+  #  FRONTEND — Angular + Nginx
+  # ──────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./demo
+      dockerfile: Dockerfile
+    container_name: tt_frontend
+    restart: unless-stopped
+    ports:
+      - "4200:80"            # Access app on http://localhost:4200
+    depends_on:
+      - backend
+    networks:
+      - tt_network
+
+# ──────────────────────────────────────────────────
+#  VOLUMES & NETWORKS
+# ──────────────────────────────────────────────────
+volumes:
+  mysql_data:
+    name: tt_mysql_data
+
+networks:
+  tt_network:
+    name: tt_network
+    driver: bridge

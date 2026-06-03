@@ -53,6 +53,8 @@ export class TechnicienEquipementsComponent implements OnInit {
   // ← NOUVEAU : détecter si conducteur
   estConducteur = false;
 
+  
+
   constructor(
     private authService: AuthService,
     private technicienService: TechnicienService,

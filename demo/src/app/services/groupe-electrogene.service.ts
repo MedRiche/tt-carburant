@@ -6,7 +6,7 @@ import { GroupeElectrogene, GroupeElectrogeneRequest } from '../models/groupe-el
 @Injectable({ providedIn: 'root' })
 export class GroupeElectrogeneService {
 
-  private baseUrl = 'http://localhost:8081/api/admin';
+  
   private geUrl   = 'http://localhost:8081/api/admin/groupes-electrogenes';
 
   constructor(private http: HttpClient) {}
