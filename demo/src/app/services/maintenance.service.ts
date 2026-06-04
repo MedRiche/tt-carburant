@@ -1,5 +1,6 @@
 // src/app/services/maintenance.service.ts
 // VERSION CORRIGÉE - Compatible avec le backend existant
+import { environment } from '../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -11,7 +12,7 @@ import {
 @Injectable({ providedIn: 'root' })
 export class MaintenanceService {
 
-  private api = 'http://localhost:8081/api/admin/maintenances';
+  private api = `${environment.apiUrl}/admin/maintenances`;
 
   constructor(private http: HttpClient) {}
 

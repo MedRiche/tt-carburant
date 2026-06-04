@@ -1,3 +1,4 @@
+import { environment } from '../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -7,7 +8,7 @@ import { GroupeElectrogene, GroupeElectrogeneRequest } from '../models/groupe-el
 export class GroupeElectrogeneService {
 
   
-  private geUrl   = 'http://localhost:8081/api/admin/groupes-electrogenes';
+  private geUrl   = `${environment.apiUrl}/admin/groupes-electrogenes`;
 
   constructor(private http: HttpClient) {}
 

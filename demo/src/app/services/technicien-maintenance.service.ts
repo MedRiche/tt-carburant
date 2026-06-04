@@ -1,4 +1,5 @@
 // src/app/services/technicien-maintenance.service.ts
+import { environment } from '../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -32,7 +33,7 @@ export interface MaintenanceDashboardTech {
 @Injectable({ providedIn: 'root' })
 export class TechnicienMaintenanceService {
 
-  private api = 'http://localhost:8081/api/technicien/maintenances';
+  private api = `${environment.apiUrl}/technicien/maintenances`;
 
   constructor(private http: HttpClient) {}
 

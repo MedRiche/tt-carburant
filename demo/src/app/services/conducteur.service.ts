@@ -1,4 +1,5 @@
 // src/app/services/conducteur.service.ts
+import { environment } from '../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -17,7 +18,7 @@ export interface ConducteurImportResult {
 
 @Injectable({ providedIn: 'root' })
 export class ConducteurService {
-  private apiUrl = 'http://localhost:8081/api/admin/vehicules';
+  private apiUrl = `${environment.apiUrl}/admin/vehicules`;
 
   constructor(private http: HttpClient) {}
 

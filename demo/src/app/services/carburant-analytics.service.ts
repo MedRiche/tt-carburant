@@ -1,4 +1,5 @@
 // src/app/services/carburant-analytics.service.ts
+import { environment } from '../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -10,7 +11,7 @@ import {
 @Injectable({ providedIn: 'root' })
 export class CarburantAnalyticsService {
 
-  private api = 'http://localhost:8081/api/admin/carburant-analytics';
+  private api = `${environment.apiUrl}/admin/carburant-analytics`;
 
   constructor(private http: HttpClient) {}
 

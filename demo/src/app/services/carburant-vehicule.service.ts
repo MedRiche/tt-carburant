@@ -1,4 +1,5 @@
 // src/app/services/carburant-vehicule.service.ts
+import { environment } from '../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -7,7 +8,7 @@ import { CarburantVehicule, CarburantPrefill } from '../models/carburant-vehicul
 @Injectable({ providedIn: 'root' })
 export class CarburantVehiculeService {
 
-  private api = 'http://localhost:8081/api/admin/carburant-vehicules';
+  private api = `${environment.apiUrl}/admin/carburant-vehicules`;
 
   constructor(private http: HttpClient) {}
 

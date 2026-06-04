@@ -1,3 +1,4 @@
+import { environment } from '../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -9,7 +10,7 @@ import { GestionCarburantGE, GestionCarburantGERequest, Semestre } from '../mode
 export class CarburantGeService {
 
 
-  private carbUrl = 'http://localhost:8081/api/admin/carburant-ge';
+  private carbUrl = `${environment.apiUrl}/admin/carburant-ge`;
 
   constructor(private http: HttpClient) {}
 

@@ -1,3 +1,4 @@
+import { environment } from '../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -7,7 +8,7 @@ import { Zone, ZoneRequest } from '../models/zone';
   providedIn: 'root'
 })
 export class ZoneService {
-  private apiUrl = 'http://localhost:8081/api/admin/zones';
+  private apiUrl = `${environment.apiUrl}/admin/zones`;
 
   constructor(private http: HttpClient) {}
 

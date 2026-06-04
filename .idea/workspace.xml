@@ -5,14 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="777fc5d2-3bb5-4db8-8545-4efa7fe5d991" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/ttcarburant/config/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/app/guards/auth.guard.spec.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/guards/auth.guard.spec.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/app/services/groupe-electrogene.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/services/groupe-electrogene.service.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/app/technicien/technicien-equipements/technicien-equipements.component.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/technicien/technicien-equipements/technicien-equipements.component.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/angular.json" beforeDir="false" afterPath="$PROJECT_DIR$/demo/angular.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/nginx.conf" beforeDir="false" afterPath="$PROJECT_DIR$/demo/nginx.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/src/app/services/auth.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/demo/src/app/services/auth.service.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -169,6 +166,7 @@
       <workItem from="1780487367009" duration="1485000" />
       <workItem from="1780491281593" duration="205000" />
       <workItem from="1780524634406" duration="156000" />
+      <workItem from="1780528130169" duration="1430000" />
     </task>
     <servers />
   </component>

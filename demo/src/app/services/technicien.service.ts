@@ -1,4 +1,5 @@
 // src/app/services/technicien.service.ts
+import { environment } from '../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -10,7 +11,7 @@ import { Zone } from '../models/zone';
 })
 export class TechnicienService {
 
-  private apiUrl = 'http://localhost:8081/api/technicien';
+  private apiUrl = `${environment.apiUrl}/technicien`;
 
   constructor(private http: HttpClient) {}
 

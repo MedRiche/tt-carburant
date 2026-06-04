@@ -1,4 +1,5 @@
 // src/app/services/technicien-equipement.service.ts
+import { environment } from '../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -25,7 +26,7 @@ export interface GEStats {
 @Injectable({ providedIn: 'root' })
 export class TechnicienEquipementService {
 
-  private baseUrl = 'http://localhost:8081/api/technicien';
+  private baseUrl = `${environment.apiUrl}/technicien`;
 
   constructor(private http: HttpClient) {}
 

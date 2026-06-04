@@ -1,4 +1,5 @@
 // src/app/services/vehicule.service.ts
+import { environment } from '../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -6,7 +7,7 @@ import { Vehicule, VehiculeRequest } from '../models/vehicule';
 
 @Injectable({ providedIn: 'root' })
 export class VehiculeService {
-  private apiUrl = 'http://localhost:8081/api/admin/vehicules';
+  private apiUrl = `${environment.apiUrl}/admin/vehicules`;
 
   constructor(private http: HttpClient) {}
 

@@ -1,4 +1,5 @@
 // src/app/services/verrouillage.service.ts
+import { environment } from '../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -7,8 +8,8 @@ import { VerrouillageDto, HistoriqueModificationDto } from '../models/verrouilla
 @Injectable({ providedIn: 'root' })
 export class VerrouillageService {
 
-  private apiVerr  = 'http://localhost:8081/api/admin/verrouillage-carburant';
-  private apiHisto = 'http://localhost:8081/api/admin/historique-carburant';
+  private apiVerr  = `${environment.apiUrl}/admin/verrouillage-carburant`;
+  private apiHisto = `${environment.apiUrl}/admin/historique-carburant`;
 
   constructor(private http: HttpClient) {}
 

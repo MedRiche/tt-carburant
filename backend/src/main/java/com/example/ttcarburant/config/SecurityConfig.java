@@ -1,7 +1,6 @@
 package com.example.ttcarburant.config;
 
 import com.example.ttcarburant.security.JwtAuthenticationFilter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,7 +27,6 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
@@ -46,19 +44,16 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        // Routes publiques
                         .requestMatchers(
                                 "/",
                                 "/api/auth/**",
+                                "/actuator/health",
+                                "/favicon.ico",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
-                        // Routes admin uniquement
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/technicien/**").hasRole("TECHNICIEN")
-                        .requestMatchers("/actuator/health").permitAll()   // ← AJOUTER
-                        .requestMatchers("/favicon.ico").permitAll()       // ← AJOUTER
-                        // Toutes les autres routes nécessitent une authentification
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
@@ -91,10 +86,35 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:4200"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:4200",   // ng serve (dev local)
+                "http://localhost:8081",   // backend direct (tests)
+                "http://localhost:3000",   // autre frontend éventuel
+                "http://localhost:80",     // nginx docker
+                "http://localhost"         // nginx docker sans port
+        ));
+
+        configuration.setAllowedMethods(Arrays.asList(
+                "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
+        ));
+
+        configuration.setAllowedHeaders(Arrays.asList(
+                "Authorization",
+                "Content-Type",
+                "Accept",
+                "Origin",
+                "X-Requested-With",
+                "Access-Control-Request-Method",
+                "Access-Control-Request-Headers"
+        ));
+
+        configuration.setExposedHeaders(List.of(
+                "Authorization"            // ← expose le header JWT au frontend
+        ));
+
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L); // ← cache preflight 1h, réduit les OPTIONS requests
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
