@@ -7,7 +7,7 @@ WORKDIR /app
 
 # Copy pom first → cache dependencies layer
 COPY pom.xml .
-RUN mvn dependency:go-offline -q
+
 
 # Copy source and build JAR (skip tests → tests run in Jenkins stage)
 COPY src ./src
