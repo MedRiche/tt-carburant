@@ -21,8 +21,6 @@ pipeline {
         stage('Backend Build') {
             steps {
                 dir('backend') {
-                    // On ne skip plus les tests : JaCoCo a besoin qu'ils
-                    // s'executent pour generer jacoco.exec (utilise par Sonar)
                     sh 'mvn clean verify'
                 }
             }
@@ -35,8 +33,11 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     dir('backend') {
+                        // On appelle le plugin par ses coordonnees completes
+                        // (groupId:artifactId:version:goal) car le prefixe
+                        // "sonar" seul n'est pas resolu par Maven sur cet agent
                         sh '''
-                            mvn sonar:sonar \
+                            mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar \
                               -Dsonar.projectKey=tt-carburant \
                               -Dsonar.projectName="TT Carburant" \
                               -Dsonar.java.binaries=target/classes
