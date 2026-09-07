@@ -4,15 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="777fc5d2-3bb5-4db8-8545-4efa7fe5d991" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/backend/src/test/java/com/example/ttcarburant/services/AuthServiceTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/test/java/com/example/ttcarburant/services/CarburantAnalyticsServiceTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/test/java/com/example/ttcarburant/services/CarburantVehiculeServiceTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/test/java/com/example/ttcarburant/services/UtilisateurServiceTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/test/java/com/example/ttcarburant/services/ZoneServiceTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
-    </list>
+    <list default="true" id="777fc5d2-3bb5-4db8-8545-4efa7fe5d991" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -175,7 +167,7 @@
       <workItem from="1781189807760" duration="792000" />
       <workItem from="1788280708014" duration="373000" />
       <workItem from="1788627276163" duration="2772000" />
-      <workItem from="1788733881456" duration="3003000" />
+      <workItem from="1788733881456" duration="3389000" />
     </task>
     <servers />
   </component>
