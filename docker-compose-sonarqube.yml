@@ -15,8 +15,14 @@ services:
       nofile:
         soft: 65536
         hard: 65536
+    networks:
+      - ci-network
 
 volumes:
   sonarqube_data:
   sonarqube_logs:
   sonarqube_extensions:
+
+networks:
+  ci-network:
+    external: true
