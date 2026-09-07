@@ -9,7 +9,7 @@ pipeline {
         BACKEND_IMAGE  = "tt-carburant-backend"
         FRONTEND_IMAGE = "tt-carburant-frontend"
         IMAGE_TAG      = "${BUILD_NUMBER}"
-        SONAR_URL      = "http://host.docker.internal:9000"
+        SONAR_URL      = "http://sonarqube:9000"
     }
     stages {
         stage('Clone Repository') {
