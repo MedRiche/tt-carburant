@@ -10,6 +10,7 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
+
 # Build directly — skip dependency:go-offline (it pulls way more
 # plugins than needed for packaging and increases failure surface
 # on unstable connections). Retry loop handles transient network drops.
